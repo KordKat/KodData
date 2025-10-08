@@ -60,6 +60,7 @@ public abstract class Memory {
 
     public int readInt(){
         if(allocatedSize < 4){
+            free();
             throw new IllegalStateException("Invalid size to read");
         }
 
