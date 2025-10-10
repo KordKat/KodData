@@ -5,11 +5,25 @@ import hello1.koddata.concurrent.ref.SharedReference;
 
 public class SafeMemory extends WritableMemory {
 
-    private final Reference<?> ref;
+    private final SharedReference<?> ref;
 
-    SafeMemory(long peer, long size){
+    private SafeMemory(long peer, long size){
         super(peer, size);
-        ref = new SharedReference<>(null, new MemoryTidy(peer, size));
+        ref = new SharedReference<>(new FakeNull(), new MemoryTidy(peer, size));
+    }
+
+    private SafeMemory(SafeMemory copy){
+        super(copy);
+        ref = copy.ref.retain();
+    }
+
+    public SafeMemory share(){
+        return new SafeMemory(this);
+    }
+
+    public void close(){
+        ref.close();
+        peer = 0;
     }
 
     public static SafeMemory allocate(long size){
@@ -33,6 +47,10 @@ public class SafeMemory extends WritableMemory {
                 free();
             }
         }
+    }
+
+    static class FakeNull {
+        //nah what are you finding bro?
     }
 
 }

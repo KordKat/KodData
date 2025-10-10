@@ -15,6 +15,11 @@ public abstract class Memory {
         this.allocatedSize = size;
     }
 
+    protected Memory(Memory copy){
+        this.peer = copy.peer;
+        this.allocatedSize = copy.allocatedSize;
+    }
+
     static long getPeer(long bytes){
         if(bytes <= 0){
             throw new RuntimeException("Invalid number of bytes");

@@ -10,6 +10,10 @@ public class WritableMemory extends Memory {
         super(peer, size);
     }
 
+    public WritableMemory(WritableMemory copy) {
+        super(copy);
+    }
+
     public static WritableMemory allocate(long bytes){
         return new WritableMemory(Memory.getPeer(bytes), bytes);
     }
