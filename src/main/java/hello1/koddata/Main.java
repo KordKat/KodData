@@ -6,11 +6,13 @@ import hello1.koddata.net.SocketFactory;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        WritableMemory memory = WritableMemory.allocateWritable(10);
-        memory.setData(9L);
+        WritableMemory memory = WritableMemory.allocate(10);
+        byte[] b = {59, -53, -25, -98, 15, 0, 0, 0};
+        memory.setData(b);
         long l = memory.readLong();
         System.out.println(l);
         memory.free();

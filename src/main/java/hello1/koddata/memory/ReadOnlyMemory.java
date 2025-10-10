@@ -13,8 +13,8 @@ public class ReadOnlyMemory extends Memory{
         isWrite = false;
     }
 
-    public static ReadOnlyMemory allocateReadOnly(long bytes){
-        return new ReadOnlyMemory(Memory.allocate(bytes), bytes);
+    public static ReadOnlyMemory allocate(long bytes){
+        return new ReadOnlyMemory(Memory.getPeer(bytes), bytes);
     }
 
     public void initData(byte[] bytes){

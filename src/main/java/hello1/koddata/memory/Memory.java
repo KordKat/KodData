@@ -15,7 +15,7 @@ public abstract class Memory {
         this.allocatedSize = size;
     }
 
-    static long allocate(long bytes){
+    static long getPeer(long bytes){
         if(bytes <= 0){
             throw new RuntimeException("Invalid number of bytes");
         }
@@ -42,9 +42,9 @@ public abstract class Memory {
     public Memory copy(long newSize, boolean readOnly){
         Memory memory;
         if(readOnly){
-            memory = ReadOnlyMemory.allocateReadOnly(newSize);
+            memory = ReadOnlyMemory.allocate(newSize);
         }else {
-            memory = WritableMemory.allocateWritable(newSize);
+            memory = WritableMemory.allocate(newSize);
         }
 
         memory.set(this, Math.min(allocatedSize, newSize));
@@ -75,13 +75,14 @@ public abstract class Memory {
         return MemoryUtil.unsafe.getLong(peer);
     }
 
-    public byte[] readBytes(int count){
-        if(allocatedSize < 4){
-            throw new IllegalStateException("Invalid size to read");
+    public byte[] readBytes(int count) {
+        if (count < 0 || count > allocatedSize) {
+            throw new IllegalArgumentException("Invalid byte count: " + count);
         }
-        byte[] buf = new byte[Math.toIntExact(allocatedSize)];
-        MemoryUtil.unsafe.copyMemory(null, peer, buf, 0, count);
+        byte[] buf = new byte[count];
+        MemoryUtil.unsafe.copyMemory(null, peer, buf, Unsafe.ARRAY_BYTE_BASE_OFFSET, count);
         return buf;
     }
+
 
 }

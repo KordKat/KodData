@@ -6,12 +6,12 @@ import java.nio.ByteBuffer;
 
 public class WritableMemory extends Memory {
     
-    private WritableMemory(long peer, long size){
+    protected WritableMemory(long peer, long size){
         super(peer, size);
     }
 
-    public static WritableMemory allocateWritable(long bytes){
-        return new WritableMemory(Memory.allocate(bytes), bytes);
+    public static WritableMemory allocate(long bytes){
+        return new WritableMemory(Memory.getPeer(bytes), bytes);
     }
 
     public void setData(byte[] bytes){
@@ -43,7 +43,4 @@ public class WritableMemory extends Memory {
             MemoryUtil.unsafe.copyMemory(MemoryUtil.unsafe.getLong(buffer, MemoryUtil.DIRECT_BYTE_BUFFER_ADDR_OFFSET) + buffer.position(), peer, buffer.remaining());
         }else throw new IllegalStateException("Cannot innit data");
     }
-
-
-
 }
