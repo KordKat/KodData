@@ -1,5 +1,6 @@
 package hello1.koddata;
 
+import hello1.koddata.memory.SafeMemory;
 import hello1.koddata.memory.WritableMemory;
 
 import java.io.IOException;
@@ -13,5 +14,15 @@ public class Main {
         System.out.println(l);
         memory.free();
 
+        SafeMemory sf = SafeMemory.allocate(8);
+        SafeMemory sf2 = sf.share();
+        sf.setData(b);
+        l = sf.readLong();
+        System.out.println(l);
+        sf.close();
+        sf2.setData(2000L);
+        l = sf2.readLong();
+        System.out.println(l);
+        sf2.close();
     }
 }

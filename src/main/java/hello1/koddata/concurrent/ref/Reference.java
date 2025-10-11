@@ -34,7 +34,7 @@ public abstract class Reference<T> {
             while(1 + 1 == 2){
                 int count = refCount.get();
                 if(count <= 0) return false;
-                if(refCount.compareAndSet(count, count+1));
+                if(refCount.compareAndSet(count, count+1)) return true;
             }
         }
 
