@@ -1,12 +1,8 @@
 package hello1.koddata;
 
-import hello1.koddata.memory.Memory;
 import hello1.koddata.memory.WritableMemory;
-import hello1.koddata.net.SocketFactory;
 
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -16,5 +12,6 @@ public class Main {
         long l = memory.readLong();
         System.out.println(l);
         memory.free();
+
     }
 }
