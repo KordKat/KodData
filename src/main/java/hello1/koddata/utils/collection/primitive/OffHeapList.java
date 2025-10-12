@@ -5,5 +5,5 @@ import hello1.koddata.memory.SafeMemory;
 public class OffHeapList {
 
     private SafeMemory safeMemory;
-    
+
 }

@@ -17,7 +17,10 @@ public class ThreadLocalMap {
 
     public static ThreadLocalMap getIfSet() {
         Thread thread = Thread.currentThread();
-        if(thread instanceof )
+        if(thread instanceof ThreadLocalThread tt){
+
+        }
+        return null;
     }
 
     public static int countIndex(){
