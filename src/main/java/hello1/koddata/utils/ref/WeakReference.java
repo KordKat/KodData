@@ -1,4 +1,4 @@
-package hello1.koddata.concurrent.ref;
+package hello1.koddata.utils.ref;
 
 public class WeakReference<T> {
     private final java.lang.ref.WeakReference<Reference.ControlBlock<T>> weak;

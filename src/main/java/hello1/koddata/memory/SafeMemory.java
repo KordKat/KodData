@@ -1,7 +1,7 @@
 package hello1.koddata.memory;
 
-import hello1.koddata.concurrent.ref.Reference;
-import hello1.koddata.concurrent.ref.SharedReference;
+import hello1.koddata.utils.ref.Reference;
+import hello1.koddata.utils.ref.SharedReference;
 
 public class SafeMemory extends WritableMemory {
 

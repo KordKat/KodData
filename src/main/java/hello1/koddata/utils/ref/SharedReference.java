@@ -1,4 +1,4 @@
-package hello1.koddata.concurrent.ref;
+package hello1.koddata.utils.ref;
 
 public class SharedReference<T> extends Reference<T> implements AutoCloseable {
 
