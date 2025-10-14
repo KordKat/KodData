@@ -34,6 +34,21 @@ public abstract class Memory {
         return peer;
     }
 
+    static long resizeMemory(long oldPeer, long oldSize, long newSize){
+        if(newSize <= 0){
+            throw new RuntimeException("Invalid number of bytes");
+        }
+        long peer = MemoryUtil.unsafe.allocateMemory(newSize);
+        long copySize = Math.min(oldSize, newSize);
+        MemoryUtil.unsafe.copyMemory(oldPeer, peer, copySize);
+        MemoryUtil.unsafe.freeMemory(oldPeer);
+        return peer;
+    }
+
+    public void resize(long newSize){
+        this.peer = resizeMemory(peer, allocatedSize, newSize);
+    }
+
     public void free(){
         MemoryUtil.unsafe.freeMemory(peer);
     }
@@ -63,6 +78,18 @@ public abstract class Memory {
         }
     }
 
+    protected void checkBounds(long offset, long size) {
+        if (offset < 0 || size < 0 || offset + size > allocatedSize) {
+            throw new IllegalArgumentException(
+                    "Out of bounds: offset=" + offset + ", size=" + size + ", allocatedSize=" + allocatedSize
+            );
+        }
+    }
+
+    public long size(){
+        return allocatedSize;
+    }
+
     public int readInt(){
         if(allocatedSize < 4){
             free();
@@ -86,6 +113,31 @@ public abstract class Memory {
         }
         byte[] buf = new byte[count];
         MemoryUtil.unsafe.copyMemory(null, peer, buf, Unsafe.ARRAY_BYTE_BASE_OFFSET, count);
+        return buf;
+    }
+
+    public int readInt(long offset) {
+        if (offset < 0 || offset + 4 > allocatedSize) {
+            throw new IllegalArgumentException("Invalid offset to read int: " + offset);
+        }
+        return MemoryUtil.unsafe.getInt(peer + offset);
+    }
+
+    public long readLong(long offset) {
+        if (offset < 0 || offset + 8 > allocatedSize) {
+            throw new IllegalArgumentException("Invalid offset to read long: " + offset);
+        }
+        return MemoryUtil.unsafe.getLong(peer + offset);
+    }
+
+    public byte[] readBytes(long offset, int count) {
+        if (offset < 0 || count < 0 || offset + count > allocatedSize) {
+            throw new IllegalArgumentException(
+                    "Invalid offset/count (offset=" + offset + ", count=" + count + ", size=" + allocatedSize + ")"
+            );
+        }
+        byte[] buf = new byte[count];
+        MemoryUtil.unsafe.copyMemory(null, peer + offset, buf, Unsafe.ARRAY_BYTE_BASE_OFFSET, count);
         return buf;
     }
 

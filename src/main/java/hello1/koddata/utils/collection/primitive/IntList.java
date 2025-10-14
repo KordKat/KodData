@@ -5,8 +5,8 @@ import hello1.koddata.utils.math.MathUtils;
 public class IntList {
 
     private int[] data;
-    private int size;
-    private static final int DEFAULT_CAPACITY = 10;
+    private int size = 0;
+    private static final int DEFAULT_CAPACITY = 8;
 
     public IntList() {
         data = new int[DEFAULT_CAPACITY];
