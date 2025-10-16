@@ -1,0 +1,59 @@
+$connection <- CONNECT TO DATABASE mariadb WITH database='sakila', host='localhost', port=3306;
+
+$df1 <- FETCH FROM DATABASE $connection USING "select * from user";
+
+$dfA <- FETCH FROM CSV 'test.csv';
+
+$pipel <- PIPELINE (
+    FILTER salary > 10000;
+    SORT BY age, salary;
+);
+
+$df2 <- APPLY $pipel TO $dfA;
+
+EXPORT $df2 AS CSV TO 'output.csv';
+
+$pipeline <- PIPELINE (
+    FILL NULL AT amount, id WITH 0;
+    FILTER amount > 12;
+    SORT payment_date, amount;
+
+    BRANCH (
+        WHEN amount > 50000 DO PIPELINE (
+            APPLY DISCOUNT 0.1;
+            LOG "High-value transaction";
+        );
+
+        WHEN amount <= 50000 AND amount > 20000 DO PIPELINE (
+            APPLY DISCOUNT 0.05;
+        );
+
+        ELSE DISCARD;
+    );
+    EXEC "select "
+); #Lazy Evaluation
+
+$df3 <- APPLY $pipeline TO $dfA;
+
+$df3[amount2] = $df[amount];
+REMOVE $df3[amount];
+
+MOVE $df3[amount] TO $df3[amount2];
+
+MOVE $df3[amount2] TO $df4[ttttt];
+
+MOVE $df3 TO $df4;
+
+$df5 <- GET $df3;
+
+EXPORT $df3 AS CSV TO 'output2.csv';
+
+DOWNLOAD 'output.csv';
+
+
+select
+*
+from user
+where
+username = 'keera'
+order by salary;
