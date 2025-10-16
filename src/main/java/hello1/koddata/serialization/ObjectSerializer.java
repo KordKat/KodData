@@ -10,19 +10,19 @@ public class ObjectSerializer implements Serializer{
     public byte[] serialize(Serializable serializable) {
         if (serializable == null) {
             System.out.println("serializable is null");
+            return new byte[0];
         }
 
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutputStream objectOut = new ObjectOutputStream(byteOut)) {
-
-            objectOut.writeObject(serializable);
-            objectOut.flush();
-            return byteOut.toByteArray();
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+             ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
+            objectStream.writeObject(serializable);
+            objectStream.flush();
+            return byteStream.toByteArray();
 
         } catch (IOException e) {
-            System.out.println("Error");
-            throw new RuntimeException(e);
+            System.out.println("error");
+            return new byte[0];
         }
     }
-}
 
+}
