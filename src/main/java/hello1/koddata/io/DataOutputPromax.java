@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public interface DataOutputPromax extends DataOutput {
     @Override
-    default void writeBoolean(boolean b) throws IOException {
+    default void writeBoolean(boolean b) throws IOException{
         write((int)(b ? 1 : 0));
     }
 
@@ -56,14 +56,14 @@ public interface DataOutputPromax extends DataOutput {
 
     @Override
     default void writeBytes(String s) throws IOException {
-        if (s == null) throw new NullPointerException("s");
+        if (s == null) throw new NullPointerException("String not be null (writeChars)");
         for (int c : s.toCharArray())
             write(c);
     }
 
     @Override
     default void writeChars(String cs) throws IOException {
-        if (cs == null) throw new NullPointerException("cs");
+        if (cs == null) throw new NullPointerException(" String not be null (writeChars)");
         for (int c : cs.toCharArray()) {
             write(c >>> 8);
             write(c);
