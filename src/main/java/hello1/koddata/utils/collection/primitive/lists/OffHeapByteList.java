@@ -80,7 +80,7 @@ public class OffHeapByteList extends ByteList {
 
         // Read removed value
         byte removed = safeMemory.readBytes(index * elementSize , 1)[0];
-//.......................................
+
         // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             byte nextValue = safeMemory.readBytes((i + 1L) * elementSize , 1)[0];

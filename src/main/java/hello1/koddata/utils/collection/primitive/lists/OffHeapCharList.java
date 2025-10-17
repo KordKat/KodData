@@ -5,18 +5,18 @@ import hello1.koddata.utils.math.MathUtils;
 
 import java.nio.ByteBuffer;
 
-public class OffHeapShortList extends ShortList {
+public class OffHeapCharList extends CharList {
 
     private SafeMemory safeMemory;
 
     private static final int DEFAULT_CAPACITY = 8;
     private int size = 0;
 
-    public OffHeapShortList(){
+    public OffHeapCharList(){
         this(DEFAULT_CAPACITY);
     }
 
-    public OffHeapShortList(int capacity){
+    public OffHeapCharList(int capacity){
         safeMemory = SafeMemory.allocate(capacity * 2);
     }
 
@@ -25,7 +25,7 @@ public class OffHeapShortList extends ShortList {
         safeMemory.setData(size * 2L, i);
     }
 
-    public void add(int index, short value) {
+    public void add(int index, char value) {
         if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException("Index: " + index);
         }
@@ -38,7 +38,7 @@ public class OffHeapShortList extends ShortList {
         size++;
     }
 
-    public void addAll(short[] array, int count) {
+    public void addAll(char[] array, int count) {
         if (array == null) {
             throw new NullPointerException("Array cannot be null");
         }
@@ -53,37 +53,37 @@ public class OffHeapShortList extends ShortList {
 
         // Copy from int[] → native memory
         byte[] bytes = new byte[count * 2];
-        ByteBuffer.wrap(bytes).asShortBuffer().put(array, 0, count);
+        ByteBuffer.wrap(bytes).asCharBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
 
         size += count;
     }
 
-    public void addAll(short[] array){
+    public void addAll(char[] array){
         addAll(array, array.length);
     }
 
-    public short get(int index){
+    public char get(int index){
         checkIndex(index);
-        return  safeMemory.readShort(index * 2L);
+        return (char) safeMemory.readShort(index * 2L);
     }
 
-    public void set(int index, short i){
+    public void set(int index, char i){
         checkIndex(index);
         safeMemory.setData(index * 2L, i);
     }
 
-    public short remove(int index) {
+    public char remove(int index) {
         checkIndex(index);
 
         long elementSize = 2L; // each int = 2 bytes
 
         // Read removed value
-        short removed = safeMemory.readShort(index * elementSize);
+        char removed = (char) safeMemory.readShort(index * elementSize);
 
         // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
-            short nextValue = safeMemory.readShort((i + 1L) * elementSize);
+            char nextValue = (char) safeMemory.readShort((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);
         }
 
