@@ -1,4 +1,4 @@
-package hello1.koddata.utils.collection.primitive;
+package hello1.koddata.utils.collection.primitive.lists;
 
 import hello1.koddata.utils.math.MathUtils;
 
