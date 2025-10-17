@@ -123,6 +123,13 @@ public abstract class Memory {
         return MemoryUtil.unsafe.getInt(peer + offset);
     }
 
+    public short readShort(long offset) {
+        if (offset < 0 || offset + 4 > allocatedSize) {
+            throw new IllegalArgumentException("Invalid offset to read int: " + offset);
+        }
+        return MemoryUtil.unsafe.getShort(peer + offset);
+    }
+
     public long readLong(long offset) {
         if (offset < 0 || offset + 8 > allocatedSize) {
             throw new IllegalArgumentException("Invalid offset to read long: " + offset);
