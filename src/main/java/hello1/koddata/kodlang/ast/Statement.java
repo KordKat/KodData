@@ -4,11 +4,11 @@ public abstract class Statement {
 
     public enum StatementType {
         BLOCK,
-        ASSIGNMENT,
         APPLY,
         DELETE,
         DOWNLOAD,
 
+        ASSIGNMENT,
         BINARY_EXPR,
         SELECT,
         NULL_LITERAL,
@@ -25,7 +25,8 @@ public abstract class Statement {
         PIPELINE_FUNC,
         PROJECTION,
         JOIN,
-        DATAFRAME
+        DATAFRAME,
+        ACCESS
     }
 
     protected StatementType type;

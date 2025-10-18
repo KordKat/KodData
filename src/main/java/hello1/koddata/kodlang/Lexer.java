@@ -141,6 +141,7 @@ public class Lexer {
                     case  "cumcount" -> Token.TokenType.CUMCOUNT;
                     case  "true" -> Token.TokenType.TRUE;
                     case  "false" -> Token.TokenType.FALSE;
+                    case  "apply" -> Token.TokenType.APPLY;
                     default -> null;
                 };
                 if(tokenType == null){

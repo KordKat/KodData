@@ -90,7 +90,8 @@ public class Token {
         CUMMIN,
         CUMCOUNT,
         TRUE,
-        FALSE
+        FALSE,
+        APPLY
     }
 
     TokenType type;

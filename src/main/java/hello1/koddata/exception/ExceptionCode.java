@@ -3,7 +3,8 @@ package hello1.koddata.exception;
 public enum ExceptionCode {
 
     KD00000("Regular Exception"),
-    KDC0001("Unknown Token");
+    KDC0001("Unknown Token"),
+    KDC0002("Unexpected Token") ;
 
     private final String message;
 
