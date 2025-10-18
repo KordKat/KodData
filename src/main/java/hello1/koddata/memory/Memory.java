@@ -137,6 +137,20 @@ public abstract class Memory {
         return MemoryUtil.unsafe.getLong(peer + offset);
     }
 
+    public float readFloat(long offset) {
+        if (offset < 0 || offset + 4 > allocatedSize) {
+            throw new IllegalArgumentException("Invalid offset to read long: " + offset);
+        }
+        return MemoryUtil.unsafe.getFloat(peer + offset);
+    }
+
+    public double readDouble(long offset) {
+        if (offset < 0 || offset + 8 > allocatedSize) {
+            throw new IllegalArgumentException("Invalid offset to read long: " + offset);
+        }
+        return MemoryUtil.unsafe.getDouble(peer + offset);
+    }
+
     public byte[] readBytes(long offset, int count) {
         if (offset < 0 || count < 0 || offset + count > allocatedSize) {
             throw new IllegalArgumentException(
@@ -147,6 +161,8 @@ public abstract class Memory {
         MemoryUtil.unsafe.copyMemory(null, peer + offset, buf, Unsafe.ARRAY_BYTE_BASE_OFFSET, count);
         return buf;
     }
+
+
 
 
 }

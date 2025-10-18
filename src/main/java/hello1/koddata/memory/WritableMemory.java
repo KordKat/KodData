@@ -36,6 +36,16 @@ public class WritableMemory extends Memory {
         MemoryUtil.unsafe.putInt(peer + offset, value);
     }
 
+    public void setData(long offset, float value) {
+        checkBounds(offset, 4);
+        MemoryUtil.unsafe.putFloat(peer + offset, value);
+    }
+
+    public void setData(long offset, double value) {
+        checkBounds(offset, 4);
+        MemoryUtil.unsafe.putDouble(peer + offset, value);
+    }
+
     public void setData(long offset, ByteBuffer buffer) {
         if (buffer == null) {
             throw new NullPointerException("Buffer cannot be null");
@@ -71,6 +81,14 @@ public class WritableMemory extends Memory {
     }
 
     public void setData(int value) {
+        setData(0, value);
+    }
+
+    public void setData(float value) {
+        setData(0, value);
+    }
+
+    public void setData(double value) {
         setData(0, value);
     }
 
