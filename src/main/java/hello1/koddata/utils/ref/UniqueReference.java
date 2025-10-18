@@ -21,7 +21,7 @@ public class UniqueReference<T> extends Reference<T> implements AutoCloseable {
     }
 
     @Override
-    public synchronized void close() throws Exception {
+    public synchronized void close(){
         if(!closed){
             closed = true;
             ctrl.release();

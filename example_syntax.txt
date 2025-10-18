@@ -14,7 +14,7 @@ $df2 <- APPLY $pipel TO $dfA;
 EXPORT $df2 AS CSV TO 'output.csv';
 
 $pipeline <- PIPELINE (
-    FILL NULL AT amount, id WITH 0;
+    FILL NULL OVER amount, id WITH 0;
     FILTER amount > 12;
     SORT payment_date, amount;
 

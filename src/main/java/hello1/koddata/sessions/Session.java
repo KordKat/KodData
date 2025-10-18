@@ -15,7 +15,7 @@ public class Session {
     private final long startedTime;
     private long lastActive;
     private SessionSettings settings;
-
+    private VariablePool varPool;
     public enum State {
         RUNNING(0),
         IDLE(1),

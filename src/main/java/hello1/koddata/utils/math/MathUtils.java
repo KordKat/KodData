@@ -14,4 +14,13 @@ public class MathUtils {
         return n - lower < upper ? lower : upper;
     }
 
+    public static int nextPowerOf2(int n){
+        if(n < 1){
+            return 1;
+        }
+
+        int highest = Integer.highestOneBit(n);
+        return (n == highest) ? n : highest << 1;
+    }
+
 }

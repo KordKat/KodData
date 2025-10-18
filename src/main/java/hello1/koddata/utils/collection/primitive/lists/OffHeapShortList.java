@@ -20,9 +20,10 @@ public class OffHeapShortList extends ShortList {
         safeMemory = SafeMemory.allocate(capacity * 2);
     }
 
-    public void add(int i){
+    public void add(short i){
         ensureCapacity();
         safeMemory.setData(size * 2L, i);
+        size++;
     }
 
     public void add(int index, short value) {
@@ -128,12 +129,12 @@ public class OffHeapShortList extends ShortList {
 
 
     private void ensureCapacity() {
-        ensureCapacity((int)safeMemory.size());
+        ensureCapacity((int)(size + 1) * 2);
     }
 
     private void ensureCapacity(int requiredCapacity) {
         long capacity = safeMemory.size();
-        if (requiredCapacity <= capacity) {
+        if (requiredCapacity < capacity) {
             return;
         }
 
@@ -151,6 +152,10 @@ public class OffHeapShortList extends ShortList {
         if(index < 0 || index >= size){
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
+    }
+
+    public void free(){
+        safeMemory.free();
     }
 
 }
