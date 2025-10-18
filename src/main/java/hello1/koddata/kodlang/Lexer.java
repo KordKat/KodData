@@ -139,6 +139,8 @@ public class Lexer {
                     case  "cummax" -> Token.TokenType.CUMMAX;
                     case  "cummin" -> Token.TokenType.CUMMIN;
                     case  "cumcount" -> Token.TokenType.CUMCOUNT;
+                    case  "true" -> Token.TokenType.TRUE;
+                    case  "false" -> Token.TokenType.FALSE;
                     default -> null;
                 };
                 if(tokenType == null){

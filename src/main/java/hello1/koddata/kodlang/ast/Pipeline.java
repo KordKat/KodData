@@ -1,0 +1,18 @@
+package hello1.koddata.kodlang.ast;
+
+import hello1.koddata.utils.collection.ImmutableArray;
+
+public class Pipeline extends Expression {
+
+    ImmutableArray<Pipeline> pipeline;
+
+    public Pipeline(ImmutableArray<Pipeline> pipelineFunctions){
+        super(StatementType.PIPELINE_FUNC);
+        this.pipeline = pipelineFunctions;
+    }
+
+    protected Pipeline(StatementType type){
+        super(type);
+    }
+
+}

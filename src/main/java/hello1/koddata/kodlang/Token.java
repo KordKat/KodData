@@ -88,7 +88,9 @@ public class Token {
         CUMPROD,
         CUMMAX,
         CUMMIN,
-        CUMCOUNT
+        CUMCOUNT,
+        TRUE,
+        FALSE
     }
 
     TokenType type;

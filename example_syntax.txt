@@ -35,7 +35,7 @@ $pipeline <- PIPELINE (
 
 $df3 <- APPLY $pipeline TO $dfA;
 
-$df3[amount2] = $df[amount];
+$df3[amount2] <- $df[amount];
 REMOVE $df3[amount];
 
 MOVE $df3[amount] TO $df3[amount2];
