@@ -23,6 +23,7 @@ public class OffHeapByteList extends ByteList {
     public void add(int i){
         ensureCapacity();
         safeMemory.setData(size, i);
+        size++;
     }
 
     public void add(int index, byte value) {
@@ -128,12 +129,12 @@ public class OffHeapByteList extends ByteList {
 
 
     private void ensureCapacity() {
-        ensureCapacity((int)safeMemory.size());
+        ensureCapacity((int)(size + 1) * 2);
     }
 
     private void ensureCapacity(int requiredCapacity) {
         long capacity = safeMemory.size();
-        if (requiredCapacity <= capacity) {
+        if (requiredCapacity < capacity) {
             return;
         }
 

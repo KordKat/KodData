@@ -23,6 +23,7 @@ public class OffHeapCharList extends CharList {
     public void add(int i){
         ensureCapacity();
         safeMemory.setData(size * 2L, i);
+        size++;
     }
 
     public void add(int index, char value) {
@@ -128,12 +129,12 @@ public class OffHeapCharList extends CharList {
 
 
     private void ensureCapacity() {
-        ensureCapacity((int)safeMemory.size());
+        ensureCapacity((int)(size + 1) * 2);
     }
 
     private void ensureCapacity(int requiredCapacity) {
         long capacity = safeMemory.size();
-        if (requiredCapacity <= capacity) {
+        if (requiredCapacity < capacity) {
             return;
         }
 

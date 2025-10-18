@@ -23,6 +23,7 @@ public class OffHeapLongList extends LongList {
     public void add(int i){
         ensureCapacity();
         safeMemory.setData(size * 8L, i);
+        size++;
     }
 
     public void add(int index, long value) {
@@ -128,12 +129,12 @@ public class OffHeapLongList extends LongList {
 
 
     private void ensureCapacity() {
-        ensureCapacity((int)safeMemory.size());
+        ensureCapacity((int)(size + 1) * 2);
     }
 
     private void ensureCapacity(int requiredCapacity) {
         long capacity = safeMemory.size();
-        if (requiredCapacity <= capacity) {
+        if (requiredCapacity < capacity) {
             return;
         }
 

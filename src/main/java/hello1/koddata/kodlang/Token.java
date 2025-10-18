@@ -63,7 +63,32 @@ public class Token {
         RIGHT,
         NATURAL,
         JOIN,
-        EOF
+        EOF,
+        NULL,
+        SORT,
+        FILL,
+        MAP,
+        DISTINCT,
+        SKIP,
+        COUNT,
+        SUM,
+        AVG,
+        MEDIAN,
+        MODE,
+        MIN,
+        MAX,
+        RANGE,
+        STD,
+        PARTITION,
+        WINDOW,
+        QUANTILE,
+        DECILE,
+        PERCENTILE,
+        CUMSUM,
+        CUMPROD,
+        CUMMAX,
+        CUMMIN,
+        CUMCOUNT
     }
 
     TokenType type;

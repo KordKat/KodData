@@ -5,33 +5,33 @@ import hello1.koddata.utils.math.MathUtils;
 
 import java.nio.ByteBuffer;
 
-public class OffHeapIntList extends IntList {
+public class OffHeapFloatList extends FloatList {
 
     private SafeMemory safeMemory;
 
     private static final int DEFAULT_CAPACITY = 8;
     private int size = 0;
 
-    public OffHeapIntList(){
+    public OffHeapFloatList(){
         this(DEFAULT_CAPACITY);
     }
 
-    public OffHeapIntList(int capacity){
-        safeMemory = SafeMemory.allocate(capacity * 4);
+    public OffHeapFloatList(int capacity){
+        safeMemory = SafeMemory.allocate(capacity * 2);
     }
 
-    public void add(int i){
+    public void add(float i){
         ensureCapacity();
         safeMemory.setData(size * 4L, i);
         size++;
     }
 
-    public void add(int index, int value) {
+    public void add(int index, float value) {
         if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException("Index: " + index);
         }
         for (int i = size - 1; i >= index; i--) {
-            int current = safeMemory.readInt((long) i * 4);
+            float current = safeMemory.readFloat((long) i * 4);
             safeMemory.setData((long) (i + 1) * 4, current);
         }
         safeMemory.setData((long) index * 4, value);
@@ -39,7 +39,7 @@ public class OffHeapIntList extends IntList {
         size++;
     }
 
-    public void addAll(int[] array, int count) {
+    public void addAll(float[] array, int count) {
         if (array == null) {
             throw new NullPointerException("Array cannot be null");
         }
@@ -50,43 +50,41 @@ public class OffHeapIntList extends IntList {
         int requiredCapacity = size + count;
         ensureCapacity(requiredCapacity);
 
-        long destOffset = (long) size * 4;
+        long destOffset = (long) size * 2;
 
         // Copy from int[] → native memory
-        byte[] bytes = new byte[count * 4];
-        ByteBuffer.wrap(bytes).asIntBuffer().put(array, 0, count);
+        byte[] bytes = new byte[count * 2];
+        ByteBuffer.wrap(bytes).asFloatBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
 
         size += count;
     }
 
-    public void addAll(int[] array){
+    public void addAll(float[] array){
         addAll(array, array.length);
     }
 
-    public int get(int index){
+    public float get(int index){
         checkIndex(index);
-        return safeMemory.readInt(index * 4L);
+        return  safeMemory.readFloat(index * 4L);
     }
 
-    public void set(int index, int i){
+    public void set(int index, float i){
         checkIndex(index);
         safeMemory.setData(index * 4L, i);
     }
 
-    public int remove(int index) {
+    public float remove(int index) {
         checkIndex(index);
 
-        long elementSize = 4L; // each int = 4 bytes
-        long srcOffset;
-        long destOffset;
+        long elementSize = 2L; // each int = 2 bytes
 
         // Read removed value
-        int removed = safeMemory.readInt(index * elementSize);
+        float removed = safeMemory.readFloat(index * elementSize);
 
         // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
-            int nextValue = safeMemory.readInt((i + 1L) * elementSize);
+            float nextValue = safeMemory.readFloat((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);
         }
 
@@ -120,7 +118,7 @@ public class OffHeapIntList extends IntList {
 
         if (size <= currentCapacity / 4) {
             int newCapacity = Math.max(DEFAULT_CAPACITY, (int)currentCapacity / 2);
-            SafeMemory newMemory = SafeMemory.allocate((long) newCapacity * 4);
+            SafeMemory newMemory = SafeMemory.allocate((long) newCapacity * 2);
             byte[] oldBytes = safeMemory.readBytes(0, size * 4);
             newMemory.setData(0, oldBytes);
 
@@ -141,7 +139,7 @@ public class OffHeapIntList extends IntList {
         }
 
         long newCapacity = MathUtils.nearestPowerOf2(requiredCapacity * 2);
-        SafeMemory newMemory = SafeMemory.allocate(newCapacity * 4);
+        SafeMemory newMemory = SafeMemory.allocate(newCapacity * 2);
 
         byte[] oldBytes = safeMemory.readBytes(0, size * 4);
         newMemory.setData(0, oldBytes);
@@ -154,6 +152,10 @@ public class OffHeapIntList extends IntList {
         if(index < 0 || index >= size){
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
+    }
+
+    public void free(){
+        safeMemory.free();
     }
 
 }
