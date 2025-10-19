@@ -4,6 +4,7 @@ public class Token {
 
     enum TokenType {
         IDENTIFIER,
+        NIDENTIFIER,
         NUMBER,
         DOT,
         STRING,

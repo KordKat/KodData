@@ -96,7 +96,7 @@ public class Parser {
     }
 
     private Expression parseLHS() throws KException {
-        Expression target = parseConditionalExpression();
+        Expression target = parseOrExpression();
 
         while(true){
             Token t = current();
@@ -118,11 +118,145 @@ public class Parser {
         return target;
     }
 
-    private Expression parseConditionalExpression(){
-        return null;
+
+
+    private Expression parseOrExpression() throws KException {
+        Expression lhs = parseAndExpression();
+
+        Token t = current();
+        if(t.type.equals(Token.TokenType.OP_OR)){
+            consume();
+            Expression rhs = parseOrExpression();
+            return new BinaryExpression(BinaryExpression.Operator.OR, lhs, rhs);
+        }
+
+        return lhs;
     }
+
+    private Expression parseAndExpression() throws KException {
+        Expression lhs = parseEqualityExpression();
+
+        Token t = current();
+        if(t.type.equals(Token.TokenType.OP_AND)){
+            consume();
+            Expression rhs = parseAndExpression();
+            return new BinaryExpression(BinaryExpression.Operator.AND, lhs, rhs);
+        }
+
+        return lhs;
+    }
+
+    private Expression parseEqualityExpression() throws KException {
+        Expression lhs = parseComparisonExpression();
+
+        Token t = current();
+
+        if(t.type.equals(Token.TokenType.OP_EQ) || t.type.equals(Token.TokenType.OP_NEQ) || t.type.equals(Token.TokenType.OP_IN)){
+            consume();
+            Expression rhs = parseEqualityExpression();
+            BinaryExpression.Operator op = switch (t.type){
+                case OP_EQ -> BinaryExpression.Operator.EQUALS;
+                case OP_NEQ -> BinaryExpression.Operator.NEQUALS;
+                case OP_IN -> BinaryExpression.Operator.IN;
+                default -> null;
+            };
+            return new BinaryExpression(op, lhs, rhs);
+        }
+
+        return lhs;
+    }
+
+    private Expression parseComparisonExpression() throws KException {
+        Expression lhs = parseAddSubExpression();
+
+        Token t = current();
+        BinaryExpression.Operator op = switch (t.type){
+            case OP_GT -> BinaryExpression.Operator.GREATER;
+            case OP_GE -> BinaryExpression.Operator.GREATEREQ;
+            case OP_LT -> BinaryExpression.Operator.LESSTHAN;
+            case OP_LE -> BinaryExpression.Operator.LESSTHANEQ;
+            default -> null;
+        };
+        if(op != null){
+            consume();
+            Expression rhs = parseComparisonExpression();
+            return new BinaryExpression(op, lhs, rhs);
+        }
+
+        return lhs;
+    }
+
+    private Expression parseAddSubExpression() throws KException {
+        Expression lhs = parseMulDivExpression();
+
+        Token t = current();
+        if(t.type.equals(Token.TokenType.OP_ADD) || t.type.equals(Token.TokenType.OP_SUB)){
+            consume();
+            Expression rhs = parseAddSubExpression();
+            if(t.type.equals(Token.TokenType.OP_ADD)){
+                return new BinaryExpression(BinaryExpression.Operator.ADD, lhs, rhs);
+            }else if(t.type.equals(Token.TokenType.OP_SUB)){
+                return new BinaryExpression(BinaryExpression.Operator.SUB, lhs, rhs);
+            }
+        }
+        return lhs;
+    }
+
+    private Expression parseMulDivExpression() throws KException {
+        Expression lhs = parsePowerExpression();
+
+        Token t = current();
+        if(t.type.equals(Token.TokenType.OP_MUL) || t.type.equals(Token.TokenType.OP_DIV)){
+            consume();
+            Expression rhs = parseMulDivExpression();
+            if(t.type.equals(Token.TokenType.OP_MUL)){
+                return new BinaryExpression(BinaryExpression.Operator.MUL, lhs, rhs);
+            }else if(t.type.equals(Token.TokenType.OP_DIV)){
+                return new BinaryExpression(BinaryExpression.Operator.DIV, lhs, rhs);
+            }
+        }
+        return lhs;
+    }
+
+    private Expression parsePowerExpression() throws KException {
+        Expression lhs = parseNIdentifierExpression();
+
+        Token t = current();
+        if(t.type.equals(Token.TokenType.OP_AND)){
+            consume();
+            Expression rhs = parsePowerExpression();
+            return new BinaryExpression(BinaryExpression.Operator.POWER, lhs, rhs);
+        }
+
+        return lhs;
+    }
+
+    private Expression parseNIdentifierExpression() throws KException {
+        Expression lhs = parsePrimaryExpression();
+
+        if(lhs instanceof NIdentifier identifier && isFunction(identifier.identifier)){
+            List<Expression> arguments = new ArrayList<>();
+            while(current() != null && !current().type.equals(Token.TokenType.EOF) && !current().type.equals(Token.TokenType.SEMICOLON)){
+                arguments.add(parseExpression());
+            }
+            return new FunctionCall(identifier, new ImmutableArray<>(arguments));
+        }
+
+        return lhs;
+    }
+
+    private Expression parsePrimaryExpression() {
+        return null; //ขี้เกียจ
+    }
+
     private void consume(){
         position++;
+    }
+
+    private static boolean isFunction(String name){
+        List<String> functionName = List.of("std", "min");
+
+        return functionName.contains(name.toLowerCase());
     }
 
     private void expect(Token.TokenType type) throws KException {

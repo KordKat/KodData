@@ -144,11 +144,8 @@ public class Lexer {
                     case  "apply" -> Token.TokenType.APPLY;
                     default -> null;
                 };
-                if(tokenType == null){
-                    //TODO: handle unknown token
-                    return new Token[]{newEofToken(i, UNKNOWN_TOKEN)};
-                }
-                tokens.add(new Token(tokenType, str.toCharArray(), start, i));
+                if(tokenType == null) tokens.add(new Token(Token.TokenType.NIDENTIFIER, str.toCharArray(), start, i));
+                else tokens.add(new Token(tokenType, str.toCharArray(), start, i));
             }else {
                 return new Token[]{newEofToken(i, UNKNOWN_TOKEN)};
             }

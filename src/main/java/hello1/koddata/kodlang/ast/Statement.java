@@ -26,7 +26,8 @@ public abstract class Statement {
         PROJECTION,
         JOIN,
         DATAFRAME,
-        ACCESS
+        ACCESS,
+        FUNCTION
     }
 
     protected StatementType type;
