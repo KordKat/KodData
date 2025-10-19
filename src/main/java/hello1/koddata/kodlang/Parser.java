@@ -7,6 +7,7 @@ import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Parser {
 
@@ -254,7 +255,7 @@ public class Parser {
     }
 
     private static boolean isFunction(String name){
-        List<String> functionName = List.of("std", "min");
+        Set<String> functionName = Set.of("std", "min");
 
         return functionName.contains(name.toLowerCase());
     }
