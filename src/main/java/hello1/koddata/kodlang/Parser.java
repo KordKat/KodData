@@ -85,41 +85,16 @@ public class Parser {
     }
 
     private Expression parseAssignmentExpression() throws KException {
-        Expression lhs = parseLHS();
+        Expression lhs = parseOrExpression();
 
         if(current().type.equals(Token.TokenType.ASSIGN)){
             consume();
-            Expression rhs = parseExpression();
+            Expression rhs = parseAssignmentExpression();
             return new AssignmentExpression(lhs, rhs);
         }
 
         return lhs;
     }
-
-    private Expression parseLHS() throws KException {
-        Expression target = parseOrExpression();
-
-        while(true){
-            Token t = current();
-            if(t.type.equals(Token.TokenType.DOT)){
-                expect(Token.TokenType.IDENTIFIER);
-                target = new PropertyAccessExpression(target, new Identifier(new String(current().lexeme)));
-                consume();
-            }else if(t.type.equals(Token.TokenType.LBRACKET)){
-                consume();
-                Expression index = parseExpression();
-                expect(Token.TokenType.RBRACKET);
-                consume();
-                target = new Subscript(target, index);
-            }else {
-                break;
-            }
-        }
-
-        return target;
-    }
-
-
 
     private Expression parseOrExpression() throws KException {
         Expression lhs = parseAndExpression();
@@ -246,9 +221,87 @@ public class Parser {
         return lhs;
     }
 
-    private Expression parsePrimaryExpression() {
-        return null; //ขี้เกียจ
+    private Expression parsePrimaryExpression() throws KException {
+        Token t = current();
+        Expression expr;
+
+        switch (t.type) {
+            case NUMBER -> {
+                String s = new String(t.lexeme);
+                consume();
+                boolean isFloat = false;
+                if (current().type.equals(Token.TokenType.DOT)) {
+                    consume();
+                    Token next = current();
+                    expect(Token.TokenType.NUMBER);
+                    s += "." + new String(next.lexeme);
+                    isFloat = true;
+                    consume();
+                }
+                expr = new NumberLiteral(s.toCharArray(), isFloat);
+            }
+            case STRING -> {
+                consume();
+                expr = new StringLiteral(t.lexeme);
+            }
+            case OP_SUB -> {
+                consume();
+                expr = new UnaryExpression(BinaryExpression.Operator.SUB, parseExpression());
+            }
+            case LPAREN -> {
+                consume();
+                Expression inner = parseExpression();
+                expect(Token.TokenType.RPAREN);
+                consume();
+                expr = inner;
+            }
+            case LBRACKET -> { // list or array literal
+                consume();
+                List<Expression> list = new ArrayList<>();
+                while (!current().type.equals(Token.TokenType.RBRACKET)) {
+                    list.add(parseExpression());
+                    if (current().type.equals(Token.TokenType.COMMA)) consume();
+                    else break;
+                }
+                expect(Token.TokenType.RBRACKET);
+                consume();
+                expr = new ArrayLiteral(new ImmutableArray<>(list));
+            }
+            case IDENTIFIER -> {
+                consume();
+                expr = new Identifier(new String(t.lexeme));
+            }
+            case NIDENTIFIER -> {
+                consume();
+                expr = new NIdentifier(new String(t.lexeme));
+            }
+            default -> throw new KException(ExceptionCode.KDC0002, "Unexpected token in expression: " + t.type);
+        }
+
+        while (true) {
+            Token next = current();
+            if (next.type.equals(Token.TokenType.DOT)) {
+                consume();
+                Token prop = current();
+                if (!prop.type.equals(Token.TokenType.IDENTIFIER)) {
+                    throw new KException(ExceptionCode.KDC0002, "Expected identifier after '.' at " + prop.start);
+                }
+                expr = new PropertyAccessExpression(expr, new Identifier(new String(prop.lexeme)));
+                consume();
+            } else if (next.type.equals(Token.TokenType.LBRACKET)) {
+                consume();
+                Expression indexExpr = parseExpression();
+                expect(Token.TokenType.RBRACKET);
+                consume();
+                expr = new Subscript(expr, indexExpr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
     }
+
 
     private void consume(){
         position++;

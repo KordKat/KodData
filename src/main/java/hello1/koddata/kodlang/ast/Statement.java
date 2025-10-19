@@ -10,6 +10,7 @@ public abstract class Statement {
 
         ASSIGNMENT,
         BINARY_EXPR,
+        UNARY_EXPR,
         SELECT,
         NULL_LITERAL,
         BOOLEAN_LITERAL,
