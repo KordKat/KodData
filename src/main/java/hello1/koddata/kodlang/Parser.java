@@ -195,7 +195,7 @@ public class Parser {
     }
 
     private Expression parsePowerExpression() throws KException {
-        Expression lhs = parseNIdentifierExpression();
+        Expression lhs = parsePipeline();
 
         Token t = current();
         if(t.type.equals(Token.TokenType.OP_AND)){
@@ -203,6 +203,12 @@ public class Parser {
             Expression rhs = parsePowerExpression();
             return new BinaryExpression(BinaryExpression.Operator.POWER, lhs, rhs);
         }
+
+        return lhs;
+    }
+
+    private Expression parsePipeline() throws KException {
+        Expression lhs = parseNIdentifierExpression();
 
         return lhs;
     }
