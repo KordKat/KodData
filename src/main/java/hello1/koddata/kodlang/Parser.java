@@ -195,7 +195,7 @@ public class Parser {
     }
 
     private Expression parsePowerExpression() throws KException {
-        Expression lhs = parsePipeline();
+        Expression lhs = parseNIdentifierExpression();
 
         Token t = current();
         if(t.type.equals(Token.TokenType.OP_AND)){
@@ -203,12 +203,6 @@ public class Parser {
             Expression rhs = parsePowerExpression();
             return new BinaryExpression(BinaryExpression.Operator.POWER, lhs, rhs);
         }
-
-        return lhs;
-    }
-
-    private Expression parsePipeline() throws KException {
-        Expression lhs = parseNIdentifierExpression();
 
         return lhs;
     }
@@ -229,7 +223,7 @@ public class Parser {
 
     private Expression parsePrimaryExpression() throws KException {
         Token t = current();
-        Expression expr;
+        Expression expr = null;
 
         switch (t.type) {
             case NUMBER -> {
@@ -281,6 +275,33 @@ public class Parser {
                 consume();
                 expr = new NIdentifier(new String(t.lexeme));
             }
+            case PIPELINE -> {
+                expect(Token.TokenType.LCURLY);
+                consume();
+                List<Expression> pipeline = new ArrayList<>();
+                while(!current().type.equals(Token.TokenType.EOF) && !current().type.equals(Token.TokenType.RCURLY)){
+                    pipeline.add(parseExpression());
+                }
+                expect(Token.TokenType.RCURLY);
+                consume();
+                expr = new Pipeline(new ImmutableArray<>(pipeline));
+            }
+            case BRANCH -> {
+                expect(Token.TokenType.LCURLY);
+                consume();
+                List<WhenCaseStatement> whens = new ArrayList<>();
+                ElseCaseStatement elseCase = null;
+                while(current().type.equals(Token.TokenType.WHEN)){
+                    consume();
+                    whens.add(parseWhenCase());
+                }
+                if(current().type.equals(Token.TokenType.ELSE)){
+                    consume();
+                    elseCase = new ElseCaseStatement(parseExpression());
+                }
+
+                expr = new BranchPipeline(new ImmutableArray<>(whens), elseCase);
+            }
             default -> throw new KException(ExceptionCode.KDC0002, "Unexpected token in expression: " + t.type);
         }
 
@@ -308,13 +329,22 @@ public class Parser {
         return expr;
     }
 
+    private WhenCaseStatement parseWhenCase() throws KException {
+        Expression condition = parseExpression();
+        if(!current().type.equals(Token.TokenType.DO)){
+            throw new KException(ExceptionCode.KDC0002, "Expected token 'DO' but got " + current().type + " instead.");
+        }
+        Expression doPipe = parseExpression();
+        return new WhenCaseStatement(condition, doPipe);
+    }
+
 
     private void consume(){
         position++;
     }
 
     private static boolean isFunction(String name){
-        Set<String> functionName = Set.of("std", "min");
+        Set<String> functionName = Set.of("max", "min");
 
         return functionName.contains(name.toLowerCase());
     }

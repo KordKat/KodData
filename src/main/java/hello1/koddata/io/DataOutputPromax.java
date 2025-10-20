@@ -2,8 +2,12 @@ package hello1.koddata.io;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public interface DataOutputPromax extends DataOutput {
+
+    void write(ByteBuffer b) throws IOException;
+
      @Override
      default void writeBoolean(boolean b) throws IOException {
          write((int)(b ? 1 : 0));

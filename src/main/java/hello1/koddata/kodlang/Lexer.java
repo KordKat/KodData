@@ -118,6 +118,7 @@ public class Lexer {
                     case  "true" -> Token.TokenType.TRUE;
                     case  "false" -> Token.TokenType.FALSE;
                     case  "apply" -> Token.TokenType.APPLY;
+                    case  "do" -> Token.TokenType.DO;
                     default -> null;
                 };
                 if(tokenType == null) tokens.add(new Token(Token.TokenType.NIDENTIFIER, str.toCharArray(), start, i));

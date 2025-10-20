@@ -69,7 +69,8 @@ public class Token {
         TRUE,
         FALSE,
         APPLY,
-        COMMA
+        COMMA,
+        DO
     }
 
     TokenType type;
