@@ -299,7 +299,8 @@ public class Parser {
                     consume();
                     elseCase = new ElseCaseStatement(parseExpression());
                 }
-
+                expect(Token.TokenType.RCURLY);
+                consume();
                 expr = new BranchPipeline(new ImmutableArray<>(whens), elseCase);
             }
             default -> throw new KException(ExceptionCode.KDC0002, "Unexpected token in expression: " + t.type);
