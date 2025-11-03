@@ -369,5 +369,40 @@ public class Parser {
             return tokens.get(tokens.length() - 1);
         }
     }
+//    -------------------------------------------------------
+    private boolean isAtEnd() {
+        Token t = current();
+        return t == null || t.type.equals(Token.TokenType.EOF);
+    }
+
+    private boolean match(Token.TokenType... types) {
+        for (Token.TokenType type : types) {
+            if (current().type.equals(type)) {
+                consume();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Token previous() {
+        return tokens.get(Math.max(0, position - 1));
+    }
+
+    private void synchronize() {
+        while (!isAtEnd()) {
+            if (previous().type.equals(Token.TokenType.SEMICOLON)) return;
+
+            switch (current().type) {
+                case DELETE, DOWNLOAD, APPLY, LCURLY -> { return; }
+            }
+
+            consume();
+        }
+    }
+
+    private Token.TokenType peekType(int offset) {
+        return peek(offset).type;
+    }
 
 }
