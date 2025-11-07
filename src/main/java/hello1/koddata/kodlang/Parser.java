@@ -20,7 +20,7 @@ public class Parser {
 
     public Statement parseStatement() throws KException {
         final Token first = current();
-        consume();
+//        consume();
         Token t = current();
         if(first.type.equals(Token.TokenType.DELETE)){
             return parseDeleteStatement();
@@ -74,7 +74,7 @@ public class Parser {
     private ApplyStatement parseApplyStatement() throws KException {
         Expression pipe = parseExpression();
         expect(Token.TokenType.TO);
-        consume();
+//        consume();
         Expression expr = parseExpression();
         return new ApplyStatement(pipe, expr);
     }
@@ -198,7 +198,7 @@ public class Parser {
         Expression lhs = parseNIdentifierExpression();
 
         Token t = current();
-        if(t.type.equals(Token.TokenType.OP_AND)){
+        if(t.type.equals(Token.TokenType.OP_POW)){
             consume();
             Expression rhs = parsePowerExpression();
             return new BinaryExpression(BinaryExpression.Operator.POWER, lhs, rhs);
@@ -228,15 +228,14 @@ public class Parser {
         switch (t.type) {
             case NUMBER -> {
                 String s = new String(t.lexeme);
-                consume();
+                consume(); // Consume the initial NUMBER token
                 boolean isFloat = false;
-                if (current().type.equals(Token.TokenType.DOT)) {
-                    consume();
+                if (current() != null && current().type.equals(Token.TokenType.DOT)) { // Check current (now DOT)
+                    consume(); // Consume the DOT
                     Token next = current();
-                    expect(Token.TokenType.NUMBER);
+                    expect(Token.TokenType.NUMBER); // Expects and consumes the NUMBER after the dot
                     s += "." + new String(next.lexeme);
                     isFloat = true;
-                    consume();
                 }
                 expr = new NumberLiteral(s.toCharArray(), isFloat);
             }
@@ -252,7 +251,7 @@ public class Parser {
                 consume();
                 Expression inner = parseExpression();
                 expect(Token.TokenType.RPAREN);
-                consume();
+//                consume();
                 expr = inner;
             }
             case LBRACKET -> { // list or array literal
@@ -264,7 +263,7 @@ public class Parser {
                     else break;
                 }
                 expect(Token.TokenType.RBRACKET);
-                consume();
+//                consume();
                 expr = new ArrayLiteral(new ImmutableArray<>(list));
             }
             case IDENTIFIER -> {
@@ -277,18 +276,18 @@ public class Parser {
             }
             case PIPELINE -> {
                 expect(Token.TokenType.LCURLY);
-                consume();
+//                consume();
                 List<Expression> pipeline = new ArrayList<>();
                 while(!current().type.equals(Token.TokenType.EOF) && !current().type.equals(Token.TokenType.RCURLY)){
                     pipeline.add(parseExpression());
                 }
                 expect(Token.TokenType.RCURLY);
-                consume();
+//                consume();
                 expr = new Pipeline(new ImmutableArray<>(pipeline));
             }
             case BRANCH -> {
                 expect(Token.TokenType.LCURLY);
-                consume();
+//                consume();
                 List<WhenCaseStatement> whens = new ArrayList<>();
                 ElseCaseStatement elseCase = null;
                 while(current().type.equals(Token.TokenType.WHEN)){
@@ -300,10 +299,12 @@ public class Parser {
                     elseCase = new ElseCaseStatement(parseExpression());
                 }
                 expect(Token.TokenType.RCURLY);
-                consume();
+//                consume();
                 expr = new BranchPipeline(new ImmutableArray<>(whens), elseCase);
             }
+
             default -> throw new KException(ExceptionCode.KDC0002, "Unexpected token in expression: " + t.type);
+
         }
 
         while (true) {
@@ -320,7 +321,7 @@ public class Parser {
                 consume();
                 Expression indexExpr = parseExpression();
                 expect(Token.TokenType.RBRACKET);
-                consume();
+//                consume();
                 expr = new Subscript(expr, indexExpr);
             } else {
                 break;
@@ -345,17 +346,44 @@ public class Parser {
     }
 
     private static boolean isFunction(String name){
-        Set<String> functionName = Set.of("max", "min");
+        Set<String> functionName = Set.of(
+//                Mathematical Functions
+                "max", "min" , "abs", "sqrt", "pow", "exp", "log", "log10", "sin", "cos", "tan", "asin", "acos", "atan", "ceil", "floor", "round", "clamp", "random", "sign", "mod" ,
+                "atan2","sinh" ,"cosh" ,"tanh" ,"deg" ,"rad" ,"gcd" ,"lcm" , "factorial" ,"root" ,
 
+//                Statistical / Aggregation Functions
+                "sum", "avg", "mean", "median", "mode", "count", "std",
+                "percentile" ,"quantile","quartile" ,"stdev" ,"variance" ,"range" ,"product" ,
+
+//                Logic / Comparison Functions
+                "equals", "not", "and", "or", "xor", "if", "ifelse",
+
+//                String Functions
+                "len", "length", "upper", "lower", "trim", "concat", "substring", "replace", "indexof", "startswith", "endswith", "split", "join", "reverse",
+                "contains" ,"padleft" ,"padright" ,"repeat" ,"tostring" ,"str" ,"format"  ,"match" ,"regex" ,
+
+//                List / Array Functions
+                "sort", "push", "pop", "append", "insert", "remove", "size", "map", "filter", "reduce",
+                "first" ,"last" ,"slice" ,"flatten" ,"unique" ,"distinct" ,"find" ,"findindex" ,"every" ,"some" ,"any" ,"merge",
+
+//                Type / Utility Functions
+                "type", "isnumber", "isstring", "islist", "isbool", "print", "input" ,"coalesce" ,"cast" ,
+
+//                Pipeline/Chaining Functions
+//                -Array Pipeline Functions
+                "take", "skip" ,"takewhile" ,"skipwhile"
+
+                );
         return functionName.contains(name.toLowerCase());
     }
 
     private void expect(Token.TokenType type) throws KException {
-        consume();
-        Token curr = current();
-        if(!curr.type.equals(type)){
-            throw new KException(ExceptionCode.KDC0002, "Expected " + type + " got " + curr.type + " at " + curr.start + " - " + curr.end);
+        Token curr = current(); // Check the current token
+        if(curr == null || !curr.type.equals(type)){
+            // Throw exception if current token doesn't match
+            throw new KException(ExceptionCode.KDC0002, "Expected " + type + " but got " + (curr == null ? "EOF" : curr.type) + " at ...");
         }
+        consume(); // Consume only after a successful match
     }
 
     private Token current(){
@@ -368,41 +396,6 @@ public class Parser {
         }else {
             return tokens.get(tokens.length() - 1);
         }
-    }
-//    -------------------------------------------------------
-    private boolean isAtEnd() {
-        Token t = current();
-        return t == null || t.type.equals(Token.TokenType.EOF);
-    }
-
-    private boolean match(Token.TokenType... types) {
-        for (Token.TokenType type : types) {
-            if (current().type.equals(type)) {
-                consume();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Token previous() {
-        return tokens.get(Math.max(0, position - 1));
-    }
-
-    private void synchronize() {
-        while (!isAtEnd()) {
-            if (previous().type.equals(Token.TokenType.SEMICOLON)) return;
-
-            switch (current().type) {
-                case DELETE, DOWNLOAD, APPLY, LCURLY -> { return; }
-            }
-
-            consume();
-        }
-    }
-
-    private Token.TokenType peekType(int offset) {
-        return peek(offset).type;
     }
 
 }
