@@ -7,10 +7,8 @@ import java.util.Set;
 
 public class Session {
 
-
     private static IdCounter idCounter = new IdCounter();
 
-    private Set<SocketChannel> viewer;
     private long sessionId;
     private final long startedTime;
     private long lastActive;

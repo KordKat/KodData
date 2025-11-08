@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 public class MemoryUtil {
 
 
-    static final Unsafe unsafe;
+    public static final Unsafe unsafe;
     static final Class<?> DIRECT_BYTE_BUFFER_CLASS;
     static final long DIRECT_BYTE_BUFFER_ADDR_OFFSET;
 

@@ -4,6 +4,7 @@ import sun.misc.Unsafe;
 
 import java.io.DataOutput;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 public abstract class Memory {
 
@@ -31,6 +32,10 @@ public abstract class Memory {
             throw new RuntimeException("Cannot allocate memory");
         }
 
+        return peer;
+    }
+
+    public long getPeer() {
         return peer;
     }
 
@@ -163,6 +168,8 @@ public abstract class Memory {
     }
 
 
-
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(peer);
+    }
 }
