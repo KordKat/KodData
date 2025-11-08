@@ -1,5 +1,7 @@
 package hello1.koddata.dataframe;
 
+import hello1.koddata.utils.SerialVersionId;
+
 public class ColumnMetaData {
 
     public enum ColumnType {
@@ -29,6 +31,7 @@ public class ColumnMetaData {
     private final ColumnType type;
     private int rows;
     private boolean isSharded = false;
+    private long serialVersionId = SerialVersionId.get;
     public ColumnMetaData(String name, ColumnType type){
         this.name = name;
         this.type = type;
