@@ -1,6 +1,9 @@
 package hello1.koddata;
 
 import hello1.koddata.exception.KException;
+import hello1.koddata.kodlang.Lexer;
+import hello1.koddata.kodlang.Parser;
+import hello1.koddata.kodlang.Token;
 import hello1.koddata.kodlang.ast.*;
 import hello1.koddata.sessions.VariablePool;
 import hello1.koddata.utils.collection.ImmutableArray;
@@ -12,14 +15,12 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) throws IOException, KException {
-        Statement stmt = new BlockStatement(new ImmutableArray<>(List.of(
-                new AssignmentExpression(new Identifier("test"), new BinaryExpression(BinaryExpression.Operator.ADD, new NumberLiteral("12".toCharArray(), false), new NumberLiteral("12".toCharArray(), false))),
-                new SelectStatement(new ImmutableArray<>(List.of(
-                        new ProjectionExpression(new Identifier("test"), new Identifier("t"))
-                )), new DataFrameDeclaration(new Identifier("df"), new Identifier("d")), null, new BinaryExpression(BinaryExpression.Operator.EQUALS, new Identifier("age"), new NumberLiteral("12".toCharArray(), false)), null, null)
-        )));
-        String rep = ASTToString.astToString(stmt);
-        System.out.println(rep);
-        SemanticAnalyzer.analyze(new NumberLiteral("1378921".toCharArray(), false));
+        String test = "$a <- max 12**(3-5) \"hello\";";
+        Token[] token = Lexer.analyze(test.toCharArray());
+        Parser parser = new Parser(new ImmutableArray<>(token));
+        Statement statement = parser.parseStatement();
+        String testaa = ASTToString.astToString(statement);
+        System.out.println(testaa);
+        SemanticAnalyzer.analyze(statement);
     }
 }

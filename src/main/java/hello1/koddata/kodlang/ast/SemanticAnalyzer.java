@@ -37,6 +37,17 @@ public class SemanticAnalyzer {
             for(Statement statement1 : block.statements){
                 analyze(statement1);
             }
+        }else if (statement instanceof BinaryExpression bin){
+            Expression left = bin.left;
+            Expression right = bin.right;
+            BinaryExpression.Operator op = bin.op;
+            if(op.equals(BinaryExpression.Operator.DIV)){
+                ReturnType r1 = evaluateExpression(left);
+                ReturnType r2 = evaluateExpression(right);
+                if (!r1.equals(ReturnType.NUMBER) || !r2.equals(ReturnType.NUMBER)){
+                    throw new KException(ExceptionCode.KDC0003,"Only number can perform division");
+                }
+            }
         }
     }
 
