@@ -5,7 +5,6 @@ import hello1.koddata.kodlang.Lexer;
 import hello1.koddata.kodlang.Parser;
 import hello1.koddata.kodlang.Token;
 import hello1.koddata.kodlang.ast.*;
-import hello1.koddata.sessions.VariablePool;
 import hello1.koddata.utils.collection.ImmutableArray;
 import hello1.koddata.utils.collection.primitive.lists.OffHeapShortList;
 

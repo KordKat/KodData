@@ -8,7 +8,8 @@ public enum ExceptionCode {
     KDC0003("Parsing error"),
     KDM0004("Memory allocation error"),
     KD00005("IllegalArgumentException"),
-    KD00006("IllegalStateException");
+    KD00006("IllegalStateException"),
+    KDM0007("Memory Error");
 
     private final String message;
 

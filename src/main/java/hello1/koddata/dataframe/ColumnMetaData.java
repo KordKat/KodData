@@ -4,37 +4,14 @@ import hello1.koddata.utils.SerialVersionId;
 
 public class ColumnMetaData {
 
-    public enum ColumnType {
-        INT(4, false),
-        LONG(8, false),
-        DOUBLE(8, false),
-        FLOAT(4, false),
-        BOOLEAN(1, false),
-        BYTE(1, false),
-        VARCHAR(0, true),
-        VARINT(0, true),
-        BLOB(0, true);
-
-        private final int size;
-        private final boolean variable;
-
-        ColumnType(int size, boolean variable) {
-            this.size = size;
-            this.variable = variable;
-        }
-
-        public boolean isVariable() { return variable; }
-        public int size() { return size; }
-    }
-
     private final String name;
-    private final ColumnType type;
+    private boolean isVariable;
     private int rows;
     private boolean isSharded = false;
     private long serialVersionId = SerialVersionId.get;
-    public ColumnMetaData(String name, ColumnType type){
+    public ColumnMetaData(String name, boolean isVariable){
         this.name = name;
-        this.type = type;
+        this.isVariable = isVariable;
     }
 
     public void setSharded(boolean sharded) {
@@ -57,7 +34,7 @@ public class ColumnMetaData {
         return name;
     }
 
-    public ColumnType getType() {
-        return type;
+    public boolean isVariable() {
+        return isVariable;
     }
 }

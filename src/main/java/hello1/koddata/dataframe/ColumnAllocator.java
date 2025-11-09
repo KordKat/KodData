@@ -9,17 +9,20 @@ import sun.misc.Unsafe;
 public abstract class ColumnAllocator implements Allocator {
 
     protected final long rows;
-    protected final ColumnMetaData.ColumnType type;
-
-
-
-    protected ColumnAllocator(long rows, ColumnMetaData.ColumnType type) {
+    protected final int sizePerElement;
+    protected final boolean isVariable;
+    protected ColumnAllocator(long rows, int sizePerElement) {
         this.rows = rows;
-        this.type = type;
+        this.sizePerElement = sizePerElement;
+        this.isVariable = sizePerElement <= 0;
     }
 
-    public ColumnMetaData.ColumnType getType() {
-        return type;
+    public boolean isVariable() {
+        return isVariable;
+    }
+
+    public int getSizePerElement() {
+        return sizePerElement;
     }
 
     public long getRows() {

@@ -1,5 +1,7 @@
 package hello1.koddata.memory;
 
+import hello1.koddata.exception.KException;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,13 +28,13 @@ public class MemoryGroup {
         return name;
     }
 
-    public Memory allocate(Allocator allocator){
+    public Memory allocate(Allocator allocator) throws KException {
         Memory allocated = allocator.allocate();
         referencePool.put(allocated, allocator);
         return allocated;
     }
 
-    public Memory allocate(long size){
+    public Memory allocate(long size) throws KException {
         return allocate(new SimpleAllocator(size));
     }
 
@@ -52,6 +54,10 @@ public class MemoryGroup {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isPresent(Memory key){
+        return referencePool.containsKey(key);
     }
 
     static class MemoryGroupShutdownHookThread extends Thread {

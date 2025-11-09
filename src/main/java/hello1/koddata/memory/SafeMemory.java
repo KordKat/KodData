@@ -44,7 +44,6 @@ public class SafeMemory extends WritableMemory {
         @Override
         public void tidy() {
             if(peer != 0){
-                System.out.println("Freed memory!");
                 free();
             }
         }

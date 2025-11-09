@@ -11,7 +11,7 @@ public class MemoryUtil {
 
     public static final Unsafe unsafe;
     static final Class<?> DIRECT_BYTE_BUFFER_CLASS;
-    static final long DIRECT_BYTE_BUFFER_ADDR_OFFSET;
+    public static final long DIRECT_BYTE_BUFFER_ADDR_OFFSET;
 
     static {
         try {
@@ -24,6 +24,13 @@ public class MemoryUtil {
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
+    }
+
+    public static long getByteBufferAddress(ByteBuffer buffer) {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("Buffer must be a direct ByteBuffer");
+        }
+        return unsafe.getLong(buffer, DIRECT_BYTE_BUFFER_ADDR_OFFSET);
     }
 
 }
