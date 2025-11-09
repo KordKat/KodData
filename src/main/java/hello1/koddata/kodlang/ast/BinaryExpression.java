@@ -19,8 +19,7 @@ public class BinaryExpression extends Expression {
         GREATER,
         GREATEREQ,
         LESSTHAN,
-        LESSTHANEQ,
-        BETWEEN
+        LESSTHANEQ
     }
     public BinaryExpression(Operator op, Expression left, Expression right) {
         super(StatementType.BINARY_EXPR);
