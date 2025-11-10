@@ -34,13 +34,15 @@ public class BufferedInputStreamPromax extends DataInputStreamPromax {
 
     @Override
     public synchronized String readUTF() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int b;
-        while ((b = read()) != -1) {
-            baos.write(b);
+        if (pos >= count) {
+            if(fill() <= 0)
+                return null;
         }
-        return baos.toString(StandardCharsets.UTF_8);
+        byte[] bytes = new byte[count - pos];
+        System.arraycopy(buffer, pos, bytes, 0, count - pos);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
+
     @Override
     public synchronized void close() throws IOException {
         in.close();
