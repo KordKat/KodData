@@ -1,0 +1,49 @@
+package hello1.koddata.io;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+public class BufferedInputStreamPromax extends DataInputStreamPromax {
+//    BufferedInputStream
+    private final InputStream in;
+    private final byte[] buffer;
+    private int pos = 0;
+    private int count = 0;
+
+    public BufferedInputStreamPromax(InputStream in, int bufferSize) {
+        this.in = in;
+        this.buffer = new byte[bufferSize];
+    }
+
+    private synchronized int fill() throws IOException {
+        pos = 0;
+        count = in.read(buffer, 0, buffer.length);
+        return count;
+    }
+
+    @Override
+    public synchronized int read() throws IOException {
+        if (pos >= count) {
+            if (fill() <= 0) return -1;
+        }
+        return buffer[pos++] & 0xFF;
+    }
+
+    @Override
+    public synchronized String readUTF() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int b;
+        while ((b = read()) != -1) {
+            baos.write(b);
+        }
+        return baos.toString(StandardCharsets.UTF_8);
+    }
+    @Override
+    public synchronized void close() throws IOException {
+        in.close();
+    }
+
+}

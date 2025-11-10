@@ -2,29 +2,29 @@ package hello1.koddata.io;
 
 import jdk.internal.misc.InternalLock;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-
+import java.nio.charset.StandardCharsets;
 
 
 public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
-    private final InternalLock lock;
     private final OutputStream out;
     private byte[] buffer;
     private int count = 0;
+    private int pos = 0;
 
-    public BufferedOutputStreamPromax(OutputStream outputStream, InternalLock lock, OutputStream out, int bufferSize){
-        this.lock = lock;
+    public BufferedOutputStreamPromax(OutputStream out, int bufferSize){
         this.out = out;
         this.buffer = new byte[bufferSize];
     }
 
-    public BufferedOutputStreamPromax(OutputStream outputStream, InternalLock lock, OutputStream out){
-        this.lock = lock;
+    public BufferedOutputStreamPromax(OutputStream out){
         this.out = out;
     }
+
     @Override
     public synchronized void write(ByteBuffer buf) throws IOException {
         int remaining = buf.remaining();
@@ -60,12 +60,12 @@ public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
 
     }
 
-
+    //เน้น ห้ามลืม
     @Override
-    public void writeUTF(String s) throws IOException {
-        new DataOutputStream(this).writeUTF(s);
+    public synchronized void writeUTF(String s) throws IOException {
+        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+        write(bytes, 0 , bytes.length);
     }
-
 
     @Override
     public synchronized void write(int b) throws IOException {
@@ -88,4 +88,5 @@ public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
             count = 0;
         }
     }
+
 }
