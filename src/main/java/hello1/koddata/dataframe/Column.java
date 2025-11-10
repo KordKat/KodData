@@ -2,7 +2,6 @@ package hello1.koddata.dataframe;
 
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
-import hello1.koddata.memory.Allocator;
 import hello1.koddata.memory.Memory;
 import hello1.koddata.memory.MemoryGroup;
 

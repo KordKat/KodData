@@ -9,7 +9,7 @@ public class SafeMemory extends WritableMemory {
 
     private SafeMemory(long peer, long size){
         super(peer, size);
-        ref = new SharedReference<>(new FakeNull(), new MemoryTidy(peer, size));
+        ref = new SharedReference<>(new FakeNull(), new MemoryTidy(peer));
     }
 
     private SafeMemory(SafeMemory copy){
@@ -34,11 +34,9 @@ public class SafeMemory extends WritableMemory {
 
     class MemoryTidy implements Reference.Sebastian {
         final long peer;
-        final long size;
 
-        public MemoryTidy(long peer, long size){
+        public MemoryTidy(long peer){
             this.peer = peer;
-            this.size = size;
         }
 
         @Override
