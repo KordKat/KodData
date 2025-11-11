@@ -17,4 +17,18 @@ public class Admin extends User {
     public void sessionList(){}
     public static Session settingSession(){return null;}
 
+
+
+    public void updateUser(long userId){}
+    public void deactivateUser(long userId){}
+    public void reactivateUser(long userId){}
+    public void listActiveSessions(){}
+    public void listUserSessions(long userId){}
+    public void inspectSession(long sessionId){}
+
+//    public void setMaxSessionProcess(long sessionId, int n){}
+
+    public void listRunningProcesses(long sessionId){}
+    public void cancelProcess(long sessionId, long processId){}
+//    public void changeQueue(long userId, long toQueueId){}
 }

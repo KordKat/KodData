@@ -19,4 +19,6 @@ public class User {
     public void endTask(long processId){}
 
 
+    public void listMySessions(){}
+    public void sessionSettings(){}
 }
