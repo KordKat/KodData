@@ -210,7 +210,7 @@ public class SemanticAnalyzer {
 //                ReturnType left = evaluateExpression(leftOn);
 //                ReturnType right = evaluateExpression(rightOn);
 //                if(){
-//                      
+//
 //                }
 //            }
 

@@ -34,6 +34,8 @@ public class Session {
         this.settings = settings;
     }
 
+
+
     public long newSession(String userId){
         return 0;
     }
@@ -56,6 +58,10 @@ public class Session {
 
     public State state(){
         return state;
+    }
+
+    public long run(byte[] b){
+        return -1;
     }
 
 }
