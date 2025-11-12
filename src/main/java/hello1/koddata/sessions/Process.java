@@ -2,6 +2,7 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.concurrent.KTask;
+import hello1.koddata.engine.Value;
 
 import java.util.function.Consumer;
 
@@ -10,7 +11,7 @@ public class Process {
     private long processId;
     private long workerId;
     private KTask task;
-    private Consumer<KodValue> onComplete;
+    private Consumer<Value<?>> onComplete;
     private Consumer<Throwable> exceptionally;
 
     public Process(KTask task){
@@ -20,7 +21,7 @@ public class Process {
         this.task = task;
     }
 
-    public void onComplete(Consumer<KodValue> onComplete){
+    public void onComplete(Consumer<Value<?>> onComplete){
         this.onComplete = onComplete;
     }
 

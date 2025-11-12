@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface DataTransformer {
 
-    String transform(List<String> columnName);
+    String transform(DataFrameRecord[] records);
 
 }

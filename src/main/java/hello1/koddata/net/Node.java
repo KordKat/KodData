@@ -21,6 +21,8 @@ public class Node {
         return readBuffer;
     }
 
+    public void send(ByteBuffer byteBuffer){}
 
+    public ByteBuffer receive() { return null; }
 
 }

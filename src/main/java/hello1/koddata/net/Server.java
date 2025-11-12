@@ -20,7 +20,7 @@ public class Server {
     private ServerSocketChannel serverChannel;
     private Set<Node> neighbors;
     private boolean isGateway = false;
-
+    private Thread serverThread;
     public Server(SocketFactory factory, int port, List<NodeConnectionData> connectionDataList) {
         this.factory = factory;
         this.port = port;
@@ -51,5 +51,13 @@ public class Server {
     public boolean isGateway(){
         return isGateway;
     }
+
+    public void send(ByteBuffer buffer, Node node){}
+
+    public void tellNeighbors(ByteBuffer buffer) {}
+
+    public void broadcast(ByteBuffer buffer) {}
+
+    public void establishConnection(NodeConnectionData nodeConnectionData) {}
 
 }

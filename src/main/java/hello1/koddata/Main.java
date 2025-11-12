@@ -1,5 +1,6 @@
 package hello1.koddata;
 
+import hello1.koddata.engine.Bootstrap;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.Lexer;
 import hello1.koddata.kodlang.Parser;
@@ -13,13 +14,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Main {
-    public static void main(String[] args) throws IOException, KException {
-        String test = "$a <- max 12**(3-5) \"hello\";";
-        Token[] token = Lexer.analyze(test.toCharArray());
-        Parser parser = new Parser(new ImmutableArray<>(token));
-        Statement statement = parser.parseStatement();
-        String testaa = ASTToString.astToString(statement);
-        System.out.println(testaa);
-        SemanticAnalyzer.analyze(statement);
+    public static void main(String[] args){
+        new Bootstrap().start(args);
+//        String test = "$a <- max 12**(3-5) \"hello\";";
+//        Token[] token = Lexer.analyze(test.toCharArray());
+//        Parser parser = new Parser(new ImmutableArray<>(token));
+//        Statement statement = parser.parseStatement();
+//        String testaa = ASTToString.astToString(statement);
+//        System.out.println(testaa);
+//        SemanticAnalyzer.analyze(statement);
     }
 }

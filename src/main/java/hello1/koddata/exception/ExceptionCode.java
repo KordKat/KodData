@@ -9,7 +9,8 @@ public enum ExceptionCode {
     KDM0004("Memory allocation error"),
     KD00005("IllegalArgumentException"),
     KD00006("IllegalStateException"),
-    KDM0007("Memory Error");
+    KDM0007("Memory Error"),
+    KDD0008("DataFame Exception");
 
     private final String message;
 
