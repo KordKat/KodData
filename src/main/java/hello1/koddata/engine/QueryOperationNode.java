@@ -6,11 +6,13 @@ import java.util.Set;
 public class QueryOperationNode {
 
     private QueryOperation operation;
-    private Set<QueryOperationNode> nextNode;
+    private QueryOperationNode nextNode;
     public QueryOperationNode(QueryOperation operation){
 
     }
 
-    public void addNextNode() {}
+    public void next(QueryOperationNode nextNode) {
+        this.nextNode = nextNode;
+    }
 
 }

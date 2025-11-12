@@ -9,7 +9,7 @@ public class Admin extends User {
     public void deleteUser(long userId){}
     public void createUser(){}
     public void userList(){}
-    public void  changeUserPassword(long userId){}
+    public void changeUserPassword(long userId){}
 
     public void endSession(long sessionId){}
     public void endAllSession(){}

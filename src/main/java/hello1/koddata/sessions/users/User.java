@@ -13,10 +13,10 @@ public class User {
 
 
     public static User logIn(long userId ,long password){return null;}
-    public  void logOut(){}
+    public void logOut(){}
     public Session newSession(){return null;}
     public long currentlySession(){return -1;}
-    public void endTask(long processId){}
+    public void terminateTask(long processId){}
 
 
     public void listMySessions(){}
