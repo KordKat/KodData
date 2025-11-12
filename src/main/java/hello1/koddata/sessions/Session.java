@@ -60,8 +60,13 @@ public class Session {
         return state;
     }
 
+    public void listRunningProcesses(){}
+    public void cancelProcess(long processId){}
+
     public long run(byte[] b){
         return -1;
     }
+
+
 
 }

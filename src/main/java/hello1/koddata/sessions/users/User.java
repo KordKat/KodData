@@ -6,19 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
-    long userId;
-    String name;
+
     List<Session> userSession;
     long currentlySession;
+    UserData userData;
 
 
     public static User logIn(long userId ,long password){return null;}
-    public void logOut(){}
+
     public Session newSession(){return null;}
+    public List<Session> listMySessions(){return null;}
     public long currentlySession(){return -1;}
+    public void logOut(){}
     public void terminateTask(long processId){}
-
-
-    public void listMySessions(){}
-    public void sessionSettings(){}
+    public byte[] userToByteArrays(){return null;}
 }
