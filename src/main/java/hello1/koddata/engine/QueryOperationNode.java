@@ -8,7 +8,7 @@ public class QueryOperationNode {
     private QueryOperation operation;
     private QueryOperationNode nextNode;
     public QueryOperationNode(QueryOperation operation){
-
+        this.operation = operation;
     }
 
     public void next(QueryOperationNode nextNode) {
