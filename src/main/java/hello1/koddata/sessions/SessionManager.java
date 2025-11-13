@@ -11,6 +11,9 @@ public class SessionManager {
     public  Session settingSession(){return null;}
     public List<Session> sessionList(){return null;}
     public List<Session> listActiveSessions(){return null;}
+    public void changeUserQueue(long userId){
+
+    }
 
 
 

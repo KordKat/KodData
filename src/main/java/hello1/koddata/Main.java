@@ -14,8 +14,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Main {
+
+    public static Bootstrap bootstrap;
+
     public static void main(String[] args){
-        new Bootstrap().start(args);
+        bootstrap = new Bootstrap();
+        bootstrap.start(args);
 //        String test = "$a <- max 12**(3-5) \"hello\";";
 //        Token[] token = Lexer.analyze(test.toCharArray());
 //        Parser parser = new Parser(new ImmutableArray<>(token));

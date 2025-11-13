@@ -2,22 +2,33 @@ package hello1.koddata.sessions.users;
 
 import hello1.koddata.sessions.Session;
 
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class User {
 
-    List<Session> userSession;
-    long currentlySession;
-    UserData userData;
+    private List<Session> userSession;
+    private long currentlySession;
+    private UserData userData;
 
-
-    public static User logIn(long userId ,long password){return null;}
+    User(UserData userData) {
+        userSession = new CopyOnWriteArrayList<>();
+        currentlySession = -1;
+        this.userData = userData;
+    }
 
     public Session newSession(){return null;}
-    public List<Session> listMySessions(){return null;}
+    public List<Session> listSessions(){return null;}
     public long currentlySession(){return -1;}
     public void logOut(){}
     public void terminateTask(long processId){}
     public byte[] userToByteArrays(){return null;}
+
+    public UserData getUserData() {
+        return userData;
+    }
+
+
 }

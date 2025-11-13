@@ -5,8 +5,14 @@ import hello1.koddata.sessions.SessionManager;
 
 public class Admin extends User {
 
-    UserManager userManager;
-    SessionManager sessionManager;
+    private UserManager userManager;
+    private SessionManager sessionManager;
+
+    Admin(UserData userData, UserManager userManager, SessionManager sessionManager) {
+        super(userData);
+        this.userManager = userManager;
+        this.sessionManager = sessionManager;
+    }
 
     public UserManager getUserManager() {
         return userManager;

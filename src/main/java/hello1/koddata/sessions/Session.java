@@ -70,6 +70,7 @@ public class Session {
         return -1;
     }
 
+    public void terminate(){}
 
 
 }

@@ -41,4 +41,12 @@ public class Bootstrap {
     public File getNodeCfgFile() {
         return nodeCfgFile;
     }
+
+    public UserManager getUserManager() {
+        return userManager;
+    }
+
+    public SessionManager getSessionManager() {
+        return sessionManager;
+    }
 }
