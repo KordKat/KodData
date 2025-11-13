@@ -1,7 +1,9 @@
 @startuml
 class hello1.koddata.kodlang.ast.BlockStatement {
 ~ ImmutableArray<Statement> statements
++ <<Create>> BlockStatement(ImmutableArray<Statement>)
 }
+
 
 class hello1.koddata.net.Server {
 - SocketFactory factory
@@ -11,6 +13,7 @@ class hello1.koddata.net.Server {
 - Set<Node> neighbors
 - boolean isGateway
 - Thread serverThread
++ <<Create>> Server(SocketFactory,int,List<NodeConnectionData>)
 + void start()
 + void shutdown()
 + boolean isGateway()
@@ -23,6 +26,7 @@ class hello1.koddata.net.Server {
 
 class hello1.koddata.dataframe.loader.DatabaseLoader {
 - DatabaseConnection connection
++ <<Create>> DatabaseLoader(DatabaseConnection)
 + void load(InputStream)
 }
 
@@ -32,7 +36,9 @@ class hello1.koddata.kodlang.ast.JoinExpression {
 ~ DataFrameDeclaration df
 ~ Expression leftOn
 ~ Expression rightOn
++ <<Create>> JoinExpression(JoinType,DataFrameDeclaration,Expression,Expression)
 }
+
 
 enum hello1.koddata.kodlang.ast.JoinType {
 +  INNER
@@ -53,13 +59,16 @@ enum hello1.koddata.exception.ExceptionCode {
 +  KDM0007
 +  KDD0008
 - String message
+~ <<Create>> ExceptionCode(String)
 + String getMessage()
 }
 
 
 abstract class hello1.koddata.kodlang.ast.Statement {
 # StatementType type
++ <<Create>> Statement(StatementType)
 }
+
 
 enum hello1.koddata.kodlang.ast.StatementType {
 +  BLOCK
@@ -91,6 +100,7 @@ enum hello1.koddata.kodlang.ast.StatementType {
 
 class hello1.koddata.engine.Value {
 - T value
++ <<Create>> Value(T)
 + T get()
 + T get(T)
 + void set(T)
@@ -101,6 +111,8 @@ class hello1.koddata.utils.collection.primitive.lists.LongList {
 - long[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> LongList()
++ <<Create>> LongList(int)
 + void add(long)
 + void add(int,long)
 + void addAll(long[],int)
@@ -122,6 +134,8 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapFloatList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapFloatList()
++ <<Create>> OffHeapFloatList(int)
 + void add(float)
 + void add(int,float)
 + void addAll(float[],int)
@@ -142,10 +156,13 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapFloatList {
 
 
 class hello1.koddata.kodlang.ast.NullLiteral {
++ <<Create>> NullLiteral()
 }
+
 class hello1.koddata.dataframe.FixedColumnAllocator {
 - ByteBuffer dataBuffer
 - boolean[] notNullFlags
++ <<Create>> FixedColumnAllocator(ByteBuffer,boolean[],int)
 + Memory allocate()
 }
 
@@ -154,6 +171,8 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapByteList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapByteList()
++ <<Create>> OffHeapByteList(int)
 + void add(int)
 + void add(int,byte)
 + void addAll(byte[],int)
@@ -177,6 +196,7 @@ class hello1.koddata.io.BufferedInputStreamPromax {
 - byte[] buffer
 - int pos
 - int count
++ <<Create>> BufferedInputStreamPromax(InputStream,int)
 - int fill()
 + int read()
 + String readUTF()
@@ -186,10 +206,13 @@ class hello1.koddata.io.BufferedInputStreamPromax {
 
 class hello1.koddata.kodlang.ast.ArrayLiteral {
 ~ ImmutableArray<Expression> literals
++ <<Create>> ArrayLiteral(ImmutableArray<Expression>)
 }
+
 
 class hello1.koddata.utils.ref.WeakReference {
 - java.lang.ref.WeakReference<Reference.ControlBlock<T>> weak
+~ <<Create>> WeakReference(Reference.ControlBlock<T>)
 + SharedReference<T> lock()
 + boolean alive()
 }
@@ -205,6 +228,7 @@ class hello1.koddata.engine.Bootstrap {
 - UserManager userManager
 - SessionManager sessionManager
 + void start(String[])
++ void end()
 - List<NodeConnectionData> loadConnectionData()
 - void startServer()
 + Server getServer()
@@ -218,6 +242,8 @@ class hello1.koddata.io.BufferedOutputStreamPromax {
 - byte[] buffer
 - int count
 - int pos
++ <<Create>> BufferedOutputStreamPromax(OutputStream,int)
++ <<Create>> BufferedOutputStreamPromax(OutputStream)
 + void write(ByteBuffer)
 + void write(byte[],int,int)
 + void writeUTF(String)
@@ -237,6 +263,8 @@ class hello1.koddata.kodlang.Lexer {
 
 
 class hello1.koddata.utils.ref.SharedReference {
+~ <<Create>> SharedReference(ControlBlock<T>)
++ <<Create>> SharedReference(T,Sebastian)
 + T get()
 + boolean isValid()
 + SharedReference<T> retain()
@@ -263,6 +291,8 @@ class hello1.koddata.utils.collection.primitive.lists.DoubleList {
 - double[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> DoubleList()
++ <<Create>> DoubleList(int)
 + void add(double)
 + void add(int,double)
 + void addAll(double[],int)
@@ -283,12 +313,16 @@ class hello1.koddata.utils.collection.primitive.lists.DoubleList {
 class hello1.koddata.kodlang.ast.PropertyAccessExpression {
 ~ Expression object
 ~ Identifier property
++ <<Create>> PropertyAccessExpression(Expression,Identifier)
 }
+
 
 class hello1.koddata.utils.collection.primitive.lists.OffHeapIntList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapIntList()
++ <<Create>> OffHeapIntList(int)
 + void add(int)
 + void add(int,int)
 + void addAll(int[],int)
@@ -333,6 +367,7 @@ class hello1.koddata.dataframe.FixedListColumnAllocator {
 - boolean[] columnNotNullFlags
 - int elementSize
 - int rows
++ <<Create>> FixedListColumnAllocator(List<List<byte[]>>,List<boolean[]>,boolean[],int)
 + Memory allocate()
 - int countNonNull(boolean[])
 }
@@ -340,10 +375,15 @@ class hello1.koddata.dataframe.FixedListColumnAllocator {
 
 class hello1.koddata.kodlang.ast.Pipeline {
 ~ ImmutableArray<Expression> pipeline
++ <<Create>> Pipeline(ImmutableArray<Expression>)
+# <<Create>> Pipeline(StatementType)
 }
+
 
 class hello1.koddata.memory.SafeMemory {
 - SharedReference<?> ref
+- <<Create>> SafeMemory(long,long)
+- <<Create>> SafeMemory(SafeMemory)
 + SafeMemory share()
 + void close()
 + {static} SafeMemory allocate(long)
@@ -352,6 +392,7 @@ class hello1.koddata.memory.SafeMemory {
 
 class hello1.koddata.memory.SafeMemory$MemoryTidy {
 ~ long peer
++ <<Create>> MemoryTidy(long)
 + void tidy()
 }
 
@@ -364,6 +405,7 @@ class hello1.koddata.net.SocketFactory {
 - boolean tcpNoDelay
 - boolean reuseAddress
 - boolean keepAlive
+- <<Create>> SocketFactory(Builder)
 + SocketChannel createNode(String,int)
 + ServerSocketChannel createServer(int)
 }
@@ -391,7 +433,9 @@ class hello1.koddata.engine.EmptyOperation {
 class hello1.koddata.kodlang.ast.UnaryExpression {
 ~ BinaryExpression.Operator op
 ~ Expression expression
++ <<Create>> UnaryExpression(BinaryExpression.Operator,Expression)
 }
+
 
 class hello1.koddata.utils.SerialVersionId {
 + {static} long get
@@ -409,6 +453,7 @@ class hello1.koddata.sessions.SessionData {
 - Map<String,Value<?>> variables
 - Map<String,Column> sessionDataFrame
 - MemoryGroup memoryGroup
++ <<Create>> SessionData(String)
 + Value<?> get(String)
 + void set(String,Value<?>)
 + void newDataFrame(DataFrameLoader)
@@ -425,6 +470,7 @@ class hello1.koddata.database.RelationalDatabaseConnection {
 - int port
 - String databaseName
 - String dbmsName
++ <<Create>> RelationalDatabaseConnection(String,int,String,String,String,String)
 + void connect()
 + void close()
 + ResultSet executeQuery()
@@ -447,6 +493,7 @@ interface hello1.koddata.io.DataOutputPromax {
 
 class hello1.koddata.concurrent.KTask {
 - QueryExecution execution
++ <<Create>> KTask(QueryExecution)
 + void run()
 + QueryExecution getExecution()
 + void cancel()
@@ -459,6 +506,8 @@ class hello1.koddata.utils.collection.primitive.lists.FloatList {
 - float[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> FloatList()
++ <<Create>> FloatList(int)
 + void add(float)
 + void add(int,float)
 + void addAll(float[],int)
@@ -479,6 +528,7 @@ class hello1.koddata.utils.collection.primitive.lists.FloatList {
 class hello1.koddata.exception.KException {
 - ExceptionCode errorCode
 - String msg
++ <<Create>> KException(ExceptionCode,String)
 + ExceptionCode getErrorCode()
 + String getMessage()
 }
@@ -491,20 +541,27 @@ class hello1.koddata.kodlang.ast.SelectStatement {
 ~ Expression whereClause
 ~ Expression groupByClause
 ~ Expression havingClause
++ <<Create>> SelectStatement(ImmutableArray<ProjectionExpression>,DataFrameDeclaration,ImmutableArray<JoinExpression>,Expression,Expression,Expression)
 }
+
 
 class hello1.koddata.kodlang.ast.ElseCaseStatement {
 ~ Expression doPipe
++ <<Create>> ElseCaseStatement(Expression)
 }
+
 
 class hello1.koddata.kodlang.ast.ApplyStatement {
 ~ Expression pipeline
 ~ Expression expression
++ <<Create>> ApplyStatement(Expression,Expression)
 }
+
 
 class hello1.koddata.kodlang.Parser {
 - ImmutableArray<Token> tokens
 - int position
++ <<Create>> Parser(ImmutableArray<Token>)
 + Statement parseStatement()
 + BlockStatement parseStatements()
 - DeleteStatement parseDeleteStatement()
@@ -534,11 +591,16 @@ class hello1.koddata.kodlang.Parser {
 class hello1.koddata.functional.ReduceFunction {
 - T startValue
 - Function<T,T> fn
++ <<Create>> ReduceFunction(T,Function<T,T>)
 }
+
 
 class hello1.koddata.dataframe.DataFrameSchema {
 ~ int[] size
 ~ String[] keys
++ <<Create>> DataFrameSchema(String[],int[])
++ <<Create>> DataFrameSchema(int)
++ <<Create>> DataFrameSchema()
 + void put(String,int)
 + boolean putIfAbsent(String,int)
 + int get(String)
@@ -552,7 +614,9 @@ class hello1.koddata.kodlang.ast.FetchExpression {
 ~ DataSource dataSource
 ~ Expression fetchSource
 ~ Expression queryString
++ <<Create>> FetchExpression(DataSource,Expression,Expression)
 }
+
 
 enum hello1.koddata.kodlang.ast.DataSource {
 +  CSV
@@ -563,7 +627,9 @@ enum hello1.koddata.kodlang.ast.DataSource {
 
 class hello1.koddata.kodlang.ast.Identifier {
 + String identifier
++ <<Create>> Identifier(String)
 }
+
 
 class hello1.koddata.dataframe.loader.JsonLoader {
 + void load(InputStream)
@@ -576,6 +642,7 @@ class hello1.koddata.sessions.Process {
 - KTask task
 - Consumer<Value<?>> onComplete
 - Consumer<Throwable> exceptionally
++ <<Create>> Process(KTask)
 + void onComplete(Consumer<Value<?>>)
 + void exceptionally(Consumer<Throwable>)
 + long id()
@@ -589,6 +656,7 @@ class hello1.koddata.concurrent.ResourceLock {
 - String clusterKey
 - AtomicBoolean isLock
 - Queue<Long> acquireQueue
++ <<Create>> ResourceLock(String)
 + void lock(long)
 + boolean tryLock(long)
 + void unlock(long)
@@ -605,6 +673,8 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapCharList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapCharList()
++ <<Create>> OffHeapCharList(int)
 + void add(int)
 + void add(int,char)
 + void addAll(char[],int)
@@ -630,6 +700,7 @@ class hello1.koddata.Main {
 class hello1.koddata.engine.SplitQueryOperationNode {
 - List<QueryOperationNode> nextNode
 - List<Predicate<Value<?>>> nodeSelector
++ <<Create>> SplitQueryOperationNode()
 + void next(QueryOperationNode)
 }
 
@@ -643,6 +714,7 @@ class hello1.koddata.dataframe.DataFrameRecord {
 - String[] columns
 - Value<?>[] values
 - Map<String,Value<?>> map
++ <<Create>> DataFrameRecord(String[],Value<?>[])
 + String[] getColumns()
 + Value<?>[] getValues()
 + Value<?> get(String)
@@ -663,6 +735,7 @@ class hello1.koddata.memory.MemoryUtil {
 
 class hello1.koddata.dataframe.VariableElement {
 - byte[] value
++ <<Create>> VariableElement(byte[])
 + {static} VariableElement newStringElement(String)
 + {static} VariableElement newElement(byte[],int)
 + {static} VariableElement newElement(byte[])
@@ -675,12 +748,16 @@ class hello1.koddata.kodlang.ast.DatabaseConnectExpression {
 ~ StringLiteral databaseName
 ~ NIdentifier databaseT
 ~ NumberLiteral port
++ <<Create>> DatabaseConnectExpression(NIdentifier,StringLiteral,StringLiteral,StringLiteral,NumberLiteral,StringLiteral)
 }
+
 
 class hello1.koddata.kodlang.ast.DataFrameDeclaration {
 ~ Expression dataframe
 ~ Expression rename
++ <<Create>> DataFrameDeclaration(Expression,Expression)
 }
+
 
 interface hello1.koddata.dataframe.DataTransformer {
 ~ String transform(DataFrameRecord[])
@@ -688,16 +765,21 @@ interface hello1.koddata.dataframe.DataTransformer {
 
 class hello1.koddata.engine.QueryExecution {
 - QueryOperationNode head
++ <<Create>> QueryExecution()
 + QueryOperationNode getHead()
 + void execute(Session)
 }
 
 
 class hello1.koddata.kodlang.ast.NIdentifier {
++ <<Create>> NIdentifier(String)
 }
+
 class hello1.koddata.kodlang.ast.BooleanLiteral {
 ~ boolean literal
++ <<Create>> BooleanLiteral(boolean)
 }
+
 
 class hello1.koddata.sessions.users.UserPrivilege {
 - int maxSession
@@ -705,10 +787,11 @@ class hello1.koddata.sessions.users.UserPrivilege {
 - boolean canAccessAdmin
 - int maxMemoryPerProcess
 - int maxStorageUsage
-+ int maxProcessPerSession()
++ <<Create>> UserPrivilege(int,int,boolean,int,int)
 + int maxSession()
-+ int maxMemoryPerProcess()
 + boolean canAccessAdmin()
++ int maxMemoryPerProcess()
++ int maxProcessPerSession()
 + int maxStorageUsage()
 }
 
@@ -716,13 +799,16 @@ class hello1.koddata.sessions.users.UserPrivilege {
 class hello1.koddata.net.util.NodeConnectionData {
 + String host
 + int port
++ <<Create>> NodeConnectionData(String,int)
 }
+
 
 class hello1.koddata.dataframe.Column {
 - String memoryGroupName
 - ColumnMetaData metaData
 - Memory memory
 - int sizePerElement
++ <<Create>> Column(String,int,String,ByteBuffer,boolean[],int)
 + void setupMetadata(String,int,String,boolean)
 + ColumnMetaData getMetaData()
 + int getSizePerElement()
@@ -736,12 +822,16 @@ class hello1.koddata.engine.SplitOperation {
 class hello1.koddata.kodlang.ast.Subscript {
 ~ Expression base
 ~ Expression index
++ <<Create>> Subscript(Expression,Expression)
 }
+
 
 class hello1.koddata.utils.collection.primitive.lists.OffHeapShortList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapShortList()
++ <<Create>> OffHeapShortList(int)
 + void add(short)
 + void add(int,short)
 + void addAll(short[],int)
@@ -763,6 +853,7 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapShortList {
 
 class hello1.koddata.utils.ref.UniqueReference {
 - boolean closed
++ <<Create>> UniqueReference(T,Sebastian)
 + T get()
 + boolean isValid()
 + void close()
@@ -770,10 +861,14 @@ class hello1.koddata.utils.ref.UniqueReference {
 
 
 abstract class hello1.koddata.kodlang.ast.Expression {
++ <<Create>> Expression(StatementType)
 }
+
 class hello1.koddata.dataframe.DataFrame {
 - DataFrameSchema schema
 - QueryExecution queryExecution
++ <<Create>> DataFrame(DataFrameSchema)
++ <<Create>> DataFrame()
 + void writeTo(DataTransformer,OutputStream)
 - void transformEveryRow(String)
 + byte[] show(int)
@@ -808,6 +903,7 @@ class hello1.koddata.dataframe.DataFrame {
 class hello1.koddata.engine.QueryOperationNode {
 - QueryOperation operation
 - QueryOperationNode nextNode
++ <<Create>> QueryOperationNode(QueryOperation)
 + void next(QueryOperationNode)
 }
 
@@ -816,6 +912,8 @@ class hello1.koddata.utils.collection.primitive.lists.IntList {
 - int[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> IntList()
++ <<Create>> IntList(int)
 + void add(int)
 + void add(int,int)
 + void addAll(int[],int)
@@ -839,6 +937,8 @@ interface hello1.koddata.engine.QueryOperation {
 
 class hello1.koddata.utils.collection.ImmutableArray {
 - T[] data
++ <<Create>> ImmutableArray(T[])
++ <<Create>> ImmutableArray(Collection<T>)
 + int length()
 + T get(int)
 + T[] toArray()
@@ -851,6 +951,8 @@ class hello1.koddata.utils.collection.primitive.lists.ByteList {
 - byte[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> ByteList()
++ <<Create>> ByteList(int)
 + void add(byte)
 + void add(int,byte)
 + void addAll(byte[],int)
@@ -872,7 +974,9 @@ class hello1.koddata.kodlang.ast.BinaryExpression {
 ~ Expression left
 ~ Expression right
 ~ Operator op
++ <<Create>> BinaryExpression(Operator,Expression,Expression)
 }
+
 
 enum hello1.koddata.kodlang.ast.Operator {
 +  ADD
@@ -894,9 +998,13 @@ enum hello1.koddata.kodlang.ast.Operator {
 class hello1.koddata.kodlang.ast.WhenCaseStatement {
 ~ Expression condition
 ~ Expression doPipe
++ <<Create>> WhenCaseStatement(Expression,Expression)
 }
 
+
 class hello1.koddata.memory.WritableMemory {
+# <<Create>> WritableMemory(long,long)
++ <<Create>> WritableMemory(WritableMemory)
 + {static} WritableMemory allocate(long)
 + void setData(long,byte[])
 + void setData(long,long)
@@ -915,6 +1023,7 @@ class hello1.koddata.memory.WritableMemory {
 abstract class hello1.koddata.utils.ref.Reference {
 # {static} Cleaner cleaner
 # ControlBlock<T> ctrl
+# <<Create>> Reference(ControlBlock<T>)
 + {abstract}T get()
 + {abstract}boolean isValid()
 # {static} void registerLeakWatcher(Object,String)
@@ -930,6 +1039,7 @@ class hello1.koddata.utils.ref.Reference$ControlBlock {
 - T referent
 - Sebastian cleaner
 - boolean closed
+~ <<Create>> ControlBlock(T,Sebastian)
 ~ T get()
 ~ boolean tryRetain()
 ~ void release()
@@ -953,6 +1063,7 @@ class hello1.koddata.kodlang.Token {
 ~ TokenType type
 ~ char[] lexeme
 ~ int start
+~ <<Create>> Token(TokenType,char[],int,int)
 + String toString()
 }
 
@@ -1034,6 +1145,7 @@ class hello1.koddata.dataframe.ColumnMetaData {
 - int rows
 - boolean isSharded
 - long serialVersionId
++ <<Create>> ColumnMetaData(String,boolean)
 + void setSharded(boolean)
 + boolean isSharded()
 ~ void setRows(int)
@@ -1045,12 +1157,16 @@ class hello1.koddata.dataframe.ColumnMetaData {
 
 class hello1.koddata.kodlang.ast.DeleteStatement {
 ~ Expression del
++ <<Create>> DeleteStatement(Expression)
 }
+
 
 class hello1.koddata.utils.collection.primitive.lists.ShortList {
 - short[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> ShortList()
++ <<Create>> ShortList(int)
 + void add(short)
 + void add(int,short)
 + void addAll(short[],int)
@@ -1070,7 +1186,9 @@ class hello1.koddata.utils.collection.primitive.lists.ShortList {
 
 class hello1.koddata.kodlang.ast.StringLiteral {
 ~ char[] literal
++ <<Create>> StringLiteral(char[])
 }
+
 
 class hello1.koddata.concurrent.IdCounter {
 - AtomicLong counter
@@ -1090,12 +1208,14 @@ abstract class hello1.koddata.dataframe.loader.DataFrameLoader {
 class hello1.koddata.dataframe.VariableColumnAllocator {
 - List<VariableElement> values
 - boolean[] notNullFlags
++ <<Create>> VariableColumnAllocator(List<VariableElement>,boolean[])
 + Memory allocate()
 }
 
 
 class hello1.koddata.memory.SimpleAllocator {
 - long size
++ <<Create>> SimpleAllocator(long)
 + Memory allocate()
 + void deallocate(Memory)
 }
@@ -1139,12 +1259,16 @@ interface hello1.koddata.io.DataInputPromax {
 class hello1.koddata.kodlang.ast.NumberLiteral {
 ~ char[] literal
 ~ boolean isFloat
++ <<Create>> NumberLiteral(char[],boolean)
 }
+
 
 class hello1.koddata.utils.collection.primitive.lists.OffHeapDoubleList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapDoubleList()
++ <<Create>> OffHeapDoubleList(int)
 + void add(double)
 + void add(int,double)
 + void addAll(double[],int)
@@ -1167,7 +1291,9 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapDoubleList {
 class hello1.koddata.kodlang.ast.AssignmentExpression {
 ~ Expression right
 ~ Expression left
++ <<Create>> AssignmentExpression(Expression,Expression)
 }
+
 
 class hello1.koddata.concurrent.SynchronizationManager {
 - Map<String,ResourceLock> resourceLock
@@ -1196,6 +1322,7 @@ class hello1.koddata.dataframe.VariableListColumnAllocator {
 - List<boolean[]> perListNotNullFlags
 - boolean[] columnNotNullFlags
 - int rows
++ <<Create>> VariableListColumnAllocator(List<List<VariableElement>>,List<boolean[]>,boolean[])
 + Memory allocate()
 - long getTotalBytes(int)
 }
@@ -1205,6 +1332,8 @@ class hello1.koddata.utils.collection.primitive.lists.CharList {
 - char[] data
 - int size
 - {static} int DEFAULT_CAPACITY
++ <<Create>> CharList()
++ <<Create>> CharList(int)
 + void add(char)
 + void add(int,char)
 + void addAll(char[],int)
@@ -1240,6 +1369,7 @@ abstract class hello1.koddata.dataframe.ColumnAllocator {
 # long rows
 # int sizePerElement
 # boolean isVariable
+# <<Create>> ColumnAllocator(long,int)
 + boolean isVariable()
 + int getSizePerElement()
 + long getRows()
@@ -1250,9 +1380,12 @@ abstract class hello1.koddata.dataframe.ColumnAllocator {
 
 
 class hello1.koddata.kodlang.ast.BranchMember {
++ <<Create>> BranchMember()
 }
+
 class hello1.koddata.database.CqlDatabaseConnection {
 - CqlSession session
++ <<Create>> CqlDatabaseConnection(CqlSession)
 + void connect()
 + void close()
 + ResultSet executeQuery()
@@ -1263,6 +1396,8 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapLongList {
 - SafeMemory safeMemory
 - {static} int DEFAULT_CAPACITY
 - int size
++ <<Create>> OffHeapLongList()
++ <<Create>> OffHeapLongList(int)
 + void add(int)
 + void add(int,long)
 + void addAll(long[],int)
@@ -1283,7 +1418,9 @@ class hello1.koddata.utils.collection.primitive.lists.OffHeapLongList {
 
 class hello1.koddata.kodlang.ast.DownloadStatement {
 ~ Expression src
++ <<Create>> DownloadStatement(Expression)
 }
+
 
 abstract class hello1.koddata.io.DataInputStreamPromax {
 + int read(byte[])
@@ -1296,7 +1433,10 @@ class hello1.koddata.sessions.Session {
 - long startedTime
 - long lastActive
 - SessionSettings settings
+- List<Process> processes
+- SessionData sessionData
 - State state
+- <<Create>> Session(SessionSettings)
 + long newSession(String)
 + long id()
 + long startedTime()
@@ -1314,11 +1454,14 @@ enum hello1.koddata.sessions.State {
 +  IDLE
 +  SUSPENDED
 +  TERMINATED
+~ <<Create>> State(int)
 }
+
 
 class hello1.koddata.net.Node {
 - SocketChannel channel
 - ByteBuffer readBuffer
++ <<Create>> Node(SocketChannel,ByteBuffer)
 + SocketChannel getChannel()
 + ByteBuffer getReadBuffer()
 + void send(ByteBuffer)
@@ -1343,10 +1486,13 @@ class hello1.koddata.sessions.SessionSettings {
 class hello1.koddata.kodlang.ast.ProjectionExpression {
 ~ Expression proj
 ~ Expression rename
++ <<Create>> ProjectionExpression(Expression,Expression)
 }
+
 
 class hello1.koddata.memory.ReadOnlyMemory {
 - boolean isWrite
+- <<Create>> ReadOnlyMemory(long,long)
 + {static} ReadOnlyMemory allocate(long)
 + void initData(byte[])
 + void initData(long)
@@ -1361,6 +1507,7 @@ class hello1.koddata.sessions.users.UserData {
 - long userId
 - String name
 - UserPrivilege userPrivilege
++ <<Create>> UserData(long,String,UserPrivilege)
 + long userId()
 + UserPrivilege userPrivilege()
 + String name()
@@ -1370,12 +1517,15 @@ class hello1.koddata.sessions.users.UserData {
 class hello1.koddata.kodlang.ast.FunctionCall {
 ~ NIdentifier function
 ~ ImmutableArray<Expression> arguments
++ <<Create>> FunctionCall(NIdentifier,ImmutableArray<Expression>)
 }
+
 
 class hello1.koddata.memory.MemoryGroup {
 ~ {static} Map<String,MemoryGroup> memoryGroups
 - String name
 - Map<Memory,Allocator> referencePool
+- <<Create>> MemoryGroup(String)
 + {static} String newMemoryGroup(String)
 + Memory allocate(Allocator)
 + Memory allocate(long)
@@ -1394,11 +1544,15 @@ class hello1.koddata.memory.MemoryGroup$MemoryGroupShutdownHookThread {
 class hello1.koddata.kodlang.ast.BranchPipeline {
 ~ ImmutableArray<WhenCaseStatement> whens
 ~ ElseCaseStatement elseCase
++ <<Create>> BranchPipeline(ImmutableArray<WhenCaseStatement>,ElseCaseStatement)
 }
+
 
 abstract class hello1.koddata.memory.Memory {
 # long peer
 # long allocatedSize
+# <<Create>> Memory(long,long)
+# <<Create>> Memory(Memory)
 ~ {static} long getPeer(long)
 + long getPeer()
 ~ {static} long resizeMemory(long,long,long)
@@ -1428,6 +1582,9 @@ class hello1.koddata.concurrent.ClusterAwait {
 - int currentCount
 - boolean autoReset
 - long timeoutMillis
++ <<Create>> ClusterAwait(String,int)
++ <<Create>> ClusterAwait(String,int,boolean)
++ <<Create>> ClusterAwait(String,int,boolean,long)
 + void await()
 + boolean await(long,TimeUnit)
 + void countDown()

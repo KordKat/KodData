@@ -17,6 +17,16 @@ public class DataFrame {
     public DataFrame(DataFrameSchema schema){}
     public DataFrame(){}
 
+    private void newQueryExecution(){
+        this.queryExecution = new QueryExecution();
+    }
+
+    public void checkForQueryExecution() {
+        if(queryExecution == null) {
+            newQueryExecution();
+        }
+    }
+
     public void writeTo(DataTransformer transformer, OutputStream os){}
 
     private void transformEveryRow(String format){}

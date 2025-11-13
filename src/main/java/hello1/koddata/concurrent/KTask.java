@@ -21,6 +21,7 @@ public class KTask extends Thread {
 
     public void cancel() {
         // TODO: implement task cancellation
+        this.interrupt();
     }
 
     public boolean isCancelled() {
