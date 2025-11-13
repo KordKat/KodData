@@ -23,6 +23,8 @@ public class Bootstrap {
 
     }
 
+    public void end(){}
+
     private List<NodeConnectionData> loadConnectionData() { return List.of(); }
 
     private void startServer() {}
