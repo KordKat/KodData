@@ -10,7 +10,9 @@ public enum ExceptionCode {
     KD00005("IllegalArgumentException"),
     KD00006("IllegalStateException"),
     KDM0007("Memory Error"),
-    KDD0008("DataFame Exception");
+    KDD0008("DataFame Exception"),
+    KDR0009("Session Exception"),
+    KD00010("IOException");
 
     private final String message;
 

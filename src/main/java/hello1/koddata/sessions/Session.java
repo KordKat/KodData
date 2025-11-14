@@ -3,6 +3,7 @@ package hello1.koddata.sessions;
 import hello1.koddata.concurrent.IdCounter;
 
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public class Session {
     private final long startedTime;
     private long lastActive;
     private SessionSettings settings;
-    private List<Process> processes;
+    private HashMap<Long, Process> processes;
     private SessionData sessionData;
     public enum State {
         RUNNING(0),
@@ -39,8 +40,12 @@ public class Session {
 
 
 
-    public long newSession(String userId){
-        return 0;
+    public static Session newSession(long userId){
+        return null;
+    }
+
+    public boolean isProcessPresent(long processId){
+        return processes.containsKey(processId);
     }
 
     public long id(){
