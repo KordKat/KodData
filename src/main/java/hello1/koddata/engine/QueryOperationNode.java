@@ -15,4 +15,8 @@ public class QueryOperationNode {
         this.nextNode = nextNode;
     }
 
+    public QueryOperation getOperation() {
+        return operation;
+    }
 }
+
