@@ -7,6 +7,7 @@ public class FilterOperation implements QueryOperation {
     private Predicate<Value<?>> predicate;
 
     public FilterOperation(Predicate<Value<?>> predicate){
+
         this.predicate = predicate;
     }
 

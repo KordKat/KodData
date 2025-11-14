@@ -1,5 +1,7 @@
 package hello1.koddata.engine;
 
+import java.util.Comparator;
+
 public class Value<T> {
 
     private T value;
@@ -21,5 +23,4 @@ public class Value<T> {
     public void set(T value){
         this.value = value;
     }
-
 }
