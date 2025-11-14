@@ -1,7 +1,6 @@
 package hello1.koddata.engine;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public class SplitQueryOperationNode extends QueryOperationNode {
