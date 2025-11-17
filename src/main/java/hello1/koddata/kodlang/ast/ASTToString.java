@@ -88,14 +88,6 @@ public class ASTToString {
             st += astToStringWithIndent(s.port, nextIndent + "  ");
             return st;
         }
-        else if(statement instanceof DataFrameDeclaration s){
-            String st = linePrefix + "DataFrame Declaration\n";
-            st += nextIndent + "|- DataFrame Source \n";
-            st += astToStringWithIndent(s.dataframe, nextIndent + "  ");
-            st += nextIndent + "|- Rename Expression \n";
-            st += astToStringWithIndent(s.rename, nextIndent + "  ");
-            return st;
-        }
         else if(statement instanceof DeleteStatement s){
             String st = linePrefix + "Delete Statement\n";
             st += nextIndent + "|- Target \n";
@@ -114,15 +106,6 @@ public class ASTToString {
             st += astToStringWithIndent(s.doPipe, nextIndent + "  ");
             return st;
         }
-        else if(statement instanceof FetchExpression s){
-            String st = linePrefix + "Fetch Expression\n";
-            st += nextIndent + "|- Data Source = " + s.dataSource + "\n";
-            st += nextIndent + "|- Fetch Source \n";
-            st += astToStringWithIndent(s.fetchSource, nextIndent + "  ");
-            st += nextIndent + "|- Query String \n";
-            st += astToStringWithIndent(s.queryString, nextIndent + "  ");
-            return st;
-        }
         else if(statement instanceof FunctionCall s){
             String st = linePrefix + "Function Call\n";
             st += nextIndent + "|- Function \n";
@@ -139,17 +122,6 @@ public class ASTToString {
         else if(statement instanceof Identifier s){
             return linePrefix + "Identifier\n" + nextIndent + "|- name = " + s.identifier + "\n";
         }
-        else if(statement instanceof JoinExpression s){
-            String st = linePrefix + "Join Expression\n";
-            st += nextIndent + "|- Join Type = " + s.joinType + "\n";
-            st += nextIndent + "|- DataFrame Declaration \n";
-            st += astToStringWithIndent(s.df, nextIndent + "  ");
-            st += nextIndent + "|- Left Join On \n";
-            st += astToStringWithIndent(s.leftOn, nextIndent + "  ");
-            st += nextIndent + "|- Right Join On \n";
-            st += astToStringWithIndent(s.rightOn, nextIndent + "  ");
-            return st;
-        }
         else if(statement instanceof NullLiteral){
             return linePrefix + "Null Literal\n";
         }
@@ -164,48 +136,12 @@ public class ASTToString {
             }
             return st;
         }
-        else if(statement instanceof ProjectionExpression s){
-            String st = linePrefix + "Projection Expression\n";
-            st += nextIndent + "|- Projection Source \n";
-            st += astToStringWithIndent(s.proj, nextIndent + "  ");
-            st += nextIndent + "|- Rename Expression \n";
-            st += astToStringWithIndent(s.rename, nextIndent + "  ");
-            return st;
-        }
         else if(statement instanceof PropertyAccessExpression s){
             String st = linePrefix + "Property Access Expression\n";
             st += nextIndent + "|- Object \n";
             st += astToStringWithIndent(s.object, nextIndent + "  ");
             st += nextIndent + "|- Property \n";
             st += astToStringWithIndent(s.property, nextIndent + "  ");
-            return st;
-        }
-        else if(statement instanceof SelectStatement s){
-            String st = linePrefix + "Select Statement\n";
-            st += nextIndent + "|- Projections \n";
-            for(ProjectionExpression ex : s.projection){
-                st += astToStringWithIndent(ex, nextIndent + "  ");
-            }
-            st += nextIndent + "|- From Source \n";
-            st += astToStringWithIndent(s.fromSource, nextIndent + "  ");
-            if(s.joinExpressions != null && s.joinExpressions.length() != 0) {
-                st += nextIndent + "|- Joins \n";
-                for (JoinExpression ex : s.joinExpressions) {
-                    st += astToStringWithIndent(ex, nextIndent + "  ");
-                }
-            }
-            if(s.whereClause != null) {
-                st += nextIndent + "|- Where Clause \n";
-                st += astToStringWithIndent(s.whereClause, nextIndent + "  ");
-            }
-            if(s.groupByClause != null) {
-                st += nextIndent + "|- Group By Clause \n";
-                st += astToStringWithIndent(s.groupByClause, nextIndent + "  ");
-            }
-            if(s.havingClause != null) {
-                st += nextIndent + "|- Having Clause \n";
-                st += astToStringWithIndent(s.havingClause, nextIndent + "  ");
-            }
             return st;
         }
         else if(statement instanceof StringLiteral s){
