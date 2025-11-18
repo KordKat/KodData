@@ -15,7 +15,6 @@ public class User {
     private List<Session> userSession;
     private Session currentlySession;
     private UserData userData;
-
     User(UserData userData) {
         userSession = new CopyOnWriteArrayList<>();
         currentlySession = null;
@@ -24,7 +23,7 @@ public class User {
 
     public Session newSession() throws KException {
         if(userData.userPrivilege().maxSession() <= userSession.size()) throw new KException(ExceptionCode.KDR0009, "Cannot create more session for this user");
-        Session session = Session.newSession(userData.userId());
+        Session session = Session.newSession(this);
         userSession.add(session);
         return session;
     }
@@ -49,6 +48,5 @@ public class User {
     public UserData getUserData() {
         return userData;
     }
-
 
 }

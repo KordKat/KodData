@@ -1,11 +1,19 @@
 package hello1.koddata.sessions;
 
 import hello1.koddata.concurrent.IdCounter;
+import hello1.koddata.engine.StatementExecutor;
+import hello1.koddata.exception.KException;
+import hello1.koddata.kodlang.Lexer;
+import hello1.koddata.kodlang.Parser;
+import hello1.koddata.kodlang.Token;
+import hello1.koddata.kodlang.ast.SemanticAnalyzer;
+import hello1.koddata.kodlang.ast.Statement;
+import hello1.koddata.sessions.users.User;
+import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class Session {
 
@@ -38,10 +46,17 @@ public class Session {
         this.settings = settings;
     }
 
+    public long executeCode(String code, SocketChannel socketChannel) throws KException {
+        Token[] tokens = Lexer.analyze(code.toCharArray());
+        Parser parser = new Parser(new ImmutableArray<>(tokens));
+        Statement statement = parser.parseStatement();
+        new SemanticAnalyzer().analyze(statement);
+        return StatementExecutor.executeStatement(statement, this, socketChannel);;
+    }
 
-
-    public static Session newSession(long userId){
-        return null;
+    public static Session newSession(User user){
+        SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
+        return new Session(sessionSettings);
     }
 
     public boolean isProcessPresent(long processId){
@@ -68,14 +83,27 @@ public class Session {
         return state;
     }
 
-    public void listRunningProcesses(){}
-    public void cancelProcess(long processId){}
+    public List<Process> listRunningProcesses(){
+        return processes.values().stream().toList();
+    }
+    public void cancelProcess(long processId){
+        if(processes.containsKey(processId)){
+            processes.get(processId).interrupt();
+            processes.remove(processId);
+        }
+    }
 
     public long run(byte[] b){
         return -1;
     }
 
-    public void terminate(){}
+    public void terminate(){
+        for(Process process : processes.values()){
+            process.interrupt();
+        }
 
+        processes.clear();
+        state = State.TERMINATED;
 
+    }
 }

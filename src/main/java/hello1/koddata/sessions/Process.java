@@ -41,4 +41,8 @@ public class Process {
         //TODO: worker pool execute KTask
     }
 
+    public void interrupt(){
+
+    }
+
 }

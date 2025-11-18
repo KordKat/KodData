@@ -12,7 +12,7 @@ public class SessionData {
     private String sessionName;
     private Map<String, Value<?>> variables = new ConcurrentHashMap<>();
 
-    private Map<String, Column> sessionDataFrame = new ConcurrentHashMap<>();
+    private Map<String, Column[]> sessionDataFrame = new ConcurrentHashMap<>();
 
     private MemoryGroup memoryGroup;
 

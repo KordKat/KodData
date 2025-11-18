@@ -12,7 +12,9 @@ public enum ExceptionCode {
     KDM0007("Memory Error"),
     KDD0008("DataFame Exception"),
     KDR0009("Session Exception"),
-    KD00010("IOException");
+    KD00010("IOException"),
+    KDN0011("InetSocketAddress");
+
 
     private final String message;
 
