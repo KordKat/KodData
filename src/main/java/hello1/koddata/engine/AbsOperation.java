@@ -9,7 +9,7 @@ public class AbsOperation implements QueryOperation {
 //        Number number = (Number) value.get();
 
         if(!(value.get() instanceof Number number)){
-            return null;
+            return value;
         }
 
         double result = Math.abs(number.doubleValue());
