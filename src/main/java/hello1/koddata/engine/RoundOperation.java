@@ -4,10 +4,10 @@ public class RoundOperation implements QueryOperation {
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) {
-            return null;
+            return value;
         }
         if (!(value.get() instanceof Number number)) {
-            return null;
+            return value;
         }
         return new Value<>((double) Math.round(number.doubleValue()));
     }

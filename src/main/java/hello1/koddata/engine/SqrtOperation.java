@@ -4,14 +4,14 @@ public class SqrtOperation implements QueryOperation {
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) {
-            return null;
+            return value;
         }
         if (!(value.get() instanceof Number number)) {
-            return null;
+            return value;
         }
         double val = number.doubleValue();
         if (val < 0) {
-            return null;
+            return value;
         }
         return new Value<>(Math.sqrt(val));
     }

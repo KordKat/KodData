@@ -4,7 +4,7 @@ public class AbsOperation implements QueryOperation {
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) {
-            return null;
+            return value;
         }
 //        Number number = (Number) value.get();
 

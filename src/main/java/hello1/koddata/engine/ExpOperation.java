@@ -1,14 +1,13 @@
 package hello1.koddata.engine;
 
-public class SinOperation implements QueryOperation {
+public class ExpOperation implements QueryOperation {
     @Override
     public Value<?> operate(Value<?> value) {
-        if (value == null || value.get() == null) {
+        if (value == null || value.get() == null)
             return value;
-        }
         if (!(value.get() instanceof Number number)) {
             return value;
         }
-        return new Value<>(Math.sin(number.doubleValue()));
+        return new Value<>(Math.exp(number.doubleValue()));
     }
 }
