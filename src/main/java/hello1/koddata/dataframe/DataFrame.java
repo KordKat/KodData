@@ -2,11 +2,8 @@ package hello1.koddata.dataframe;
 
 import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.engine.Value;
-import hello1.koddata.functional.ReduceFunction;
 
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public class DataFrame {
@@ -56,8 +53,6 @@ public class DataFrame {
     public DataFrame groupBy(String...columns) { return null; }
 
     public DataFrame aggregate(String fnName, String column) { return null; }
-
-    public Value<?> reduce(String column, ReduceFunction<Value<?>> reducer) {return null;}
 
     public DataFrame drop(String...columns) {return null; }
 

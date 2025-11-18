@@ -20,6 +20,7 @@ public class Session {
     private static IdCounter idCounter = new IdCounter();
 
     private long sessionId;
+    private User user;
     private final long startedTime;
     private long lastActive;
     private SessionSettings settings;
@@ -36,14 +37,16 @@ public class Session {
         }
     }
 
+
     private State state;
 
-    private Session(SessionSettings settings){
+    private Session(SessionSettings settings ,User user){
         sessionId = idCounter.next();
         startedTime = System.currentTimeMillis();
         lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
         this.settings = settings;
+        this.user = user;
     }
 
     public long executeCode(String code, SocketChannel socketChannel) throws KException {
@@ -51,12 +54,12 @@ public class Session {
         Parser parser = new Parser(new ImmutableArray<>(tokens));
         Statement statement = parser.parseStatement();
         new SemanticAnalyzer().analyze(statement);
-        return StatementExecutor.executeStatement(statement, this, socketChannel);;
+        return StatementExecutor.executeStatement(statement, this, socketChannel);
     }
 
     public static Session newSession(User user){
         SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
-        return new Session(sessionSettings);
+        return new Session(sessionSettings , user);
     }
 
     public boolean isProcessPresent(long processId){

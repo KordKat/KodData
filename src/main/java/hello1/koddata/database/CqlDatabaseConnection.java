@@ -23,7 +23,7 @@ public class CqlDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public ResultSet executeQuery() {
+    public ResultSet executeQuery(String query) {
         return null;
     }
 }
