@@ -1,6 +1,6 @@
 package hello1.koddata.engine;
 
-public class AbsoluteOperation implements QueryOperation {
+public class AbsOperation implements QueryOperation {
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) {
