@@ -277,4 +277,10 @@ public class GossipServer extends Server {
     private NodeStatus decodeReceivedStatus(byte[] data) {
         return null;
     }
+
+    public Set<InetSocketAddress> getPeers() {
+        return peers;
+    }
+
+
 }

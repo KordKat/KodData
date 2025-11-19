@@ -1,6 +1,7 @@
 package hello1.koddata.sessions;
 
 import hello1.koddata.dataframe.Column;
+import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
 import hello1.koddata.engine.Value;
 import hello1.koddata.memory.MemoryGroup;
@@ -50,6 +51,25 @@ public class SessionData {
     }
 
     public void assignVariable(String name, Object value) {
+        if(value instanceof Column){
+            //read as column
+        }else if(value instanceof ColumnArray){
+            //read as dataframe
+        }else {
+            //read as variable
+            variables.put(name, new Value<>(value));
+        }
+    }
 
+    public String getSessionName() {
+        return sessionName;
+    }
+
+    public Map<String, Column[]> getSessionDataFrame() {
+        return sessionDataFrame;
+    }
+
+    public Map<String, Value<?>> getVariables() {
+        return variables;
     }
 }
