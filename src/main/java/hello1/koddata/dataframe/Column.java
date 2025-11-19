@@ -10,6 +10,7 @@ import hello1.koddata.utils.KodResourceNaming;
 import hello1.koddata.utils.Serializable;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Set;
 
 public class Column implements Serializable, KodResourceNaming {
@@ -36,6 +37,26 @@ public class Column implements Serializable, KodResourceNaming {
                 .allocate(new FixedColumnAllocator(dataBuffer, notNullFlags, elementSize));
         this.startIdx = startIdx;
         this.endIdx = endIdx;
+    }
+
+    public Column(String name, List<VariableElement> values, String memoryGroupName, boolean[] notNullFlags, int startIdx, int endIdx) throws KException {
+        setupMetadata(name, sizePerElement, memoryGroupName, true);
+        id = columnIdCounter.count();
+
+    }
+
+    public Column(String name, String memoryGroupName, List<List<byte[]>> lists, List<boolean[]> perListNotNullFlags,
+                  boolean[] columnNotNullFlags, int elementSize, int startIdx, int endIdx) throws KException {
+        setupMetadata(name, elementSize, memoryGroupName, false);
+        id = columnIdCounter.count();
+
+    }
+
+    public Column(String name , String memoryGroupName,List<List<VariableElement>> lists,
+                  List<boolean[]> perListNotNullFlags,
+                  boolean[] columnNotNullFlags, int startIdx, int endIdx) throws KException {
+        setupMetadata(name, -1, memoryGroupName, true);
+        id = columnIdCounter.count();
     }
 
     public Column(String name, int sizePerElement, String memoryGroupName, ByteBuffer dataBuffer, boolean[] notNullFlags, int elementSize) throws KException {
