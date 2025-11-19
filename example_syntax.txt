@@ -38,22 +38,20 @@ $df3 <- APPLY $pipeline TO $dfA;
 $df3[amount2] <- $df[amount];
 REMOVE $df3[amount];
 
-MOVE $df3[amount] TO $df3[amount2];
-
-MOVE $df3[amount2] TO $df4[ttttt];
-
-MOVE $df3 TO $df4;
-
 $df5 <- GET $df3;
 
 EXPORT $df3 AS CSV TO 'output2.csv';
 
 DOWNLOAD 'output.csv';
 
+# Admin
+USER CREATE ....;
+USER EDIT ....;
+USER REMOVE ....;
+USER LIST .....;
 
-select
-*
-from user
-where
-username = 'keera'
-order by salary;
+SESSION TERMINATE ....;
+SESSION LIST .....;
+
+TASK CANCEL ....;
+TASK LIST ....;
