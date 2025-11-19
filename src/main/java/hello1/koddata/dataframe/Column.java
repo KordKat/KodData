@@ -63,6 +63,6 @@ public class Column implements Serializable, KodResourceNaming {
 
     @Override
     public byte[] serialize() {
-
+        return null;
     }
 }
