@@ -1,4 +1,4 @@
-package hello1.koddata.concurrent;
+package hello1.koddata.concurrent.cluster;
 
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -51,7 +51,7 @@ public class Session {
         Parser parser = new Parser(new ImmutableArray<>(tokens));
         Statement statement = parser.parseStatement();
         new SemanticAnalyzer().analyze(statement);
-        return StatementExecutor.executeStatement(statement, this, socketChannel);;
+        return StatementExecutor.executeStatement(statement, this, socketChannel);
     }
 
     public static Session newSession(User user){
