@@ -63,33 +63,34 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                 }));
             }
             else {
-                if(source.get() instanceof DatabaseConnection databaseConnection){
-                    if(!arguments.containsKey("query")){
-                        throw new KException(ExceptionCode.KDE0012,"Function fetch database need argument query");
-                    }
-
-                    Value<?> query = arguments.get("query");
-                    if (query.get() instanceof String s){
-                        return new Value<>(CompletableFuture.supplyAsync(() -> {
-                            DataFrameLoader dataFrameLoader = null;
-                            dataFrameLoader = new DatabaseLoader(databaseConnection);
-                            dataFrameLoader.load(null);
-                            return dataFrameLoader;
-                        }));
-                    }
-                    else {
-                        throw new KException(ExceptionCode.KDE0012,"query should be string");
-                    }
-
-
-                }
-                else {
-                    throw new KException(ExceptionCode.KDE0012,"database can only use databaseConnection ");
-                }
+                throw new KException(ExceptionCode.KDE0012,"source can only use string ");
             }
+
         }
         else {
-            throw new KException(ExceptionCode.KDE0012,"argument Data Source should be DATABASE , JSON , CSV");
+            if(source.get() instanceof DatabaseConnection databaseConnection){
+                if(!arguments.containsKey("query")){
+                    throw new KException(ExceptionCode.KDE0012,"Function fetch database need argument query");
+                }
+
+                Value<?> query = arguments.get("query");
+                if (query.get() instanceof String s){
+                    return new Value<>(CompletableFuture.supplyAsync(() -> {
+                        DataFrameLoader dataFrameLoader = null;
+                        dataFrameLoader = new DatabaseLoader(databaseConnection);
+                        dataFrameLoader.load(null);
+                        return dataFrameLoader;
+                    }));
+                }
+                else {
+                    throw new KException(ExceptionCode.KDE0012,"query should be string");
+                }
+
+
+            }
+            else {
+                throw new KException(ExceptionCode.KDE0012,"database can only use databaseConnection ");
+            }
         }
     }
 
