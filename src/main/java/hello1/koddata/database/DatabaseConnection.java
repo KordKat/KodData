@@ -8,5 +8,5 @@ public interface DatabaseConnection {
 
     void close();
 
-    ResultSet executeQuery();
+    ResultSet executeQuery(String query);
 }

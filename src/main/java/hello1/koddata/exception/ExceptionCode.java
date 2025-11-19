@@ -13,7 +13,9 @@ public enum ExceptionCode {
     KDD0008("DataFame Exception"),
     KDR0009("Session Exception"),
     KD00010("IOException"),
-    KDN0011("InetSocketAddress");
+    KDN0011("InetSocketAddress"),
+    KDE0012("ArgumentMissing"),
+    KDE0013("File not found");
 
 
     private final String message;
