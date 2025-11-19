@@ -12,13 +12,13 @@ import java.util.concurrent.*;
 
 public class GossipServer extends Server {
 
-
-
-
     private Set<InetSocketAddress> peers;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final ExecutorService senderExec = Executors.newFixedThreadPool(4);
     private final ExecutorService readerExec = Executors.newSingleThreadExecutor();
+
+    private final Properties config;
+    private DataTransferServer dataTransferServer;
 
     private final ConcurrentMap<InetSocketAddress, NodeStatus> statusMap = new ConcurrentHashMap<>();
 
@@ -30,6 +30,7 @@ public class GossipServer extends Server {
         for (String peer : peerList) {
             peers.add(convertToInetSocketAddress(peer.trim().toLowerCase()));
         }
+        config = properties;
     }
 
     private InetSocketAddress convertToInetSocketAddress(String hostname) throws KException {
@@ -66,6 +67,10 @@ public class GossipServer extends Server {
             serverChannel = factory.createServer(inetSocketAddress.getPort());
             selector = Selector.open();
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+            if(dataTransferServer == null || !dataTransferServer.running){
+                dataTransferServer = new DataTransferServer(new InetSocketAddress(inetSocketAddress.getHostName(), Integer.parseInt((String) config.get("dts.port"))), factory);
+                dataTransferServer.start();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -195,6 +200,7 @@ public class GossipServer extends Server {
         }
         ns.setAvailable(true);
         ns.setChannel(ch);
+        ch.keyFor(selector).attach(ns);
     }
 
     private void readFromPeer(SelectionKey key, ByteBuffer buffer) {
@@ -216,6 +222,23 @@ public class GossipServer extends Server {
                 byte[] body = new byte[buffer.remaining()];
                 buffer.get(body);
                 processStatusMessage(ch, body);
+            }else if(opcode == NetUtils.OPCODE_INFO_DATA_PORT){
+                byte[] body = new byte[buffer.remaining()];
+                buffer.get(body);
+                buffer.flip();
+                int i = buffer.getInt();
+                InetSocketAddress isa = (InetSocketAddress) ch.getRemoteAddress();
+                dataTransferServer.addPeer(new InetSocketAddress(isa.getHostName(), i));
+            }else if(opcode == NetUtils.OPCODE_STARTUP){
+                InetSocketAddress isa = (InetSocketAddress) ch.getRemoteAddress();
+                if(!statusMap.containsKey(isa)) return;
+                ByteBuffer buf = ByteBuffer.allocate(5);
+                buf.put(NetUtils.OPCODE_INFO_DATA_PORT);
+                buf.putInt(Integer.parseInt((String) config.get("dts.port")));
+                buf.flip();
+                byte[] d = new byte[buf.capacity()];
+                buf.get(d);
+                NetUtils.sendMessage(ch, d);
             }
         } catch (IOException ignored) {
             try {

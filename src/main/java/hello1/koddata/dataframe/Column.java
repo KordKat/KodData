@@ -86,4 +86,9 @@ public class Column implements Serializable, KodResourceNaming {
     public byte[] serialize() {
         return null;
     }
+
+    @Override
+    public Object deserialize(byte[] b) {
+        return null;
+    }
 }

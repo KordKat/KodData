@@ -109,4 +109,10 @@ public class Session {
         state = State.TERMINATED;
 
     }
+
+
+
+    public SessionData getSessionData() {
+        return sessionData;
+    }
 }

@@ -1,5 +1,6 @@
 package hello1.koddata.net;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -19,7 +20,7 @@ public class Server {
         this.factory = socketFactory;
     }
 
-    public void start(){
+    public void start() throws IOException {
 
     }
 
@@ -28,7 +29,7 @@ public class Server {
     }
 
 
-    public void stop(){
+    public void stop() throws IOException {
 
     }
 

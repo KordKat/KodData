@@ -16,7 +16,7 @@ public class SessionManager {
         return null;
     }
 
-    public Session inspectSession(long sessionId){
+    public Session getSession(long sessionId){
         return null;
     }
 

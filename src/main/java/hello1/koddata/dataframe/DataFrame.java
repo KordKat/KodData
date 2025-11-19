@@ -10,9 +10,10 @@ public class DataFrame {
     // perform only logical
     private DataFrameSchema schema;
     private QueryExecution queryExecution;
+    private String name;
 
-    public DataFrame(DataFrameSchema schema){}
-    public DataFrame(){}
+    public DataFrame(DataFrameSchema schema, String name){}
+    public DataFrame(String name){}
 
     private void newQueryExecution(){
         this.queryExecution = new QueryExecution();
@@ -76,4 +77,7 @@ public class DataFrame {
     public DataFrame intersect(DataFrame other) {return null; }
     public DataFrame except(DataFrame other) {return null; }
 
+    public String getName() {
+        return name;
+    }
 }

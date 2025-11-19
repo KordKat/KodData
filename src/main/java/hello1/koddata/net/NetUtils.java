@@ -33,6 +33,10 @@ public class NetUtils {
     public static final byte OPCODE_LOCK_GRANTED = 0x16;
     public static final byte OPCODE_LOCK_DENIED = 0x17;
 
+    public static final byte OPCODE_INFO_DATA_PORT = 0x18;
+
+    public static final byte OPCODE_DATATRANSFER = 0x19;
+
     public static void sendMessage(SocketChannel ch, byte[] data) throws IOException {
         ByteBuffer buf = ByteBuffer.wrap(data);
         buf.flip();
