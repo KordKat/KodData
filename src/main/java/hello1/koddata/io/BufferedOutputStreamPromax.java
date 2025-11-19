@@ -1,6 +1,6 @@
 package hello1.koddata.io;
 
-import jdk.internal.misc.InternalLock;
+//import jdk.internal.misc.InternalLock;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
