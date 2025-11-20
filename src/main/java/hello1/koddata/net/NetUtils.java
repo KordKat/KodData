@@ -37,6 +37,8 @@ public class NetUtils {
 
     public static final byte OPCODE_DATATRANSFER = 0x19;
 
+    public static final byte OPCODE_CONSISTENT_CHECK_REQUEST = 0x20;
+
     public static void sendMessage(SocketChannel ch, byte[] data) throws IOException {
         ByteBuffer buf = ByteBuffer.wrap(data);
         buf.flip();

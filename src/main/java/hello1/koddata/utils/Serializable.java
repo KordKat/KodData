@@ -1,5 +1,7 @@
 package hello1.koddata.utils;
 
+import hello1.koddata.exception.KException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,8 +23,8 @@ public interface Serializable {
         return wireToId.get(clazz);
     }
 
-    byte[] serialize();
+    byte[] serialize() throws KException;
 
-    Object deserialize(byte[] b);
+    void deserialize(byte[] b);
 
 }

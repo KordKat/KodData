@@ -24,8 +24,18 @@ import hello1.koddata.exception.KException;
 import hello1.koddata.io.ChannelState;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.utils.Serializable;
+import hello1.koddata.utils.ref.ClusterReference;
 
 public class DataTransferServer extends Server implements Runnable {
+
+    private static final byte OP_REQUEST_DATA = 0x00;
+    private static final byte OP_RESPONSE_DATA = 0x01;
+
+    private static final byte OP_SESSION_DATA_SEND = 0x10;
+    private static final byte OP_SESSION_DATA_REQUEST = 0x11;
+
+    private static final byte OP_RESOURCE_REQUEST = 0x20;
+    private static final byte OP_RESOURCE_SEND = 0x21;
 
     private Set<InetSocketAddress> peers;
     private ConcurrentMap<InetSocketAddress, SocketChannel> sockets;
@@ -163,7 +173,8 @@ public class DataTransferServer extends Server implements Runnable {
 
         try {
             Serializable instance = wireClass.getDeclaredConstructor().newInstance();
-            return instance.deserialize(data);
+            instance.deserialize(data);
+            return instance;
 
         } catch (Exception e) {
             throw new KException(ExceptionCode.KD00000, "Error during deserialization or instantiation: " + e.getMessage());
@@ -262,6 +273,10 @@ public class DataTransferServer extends Server implements Runnable {
 
             }
         }
+    }
+
+    public <T> T requestData(ClusterReference<T> ref){
+        return null;
     }
 
     private Object deserializeLargeObject(Path file) throws Exception {

@@ -22,7 +22,8 @@ public class Column implements Serializable, KodResourceNaming {
     private int sizePerElement;
     private int startIdx;
     private int endIdx;
-
+    //for deserializing
+    public Column(){}
 
     public static void setupIdCounter(Set<NodeStatus> peers){
         columnIdCounter = ClusterIdCounter.getCounter(Column.class, peers);
@@ -103,8 +104,8 @@ public class Column implements Serializable, KodResourceNaming {
     }
 
     @Override
-    public Object deserialize(byte[] b) {
-        return null;
+    public void deserialize(byte[] b) {
+
     }
 
     public String getMemoryGroupName() {

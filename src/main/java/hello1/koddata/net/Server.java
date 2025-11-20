@@ -33,4 +33,7 @@ public class Server {
 
     }
 
+    public InetSocketAddress getInetSocketAddress() {
+        return inetSocketAddress;
+    }
 }

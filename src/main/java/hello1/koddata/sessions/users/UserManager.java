@@ -190,6 +190,18 @@ public class UserManager {
         }
     }
 
+    public void removeUser(long id){
+        if(users.containsKey(id)) {
+            User u = users.get(id);
+            u.logOut();
+            for(Session session : u.listSessions()){
+                session.terminate();
+            }
+            userDataMap.remove(id);
+            users.remove(id);
+        }
+    }
+
     public String getProperty(String key, String defaultValue){
         return props.getProperty(key, defaultValue);
     }

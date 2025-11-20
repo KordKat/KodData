@@ -3,6 +3,8 @@ package hello1.koddata.sessions;
 import hello1.koddata.Main;
 import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.concurrent.cluster.ClusterIdCounter;
+import hello1.koddata.concurrent.cluster.ConsistentCriteria;
+import hello1.koddata.concurrent.cluster.Replica;
 import hello1.koddata.engine.StatementExecutor;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.Lexer;
@@ -20,7 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Session {
+public class Session implements Replica {
 
     private static final ClusterIdCounter idCounter =
             ClusterIdCounter.getCounter(Session.class,
@@ -33,6 +35,9 @@ public class Session {
     private SessionSettings settings;
     private HashMap<Long, Process> processes;
     private SessionData sessionData;
+
+
+
     public enum State {
         RUNNING(0),
         IDLE(1),
@@ -125,5 +130,18 @@ public class Session {
 
     public SessionData getSessionData() {
         return sessionData;
+    }
+
+    @Override
+    public ConsistentCriteria getConsistencyCriteria() {
+        ConsistentCriteria criteria = new ConsistentCriteria();
+        criteria.addCriteria("state", state);
+        criteria.addCriteria("processes_count", processes.size());
+        return null;
+    }
+
+    @Override
+    public void update(ConsistentCriteria latest) {
+
     }
 }

@@ -2,11 +2,14 @@ package hello1.koddata.net;
 
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -16,6 +19,9 @@ public class GossipServer extends Server {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final ExecutorService senderExec = Executors.newFixedThreadPool(4);
     private final ExecutorService readerExec = Executors.newSingleThreadExecutor();
+
+    private static final long THRESHOLD = 5;
+    private static final float GOSSIP_FRACTION = 0.3f;
 
     private final Properties config;
     private DataTransferServer dataTransferServer;
@@ -80,10 +86,24 @@ public class GossipServer extends Server {
 
     public void run() {
         if (!running) return;
-        for (InetSocketAddress peer : peers) {
+        List<InetSocketAddress> selectedPeers;
+
+        if (peers.size() <= THRESHOLD) {
+            selectedPeers = new ArrayList<>(peers);
+        } else {
+            List<InetSocketAddress> shuffled = new ArrayList<>(peers);
+            Collections.shuffle(shuffled);
+
+            int count = Math.max(1, (int) (peers.size() * GOSSIP_FRACTION));
+
+            selectedPeers = shuffled.subList(0, count);
+        }
+
+        for (InetSocketAddress peer : selectedPeers) {
             senderExec.submit(() -> {
                 sendHeartbeat(peer);
                 sendStatus(peer);
+                consistentCheck(peer);
             });
         }
     }
@@ -121,6 +141,51 @@ public class GossipServer extends Server {
     @Override
     public void stop() {
         stopGracefully();
+    }
+
+    public void consistentCheck(InetSocketAddress peer) {
+        ConcurrentMap<String, ReplicatedResourceClusterReference<?>> resources = ReplicatedResourceClusterReference.resources;
+        NodeStatus ns = statusMap.get(peer);
+        if (ns == null) return;
+        SocketChannel ch = ns.getChannel();
+
+        try {
+            if (ch == null || !ch.isConnected() || !ch.isOpen()) {
+                ch = SocketChannel.open(peer);
+                ch.configureBlocking(false);
+                ns.setChannel(ch);
+            }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bos.write(NetUtils.OPCODE_CONSISTENT_CHECK_REQUEST);
+
+            bos.write(ByteBuffer.allocate(4).putInt(resources.size()).array());
+
+            for (Map.Entry<String, ReplicatedResourceClusterReference<?>> r : resources.entrySet()) {
+                String name = r.getValue().getResourceName();
+                byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+                byte[] criteriaBytes = r.getValue().get().getConsistencyCriteria().serialize();
+
+                bos.write(ByteBuffer.allocate(4).putInt(nameBytes.length).array());
+                bos.write(nameBytes);
+
+                bos.write(ByteBuffer.allocate(4).putInt(criteriaBytes.length).array());
+                bos.write(criteriaBytes);
+            }
+
+            byte[] dataset = bos.toByteArray();
+            ByteBuffer buf = ByteBuffer.allocate(dataset.length);
+            buf.put(dataset);
+            buf.flip();
+
+            while(buf.hasRemaining()){
+                if(ch.write(buf) == 0) Thread.yield();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void updateConsistent(){
+
     }
 
     private void sendHeartbeat(InetSocketAddress peer) {
@@ -282,5 +347,12 @@ public class GossipServer extends Server {
         return peers;
     }
 
+    public DataTransferServer getDataTransferServer() {
+        return dataTransferServer;
+    }
+
+    public InetSocketAddress getDataTransferServerInetSocketAddress() {
+        return dataTransferServer.getInetSocketAddress();
+    }
 
 }
