@@ -101,9 +101,6 @@ public class Column implements Serializable, KodResourceNaming {
     public byte[] serialize() {
         return null;
     }
-<<<<<<< HEAD
-}
-=======
 
     @Override
     public Object deserialize(byte[] b) {
@@ -117,4 +114,4 @@ public class Column implements Serializable, KodResourceNaming {
         return memory;
     }
 }
->>>>>>> 23553b41e773e6f8f6ee4a109800d057d141d747
+

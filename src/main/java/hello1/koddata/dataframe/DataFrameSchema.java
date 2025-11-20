@@ -24,10 +24,8 @@ public class DataFrameSchema {
     public void put(String key, int size){
         int exist = Arrays.binarySearch(keys, key);
         if(exist < 0) {
-            //
         }
     }
-
     public boolean putIfAbsent(String key, int size){
         return false;
     }
@@ -42,6 +40,5 @@ public class DataFrameSchema {
     }
 
     public DataFrameSchema select(String...columns) { return null; }
-
 
 }
