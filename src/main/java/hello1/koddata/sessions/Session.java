@@ -66,7 +66,9 @@ public class Session {
 
     public static Session newSession(User user){
         SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
-        return new Session(sessionSettings , user);
+        Session session = new Session(sessionSettings , user);
+        Main.bootstrap.getSessionManager().putSession(session.sessionId, session);
+        return session;
     }
 
     public boolean isProcessPresent(long processId){
@@ -117,7 +119,9 @@ public class Session {
 
     }
 
-
+    public SessionSettings getSettings() {
+        return settings;
+    }
 
     public SessionData getSessionData() {
         return sessionData;

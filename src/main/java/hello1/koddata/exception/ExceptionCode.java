@@ -16,7 +16,8 @@ public enum ExceptionCode {
     KDN0011("InetSocketAddress"),
     KDE0012("ArgumentMissing"),
     KDE0013("File not found"),
-    KDS00014("Serialization");
+    KDS00014("Serialization"),
+    KDE00015("Illegal Variable Name");
 
 
     private final String message;

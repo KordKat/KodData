@@ -3,8 +3,12 @@ package hello1.koddata.sessions;
 import hello1.koddata.dataframe.Column;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
+import hello1.koddata.engine.DataName;
 import hello1.koddata.engine.Value;
+import hello1.koddata.exception.ExceptionCode;
+import hello1.koddata.exception.KException;
 import hello1.koddata.memory.MemoryGroup;
+import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +17,7 @@ public class SessionData {
     private String sessionName;
     private Map<String, Value<?>> variables = new ConcurrentHashMap<>();
 
-    private Map<String, Column[]> sessionDataFrame = new ConcurrentHashMap<>();
+    private Map<String, ColumnArray> sessionDataFrame = new ConcurrentHashMap<>();
 
     private Map<Integer, String> preparedBlock = new ConcurrentHashMap<>();
 
@@ -34,30 +38,49 @@ public class SessionData {
     public void newDataFrame(DataFrameLoader loader){
         String name = loader.getFrame().getName();
         Column[] columns = loader.getColumns();
-
-        sessionDataFrame.put(name, columns);
+        ColumnArray columnArray = new ColumnArray(new ImmutableArray<>(columns), memoryGroup);
+        sessionDataFrame.put(name, columnArray);
 
     }
 
     public void deallocDataFrame(String dfName){
-        Column[] columns = sessionDataFrame.get(dfName);
-        for(Column column : columns){
-            //todo deallocate column
-        }
+        ColumnArray columnArray = sessionDataFrame.get(dfName);
+        if(columnArray == null) return;
+        columnArray.deallocate();
+        sessionDataFrame.remove(dfName);
     }
 
     public Map<Integer, String> getPreparedBlock() {
         return preparedBlock;
     }
 
-    public void assignVariable(String name, Object value) {
-        if(value instanceof Column){
-            //read as column
-        }else if(value instanceof ColumnArray){
-            //read as dataframe
+    public void assignVariable(DataName name, Object value) throws KException {
+        if(value instanceof Column c){
+            if(name.getIndex() == null){
+                throw new KException(ExceptionCode.KDE00015, "Column name missing");
+            }
+
+            if(!sessionDataFrame.containsKey(name.getName())){
+                sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c}), memoryGroup));
+            }else {
+                ColumnArray columnArray = sessionDataFrame.get(name.getName());
+                if(columnArray == null) sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c}), memoryGroup));
+                else columnArray.addColumn(c);
+            }
+
+        }else if(value instanceof ColumnArray columnArray){
+            if(!sessionDataFrame.containsKey(name.getName())){
+                sessionDataFrame.put(name.getName(), columnArray);
+            }else {
+                ColumnArray old = sessionDataFrame.get(name.getName());
+                if(old == null) sessionDataFrame.put(name.getName(), columnArray);
+                else {
+                    old.deallocate();
+                    sessionDataFrame.put(name.getName(), columnArray);
+                }
+            }
         }else {
-            //read as variable
-            variables.put(name, new Value<>(value));
+            variables.put(name.getName(), new Value<>(value));
         }
     }
 
@@ -65,7 +88,7 @@ public class SessionData {
         return sessionName;
     }
 
-    public Map<String, Column[]> getSessionDataFrame() {
+    public Map<String, ColumnArray> getSessionDataFrame() {
         return sessionDataFrame;
     }
 

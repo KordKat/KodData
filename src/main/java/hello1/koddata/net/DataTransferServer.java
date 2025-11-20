@@ -1,21 +1,27 @@
 package hello1.koddata.net;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import hello1.koddata.Main;
+import hello1.koddata.engine.DataName;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+import hello1.koddata.io.ChannelState;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.utils.Serializable;
 
@@ -41,7 +47,6 @@ public class DataTransferServer extends Server implements Runnable {
     public void start() throws IOException {
         selector = Selector.open();
         ssc = factory.createServer(inetSocketAddress.getPort());
-        ssc.bind(inetSocketAddress);
         ssc.register(selector, SelectionKey.OP_ACCEPT);
 
         running = true;
@@ -166,7 +171,8 @@ public class DataTransferServer extends Server implements Runnable {
     }
 
     public void readerLoop() {
-        final int MAX_READ_SIZE = 4096;
+        final int READ_BUFFER_SIZE = 64 * 1024; // 64KB chunks
+        Map<SocketChannel, ChannelState> states = new ConcurrentHashMap<>();
 
         while (running) {
             try {
@@ -177,49 +183,101 @@ public class DataTransferServer extends Server implements Runnable {
                     SelectionKey key = keyIterator.next();
                     keyIterator.remove();
 
-                    if (!key.isValid()) {
+                    if (!key.isValid())
                         continue;
-                    }
 
                     if (key.isAcceptable()) {
                         acceptConnection(key);
-                    } else if (key.isConnectable()) {
+                        continue;
+                    }
+
+                    if (key.isConnectable()) {
                         completeConnection(key, (SocketChannel) key.channel(), (InetSocketAddress) key.attachment());
-                    } else if (key.isReadable()) {
+                        continue;
+                    }
+
+                    if (key.isReadable()) {
                         SocketChannel ch = (SocketChannel) key.channel();
-                        InetSocketAddress remoteAddress = channelToAddress.get(ch);
-
-                        ByteBuffer readBuffer = ByteBuffer.allocate(MAX_READ_SIZE);
-                        int bytesRead = ch.read(readBuffer);
-                        readBuffer.flip();
-
-                        if (bytesRead == -1) {
-                            ch.close();
-                            key.cancel();
-                            sockets.remove(remoteAddress);
-                            channelToAddress.remove(ch);
-                            continue;
-                        }
+                        ChannelState state = states.computeIfAbsent(ch, c -> new ChannelState(READ_BUFFER_SIZE));
 
                         try {
-                            if (readBuffer.hasRemaining()) {
-                                long sessionId = readBuffer.getLong();
-                                long blockId = readBuffer.getLong();
-                                Object o = read(readBuffer);
-                                Session session = Main.bootstrap.getSessionManager().getSession(sessionId);
-                                String varName = session.getSessionData().getPreparedBlock().get(blockId);
+                            if (!state.headerComplete) {
+                                int n = ch.read(state.headerBuffer);
+                                if (n == -1) {
+                                    closeChannel(ch, key, states);
+                                    continue;
+                                }
+                                if (state.headerBuffer.hasRemaining()) {
+                                    continue; // header not yet fully received
+                                }
 
-                                session.getSessionData().assignVariable(varName, o);
+                                // Parse header
+                                state.headerBuffer.flip();
+                                state.sessionId = state.headerBuffer.getLong();
+                                state.blockId = state.headerBuffer.getLong();
+                                state.payloadLength = state.headerBuffer.getLong();
+                                state.headerBuffer.clear();
+                                state.headerComplete = true;
 
+                                state.tempFile = Files.createTempFile("batch_", ".bin");
+                                state.output = Files.newOutputStream(state.tempFile);
+                                state.bytesReceived = 0;
+
+                                state.payloadBuffer.clear();
                             }
-                        } catch (KException e) {
-                            // Error handling here, without printing to System.err
+
+                            int n = ch.read(state.payloadBuffer);
+                            if (n == -1) {
+                                closeChannel(ch, key, states);
+                                continue;
+                            }
+
+                            state.payloadBuffer.flip();
+                            state.output.write(state.payloadBuffer.array(), 0, state.payloadBuffer.limit());
+                            state.bytesReceived += state.payloadBuffer.limit();
+                            state.payloadBuffer.clear();
+
+                            if (state.bytesReceived >= state.payloadLength) {
+                                state.output.close();
+
+                                Object o = deserializeLargeObject(state.tempFile);
+
+                                Session session = Main.bootstrap.getSessionManager().getSession(state.sessionId);
+                                String varName = session.getSessionData().getPreparedBlock().get(state.blockId);
+
+                                DataName name = varName.contains("$")
+                                        ? new DataName(varName.split("\\$")[0], varName.split("\\$")[1])
+                                        : new DataName(varName, null);
+
+                                session.getSessionData().assignVariable(name, o);
+
+                                state.reset();
+                            }
+                        } catch (Exception ex) {
+
                         }
                     }
                 }
             } catch (IOException e) {
-                // Error handling here, without printing to System.err
+
             }
         }
     }
+
+    private Object deserializeLargeObject(Path file) throws Exception {
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(file))) {
+            return ois.readObject();
+        }
+    }
+
+    private void closeChannel(SocketChannel ch, SelectionKey key, Map<SocketChannel, ChannelState> states) {
+        try {
+            key.cancel();
+            states.remove(ch);
+            ch.close();
+        } catch (IOException ignored) {}
+    }
+
+
+
 }
