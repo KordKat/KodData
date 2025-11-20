@@ -23,6 +23,7 @@ public class Column implements Serializable, KodResourceNaming {
     private int startIdx;
     private int endIdx;
 
+
     public static void setupIdCounter(Set<NodeStatus> peers){
         columnIdCounter = ClusterIdCounter.getCounter(Column.class, peers);
     }
@@ -43,13 +44,22 @@ public class Column implements Serializable, KodResourceNaming {
         setupMetadata(name, sizePerElement, memoryGroupName, true);
         id = columnIdCounter.count();
 
+        memory = MemoryGroup.get(memoryGroupName)
+                .allocate(new VariableColumnAllocator(values, notNullFlags));
+
+        this.startIdx = startIdx;
+        this.endIdx = endIdx;
     }
 
     public Column(String name, String memoryGroupName, List<List<byte[]>> lists, List<boolean[]> perListNotNullFlags,
                   boolean[] columnNotNullFlags, int elementSize, int startIdx, int endIdx) throws KException {
-        setupMetadata(name, elementSize, memoryGroupName, false);
+        setupMetadata(name, elementSize, memoryGroupName, true);
         id = columnIdCounter.count();
 
+        memory = MemoryGroup.get(memoryGroupName)
+                .allocate(new FixedListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags,elementSize));
+        this.startIdx = startIdx;
+        this.endIdx = endIdx;
     }
 
     public Column(String name , String memoryGroupName,List<List<VariableElement>> lists,
@@ -57,6 +67,11 @@ public class Column implements Serializable, KodResourceNaming {
                   boolean[] columnNotNullFlags, int startIdx, int endIdx) throws KException {
         setupMetadata(name, -1, memoryGroupName, true);
         id = columnIdCounter.count();
+        memory = MemoryGroup.get(memoryGroupName)
+                .allocate(new VariableListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags));
+        this.startIdx = startIdx;
+        this.endIdx = endIdx;
+
     }
 
     public Column(String name, int sizePerElement, String memoryGroupName, ByteBuffer dataBuffer, boolean[] notNullFlags, int elementSize) throws KException {

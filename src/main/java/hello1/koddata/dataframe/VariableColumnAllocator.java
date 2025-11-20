@@ -7,7 +7,7 @@ import hello1.koddata.memory.ReadOnlyMemory;
 import java.util.List;
 
 public class VariableColumnAllocator extends ColumnAllocator {
-
+//do it
     private final List<VariableElement> values;
     private final boolean[] notNullFlags;
 

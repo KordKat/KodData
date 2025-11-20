@@ -8,7 +8,7 @@ import hello1.koddata.memory.ReadOnlyMemory;
 import java.util.List;
 
 public class FixedListColumnAllocator extends VariableColumnAllocator {
-
+//do it
     private final List<List<byte[]>> lists;
     private final List<boolean[]> perListNotNullFlags;
     private final boolean[] columnNotNullFlags;
