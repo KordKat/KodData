@@ -15,7 +15,8 @@ public enum ExceptionCode {
     KD00010("IOException"),
     KDN0011("InetSocketAddress"),
     KDE0012("ArgumentMissing"),
-    KDE0013("File not found");
+    KDE0013("File not found"),
+    KDS00014("Serialization");
 
 
     private final String message;

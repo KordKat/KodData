@@ -1,6 +1,8 @@
 package hello1.koddata.sessions;
 
+import hello1.koddata.Main;
 import hello1.koddata.concurrent.IdCounter;
+import hello1.koddata.concurrent.cluster.ClusterIdCounter;
 import hello1.koddata.engine.StatementExecutor;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.Lexer;
@@ -8,16 +10,21 @@ import hello1.koddata.kodlang.Parser;
 import hello1.koddata.kodlang.Token;
 import hello1.koddata.kodlang.ast.SemanticAnalyzer;
 import hello1.koddata.kodlang.ast.Statement;
+import hello1.koddata.net.NodeStatus;
 import hello1.koddata.sessions.users.User;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Session {
 
-    private static IdCounter idCounter = new IdCounter();
+    private static final ClusterIdCounter idCounter =
+            ClusterIdCounter.getCounter(Session.class,
+                    new HashSet<>(Main.bootstrap.getServer().getStatusMap().values()));
 
     private long sessionId;
     private User user;
@@ -41,7 +48,7 @@ public class Session {
     private State state;
 
     private Session(SessionSettings settings ,User user){
-        sessionId = idCounter.next();
+        sessionId = idCounter.count();
         startedTime = System.currentTimeMillis();
         lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
@@ -108,5 +115,11 @@ public class Session {
         processes.clear();
         state = State.TERMINATED;
 
+    }
+
+
+
+    public SessionData getSessionData() {
+        return sessionData;
     }
 }

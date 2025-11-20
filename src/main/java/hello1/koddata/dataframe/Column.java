@@ -101,4 +101,20 @@ public class Column implements Serializable, KodResourceNaming {
     public byte[] serialize() {
         return null;
     }
+<<<<<<< HEAD
 }
+=======
+
+    @Override
+    public Object deserialize(byte[] b) {
+        return null;
+    }
+
+    public String getMemoryGroupName() {
+        return memoryGroupName;
+    }
+    public Memory getMemory() {
+        return memory;
+    }
+}
+>>>>>>> 23553b41e773e6f8f6ee4a109800d057d141d747

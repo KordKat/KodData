@@ -1,6 +1,7 @@
 package hello1.koddata.sessions;
 
 import hello1.koddata.dataframe.Column;
+import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
 import hello1.koddata.engine.Value;
 import hello1.koddata.memory.MemoryGroup;
@@ -14,9 +15,13 @@ public class SessionData {
 
     private Map<String, Column[]> sessionDataFrame = new ConcurrentHashMap<>();
 
+    private Map<Integer, String> preparedBlock = new ConcurrentHashMap<>();
+
     private MemoryGroup memoryGroup;
 
-    public SessionData(String sessionName){}
+    public SessionData(String sessionName){
+        this.sessionName = sessionName;
+    }
 
     public Value<?> get(String varName){
         return variables.getOrDefault(varName, null);
@@ -26,8 +31,45 @@ public class SessionData {
         this.variables.put(varName, value);
     }
 
-    public void newDataFrame(DataFrameLoader loader){}
+    public void newDataFrame(DataFrameLoader loader){
+        String name = loader.getFrame().getName();
+        Column[] columns = loader.getColumns();
 
-    public void deallocDataFrame(String dfName){}
+        sessionDataFrame.put(name, columns);
 
+    }
+
+    public void deallocDataFrame(String dfName){
+        Column[] columns = sessionDataFrame.get(dfName);
+        for(Column column : columns){
+            //todo deallocate column
+        }
+    }
+
+    public Map<Integer, String> getPreparedBlock() {
+        return preparedBlock;
+    }
+
+    public void assignVariable(String name, Object value) {
+        if(value instanceof Column){
+            //read as column
+        }else if(value instanceof ColumnArray){
+            //read as dataframe
+        }else {
+            //read as variable
+            variables.put(name, new Value<>(value));
+        }
+    }
+
+    public String getSessionName() {
+        return sessionName;
+    }
+
+    public Map<String, Column[]> getSessionDataFrame() {
+        return sessionDataFrame;
+    }
+
+    public Map<String, Value<?>> getVariables() {
+        return variables;
+    }
 }
