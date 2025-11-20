@@ -28,14 +28,14 @@ public class CSVLoader extends DataFrameLoader {
 
             if (text == null || text.isEmpty()) {
                 this.columns = new Column[0];
-                this.frame = new DataFrame();
+                this.frame = new DataFrame(memoryGroupName);
                 return;
             }
 
             String[] lines = text.split("\\r?\\n");
             if (lines.length == 0) {
                 this.columns = new Column[0];
-                this.frame = new DataFrame();
+                this.frame = new DataFrame(memoryGroupName);
                 return;
             }
 
@@ -89,7 +89,7 @@ public class CSVLoader extends DataFrameLoader {
             }
 
             DataFrameSchema schema = new DataFrameSchema();
-            this.frame = new DataFrame(schema);
+            this.frame = new DataFrame(memoryGroupName);
             if (columnCount > 0 && dataRowIndex > 0) {
 
                 int elementSize = 8;
@@ -102,7 +102,7 @@ public class CSVLoader extends DataFrameLoader {
                 fixedBuffer.flip();
 
                 Column fixedColumn = new Column(
-                        "fixedSample",
+                        "fixedColumn",
                         elementSize,
                         memoryGroupName,
                         fixedBuffer,
@@ -128,7 +128,7 @@ public class CSVLoader extends DataFrameLoader {
                 }
 
                 Column fixedListColumn = new Column(
-                        "fixedListSample",
+                        "fixedListColumn",
                         memoryGroupName,
                         fixedLists,
                         perListNotNull,
@@ -156,7 +156,7 @@ public class CSVLoader extends DataFrameLoader {
                 }
 
                 Column variableListColumn = new Column(
-                        "variableListSample",
+                        "variableListColumn",
                         memoryGroupName,
                         variableLists,
                         perListNotNull2,
