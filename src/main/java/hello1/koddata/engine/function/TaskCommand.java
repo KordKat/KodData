@@ -5,6 +5,7 @@ import hello1.koddata.concurrent.KTask;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+import hello1.koddata.sessions.Process;
 import hello1.koddata.sessions.users.UserData;
 
 import java.util.List;
@@ -37,9 +38,16 @@ public class TaskCommand extends KodFunction<KTask>{
             cancelTask(userIdLong , taskIdLong);
         }
         else if (command.get().equals("taskList")){
-            taskList();
+            if (!arguments.containsKey("sessionId")){
+                throw new KException(ExceptionCode.KDE0012,"You need to write userId to terminate session");
+            }
+            Value<?> userId = arguments.get("sessionId");
+            if (!(userId.get() instanceof Long sessionIdLong)) {
+                throw new KException(ExceptionCode.KDE0012, "sessionId should be Long");
+            }
+            List<Process> task = taskList(sessionIdLong);
         }
-        return null;
+        return new Value<>(null);
     }
 
     public void cancelTask(long userId , long taskId) throws KException {
@@ -50,7 +58,8 @@ public class TaskCommand extends KodFunction<KTask>{
         Main.bootstrap.getUserManager().findUser(userId).terminateTask(taskId);
 
     }
-    public List<KTask> taskList(){
-        return null;
+
+    public List<Process> taskList(long sessionIdLong){
+        return Main.bootstrap.getSessionManager().getSession(sessionIdLong).listRunningProcesses();
     }
 }

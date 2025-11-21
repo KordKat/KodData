@@ -1,8 +1,6 @@
 package hello1.koddata.engine.function;
 
-import hello1.koddata.database.CqlDatabaseConnection;
 import hello1.koddata.database.DatabaseConnection;
-import hello1.koddata.dataframe.Column;
 import hello1.koddata.dataframe.loader.CSVLoader;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
 import hello1.koddata.dataframe.loader.DatabaseLoader;
@@ -14,8 +12,7 @@ import hello1.koddata.exception.KException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.sql.ResultSet;
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader>>{
@@ -46,17 +43,25 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                 if (!file.exists()){
                     throw new KException(ExceptionCode.KDE0013,"There are no file in that name exists");
                 }
+                if (!arguments.containsKey("memoryGroupName")){
+                    throw new KException(ExceptionCode.KDE0012,"You need to write memoryGroupName to use fetch function in csv or json");
+                }
+                Value<?> memoryGroupName = arguments.get("memoryGroupName");
+                if (!(memoryGroupName.get() instanceof String memoryGroupNameString)) {
+                    throw new KException(ExceptionCode.KDE0012, "memoryGroupName should be string");
+                }
                 return new Value<>(CompletableFuture.supplyAsync(() -> {
                     DataFrameLoader dataFrameLoader = null;
                     if (finalDataSource.get().equals(DataSource.JSON)){
                         dataFrameLoader = new JsonLoader();
                     }
                     else {
-                        dataFrameLoader = new CSVLoader();
+
+                        dataFrameLoader = new CSVLoader(memoryGroupNameString);
                     }
                     try {
                         dataFrameLoader.load(new FileInputStream(file));
-                    } catch (FileNotFoundException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     return dataFrameLoader;
@@ -78,7 +83,11 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                     return new Value<>(CompletableFuture.supplyAsync(() -> {
                         DataFrameLoader dataFrameLoader = null;
                         dataFrameLoader = new DatabaseLoader(databaseConnection);
-                        dataFrameLoader.load(null);
+                        try {
+                            dataFrameLoader.load(null);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         return dataFrameLoader;
                     }));
                 }

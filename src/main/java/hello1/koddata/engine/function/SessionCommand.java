@@ -34,8 +34,8 @@ public class SessionCommand extends KodFunction<Session>{
         else if (command.get().equals("sessionList")){
             sessionList();
         }
+        return new Value<>(null);
 
-        return null;
     }
 
     public void terminateSession(Long sessionId){

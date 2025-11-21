@@ -4,11 +4,8 @@ import hello1.koddata.engine.DataName;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
-import hello1.koddata.memory.MemoryGroup;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionData;
-
-import java.util.Arrays;
 
 public class RemoveFunction extends KodFunction<SessionData>{
 
@@ -42,8 +39,7 @@ public class RemoveFunction extends KodFunction<SessionData>{
             }
             else {
                 var columns = s.getSessionData().getSessionDataFrame().get(dataNameDN.getName());
-                var column = Arrays.stream(columns).filter(x -> x.getMetaData().getName().equals(dataNameDN.getName())).findFirst();
-                MemoryGroup.get(column.get().getMemoryGroupName()).deallocate(column.get().getMemory());
+                columns.removeColumn(dataNameDN.getIndex());
                 return null;
             }
         }

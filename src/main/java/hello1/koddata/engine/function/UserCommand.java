@@ -1,11 +1,9 @@
 package hello1.koddata.engine.function;
 
 import hello1.koddata.Main;
-import hello1.koddata.concurrent.KTask;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
-import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.users.User;
 import hello1.koddata.sessions.users.UserData;
 import hello1.koddata.sessions.users.UserPrivilege;
@@ -130,7 +128,7 @@ public class UserCommand extends KodFunction<User>{
             userList();
         }
 
-        return null;
+        return new Value<>(null);
     }
 
 
