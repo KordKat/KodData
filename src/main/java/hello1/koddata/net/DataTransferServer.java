@@ -1,5 +1,6 @@
 package hello1.koddata.net;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
@@ -8,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -25,6 +27,7 @@ import hello1.koddata.io.ChannelState;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.utils.Serializable;
 import hello1.koddata.utils.ref.ClusterReference;
+import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
 public class DataTransferServer extends Server implements Runnable {
 
@@ -36,6 +39,10 @@ public class DataTransferServer extends Server implements Runnable {
 
     private static final byte OP_RESOURCE_REQUEST = 0x20;
     private static final byte OP_RESOURCE_SEND = 0x21;
+
+    private static final byte MODE_SESSION_BLOCK = 0x30;
+    private static final byte MODE_USER_FILE = 0x31;
+    private static final byte MODE_SERVER_STATE = 0x32;
 
     private Set<InetSocketAddress> peers;
     private ConcurrentMap<InetSocketAddress, SocketChannel> sockets;
@@ -99,7 +106,7 @@ public class DataTransferServer extends Server implements Runnable {
                 ch.finishConnect();
             }
 
-            NetUtils.sendMessage(ch, NetUtils.OPCODE_DATATRANSFER);
+            NetUtils.sendMessage(ch, NetUtils.OPCODE_DATATRANSFER_HANDSHAKE);
 
             sockets.put(isa, ch);
             channelToAddress.put(ch, isa);
@@ -125,26 +132,58 @@ public class DataTransferServer extends Server implements Runnable {
         }
     }
 
+    //to session block
+    public void transfer(InetSocketAddress node, Serializable serializable, long sessionId, String name, String index) throws KException {
+        SocketChannel ch = sockets.get(node);
+        if (ch == null || !ch.isConnected()) {
+            throw new KException(ExceptionCode.KDN0011, "Peer node is not connected: " + node);
+        }
+        byte[] data = serializable.serialize();
+        byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+        byte[] indexBytes = index == null ? new byte[]{0} : index.getBytes(StandardCharsets.UTF_8);
+        long capacity = data.length + 21 + nameBytes.length + indexBytes.length;
+        ByteBuffer buf = ByteBuffer.allocate((int) capacity);
+        Integer wireId = Serializable.searchWireId(serializable.getClass());
+        byte mode = MODE_SESSION_BLOCK;
+        if (wireId == null) {
+            throw new KException(ExceptionCode.KD00000, "Wire ID not registered for class: " + serializable.getClass().getName());
+        }
+        buf.putLong(capacity);
+        buf.put(mode);
+        buf.putLong(sessionId);
+        buf.put(nameBytes);
+        buf.put(indexBytes);
+        buf.putInt(wireId);
+        buf.put(data);
+        buf.flip();
+        try {
+            while (buf.hasRemaining()) {
+                ch.write(buf);
+            }
+        } catch (IOException e) {
 
-    public void transfer(InetSocketAddress node, Serializable serializable, long sessionId, long blockId) throws KException {
+        }
+    }
+
+    //to user file
+    public void transfer(InetSocketAddress node, Serializable serializable, long userId, String fileName) throws KException {
         SocketChannel ch = sockets.get(node);
         if (ch == null || !ch.isConnected()) {
             throw new KException(ExceptionCode.KDN0011, "Peer node is not connected: " + node);
         }
 
         byte[] data = serializable.serialize();
-        ByteBuffer buf = ByteBuffer.allocate(data.length + 4);
         Integer wireId = Serializable.searchWireId(serializable.getClass());
+        byte[] fName = fileName.getBytes(StandardCharsets.UTF_8);
+        long capacity = data.length + 17 + fName.length;
+        byte mode = MODE_USER_FILE;
+        ByteBuffer buf = ByteBuffer.allocate((int) capacity);
 
-        if (wireId == null) {
-            throw new KException(ExceptionCode.KD00000, "Wire ID not registered for class: " + serializable.getClass().getName());
-        }
-
-        buf.putLong(sessionId);
-        buf.putLong(blockId);
-        buf.putInt(wireId);
+        buf.putLong(capacity); //8
+        buf.put(mode); //1
+        buf.putLong(userId); //8
+        buf.put(fName);
         buf.put(data);
-
         buf.flip();
 
         try {
@@ -156,28 +195,41 @@ public class DataTransferServer extends Server implements Runnable {
         }
     }
 
-    public Object read(ByteBuffer buf) throws KException {
-        if (buf.remaining() < 4) {
-            throw new KException(ExceptionCode.KD00000, "Buffer too short to read wire ID.");
+    public void transfer(InetSocketAddress node, ConcurrentMap<String, ReplicatedResourceClusterReference<?>> resources) throws KException, IOException {
+        SocketChannel ch = sockets.get(node);
+        if (ch == null || !ch.isConnected()) {
+            throw new KException(ExceptionCode.KDN0011, "Peer node is not connected: " + node);
         }
 
-        final int wireId = buf.getInt();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (Map.Entry<String, ReplicatedResourceClusterReference<?>> r : resources.entrySet()) {
+            String name = r.getValue().getResourceName();
+            byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+            byte[] criteriaBytes = r.getValue().get().getConsistencyCriteria().serialize();
 
-        Class<? extends Serializable> wireClass = Serializable.searchWireClass(wireId);
-        if (wireClass == null) {
-            throw new KException(ExceptionCode.KDS00014, "Unknown wire ID received: " + wireId);
+            bos.write(ByteBuffer.allocate(4).putInt(nameBytes.length).array());
+            bos.write(nameBytes);
+
+            bos.write(ByteBuffer.allocate(4).putInt(criteriaBytes.length).array());
+            bos.write(criteriaBytes);
         }
 
-        byte[] data = new byte[buf.remaining()];
-        buf.get(data);
+        byte[] dataset = bos.toByteArray();
+        byte mode = MODE_SERVER_STATE;
+        long capacity = 8 + 1 + dataset.length;
+
+        ByteBuffer buf = ByteBuffer.allocate((int) capacity);
+        buf.putLong(capacity);
+        buf.put(mode);
+        buf.put(dataset);
+        buf.flip();
 
         try {
-            Serializable instance = wireClass.getDeclaredConstructor().newInstance();
-            instance.deserialize(data);
-            return instance;
+            while (buf.hasRemaining()) {
+                ch.write(buf);
+            }
+        } catch (IOException e) {
 
-        } catch (Exception e) {
-            throw new KException(ExceptionCode.KD00000, "Error during deserialization or instantiation: " + e.getMessage());
         }
     }
 
@@ -209,64 +261,7 @@ public class DataTransferServer extends Server implements Runnable {
 
                     if (key.isReadable()) {
                         SocketChannel ch = (SocketChannel) key.channel();
-                        ChannelState state = states.computeIfAbsent(ch, c -> new ChannelState(READ_BUFFER_SIZE));
 
-                        try {
-                            if (!state.headerComplete) {
-                                int n = ch.read(state.headerBuffer);
-                                if (n == -1) {
-                                    closeChannel(ch, key, states);
-                                    continue;
-                                }
-                                if (state.headerBuffer.hasRemaining()) {
-                                    continue; // header not yet fully received
-                                }
-
-                                // Parse header
-                                state.headerBuffer.flip();
-                                state.sessionId = state.headerBuffer.getLong();
-                                state.blockId = state.headerBuffer.getLong();
-                                state.payloadLength = state.headerBuffer.getLong();
-                                state.headerBuffer.clear();
-                                state.headerComplete = true;
-
-                                state.tempFile = Files.createTempFile("batch_", ".bin");
-                                state.output = Files.newOutputStream(state.tempFile);
-                                state.bytesReceived = 0;
-
-                                state.payloadBuffer.clear();
-                            }
-
-                            int n = ch.read(state.payloadBuffer);
-                            if (n == -1) {
-                                closeChannel(ch, key, states);
-                                continue;
-                            }
-
-                            state.payloadBuffer.flip();
-                            state.output.write(state.payloadBuffer.array(), 0, state.payloadBuffer.limit());
-                            state.bytesReceived += state.payloadBuffer.limit();
-                            state.payloadBuffer.clear();
-
-                            if (state.bytesReceived >= state.payloadLength) {
-                                state.output.close();
-
-                                Object o = deserializeLargeObject(state.tempFile);
-
-                                Session session = Main.bootstrap.getSessionManager().getSession(state.sessionId);
-                                String varName = session.getSessionData().getPreparedBlock().get(state.blockId);
-
-                                DataName name = varName.contains("$")
-                                        ? new DataName(varName.split("\\$")[0], varName.split("\\$")[1])
-                                        : new DataName(varName, null);
-
-                                session.getSessionData().assignVariable(name, o);
-
-                                state.reset();
-                            }
-                        } catch (Exception ex) {
-
-                        }
                     }
                 }
             } catch (IOException e) {

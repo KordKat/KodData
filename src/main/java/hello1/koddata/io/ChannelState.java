@@ -1,17 +1,18 @@
 package hello1.koddata.io;
 
+import hello1.koddata.exception.KException;
+
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-public class ChannelState {
+public abstract class ChannelState {
+    private volatile long id;
     public ByteBuffer headerBuffer = ByteBuffer.allocate(24); // header size
     public ByteBuffer payloadBuffer;
 
     public boolean headerComplete = false;
 
-    public long sessionId;
-    public long blockId;
     public long payloadLength;
     public long bytesReceived;
 
@@ -29,6 +30,12 @@ public class ChannelState {
 
         headerBuffer.clear();
         payloadBuffer.clear();
+    }
+
+    public abstract void perform() throws KException;
+
+    public long getId() {
+        return id;
     }
 }
 

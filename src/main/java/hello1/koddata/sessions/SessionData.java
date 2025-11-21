@@ -37,7 +37,7 @@ public class SessionData {
 
     public void newDataFrame(DataFrameLoader loader){
         String name = loader.getFrame().getName();
-        Column[] columns = loader.getColumns();
+        Column[] columns = loader.getColumns().toArray(new Column[0]);
         ColumnArray columnArray = new ColumnArray(new ImmutableArray<>(columns), memoryGroup);
         sessionDataFrame.put(name, columnArray);
 
