@@ -94,5 +94,5 @@ public class FixedListColumnAllocator extends VariableColumnAllocator {
         return count;
     }
 
-    /// [null bitmap][null bitmap per-array][size of array][......]
+    /// [null bitmap][null bitmap per-array][[size of array][......]]
 }
