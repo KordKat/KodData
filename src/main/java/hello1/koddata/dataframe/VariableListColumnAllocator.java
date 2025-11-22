@@ -101,6 +101,6 @@ public class VariableListColumnAllocator extends VariableColumnAllocator {
         }
         return totalBytes;
     }
-    /// [null bitmap][null bitmap per-array][size of array][[][size of element][.....]][[size of element][.....]]...]
+    /// [null bitmap][[null bitmap per-array][size of array][[size of element][.....]]]
 }
 
