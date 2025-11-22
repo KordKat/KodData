@@ -57,5 +57,7 @@ public class VariableColumnAllocator extends ColumnAllocator {
 
         return mem;
     }
+
+    // [null bitmap] [[data length] [data]][[data length] [data]][[data length] [data]]
 }
 
