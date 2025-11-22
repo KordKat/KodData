@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CSVLoader extends DataFrameLoader {
@@ -73,6 +72,17 @@ public class CSVLoader extends DataFrameLoader {
                                 column = buildListFixedNumericColumn(name, cells, c, rowCount, false);
                         case LIST_STRING ->
                                 column = buildListStringColumn(name, cells, c, rowCount);
+
+                        case SCALAR_LOGICAL ->
+                                column = buildScalarLogicalColumn(name, cells, c, rowCount);
+
+                        case SCALAR_DATE ->
+                                column = buildScalarDateColumn(name, cells, c, rowCount);
+
+                        case SCALAR_TIMESTAMP ->
+                                column = buildScalarTimestampColumn(name, cells, c, rowCount);
+
+
                         default -> throw new IllegalStateException();
                     }
                     result.add(column);
@@ -91,8 +101,13 @@ public class CSVLoader extends DataFrameLoader {
         SCALAR_STRING,
         LIST_INT,
         LIST_DOUBLE,
-        LIST_STRING
-    }
+        LIST_STRING,
+        SCALAR_LOGICAL,
+        SCALAR_DATE,
+        SCALAR_TIMESTAMP
+
+        }
+
 
     private Column buildScalarIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         int elementSize = Integer.BYTES;
@@ -148,6 +163,73 @@ public class CSVLoader extends DataFrameLoader {
 
         return new Column(name, list, memoryGroupName, flags, 0, rowCount);
     }
+
+    private Column buildScalarLogicalColumn(String name, String[][] cells, int colIdx, int rowCount)
+            throws KException {
+
+        int elementSize = 1;
+        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
+        boolean[] flags = new boolean[rowCount];
+
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v != null) {
+                flags[r] = true;
+                String t = v.trim().toLowerCase();
+                boolean val = t.equals("true") || t.equals("1");
+                buffer.put((byte)(val ? 1 : 0));
+            } else {
+                buffer.put((byte)0);
+            }
+        }
+
+        buffer.flip();
+        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount);
+    }
+    private Column buildScalarDateColumn(String name, String[][] cells, int colIdx, int rowCount)
+            throws KException {
+
+        int elementSize = Long.BYTES;
+        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
+        boolean[] flags = new boolean[rowCount];
+
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v != null) {
+                flags[r] = true;
+                long epoch = java.time.LocalDate.parse(v.trim()).toEpochDay();
+                buffer.putLong(epoch);
+            } else {
+                buffer.putLong(0L);
+            }
+        }
+
+        buffer.flip();
+        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount);
+    }
+
+    private Column buildScalarTimestampColumn(String name, String[][] cells, int colIdx, int rowCount)
+            throws KException {
+
+        int elementSize = Long.BYTES;
+        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
+        boolean[] flags = new boolean[rowCount];
+
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v != null) {
+                flags[r] = true;
+                long epoch = java.time.Instant.parse(v.trim()).toEpochMilli();
+                buffer.putLong(epoch);
+            } else {
+                buffer.putLong(0L);
+            }
+        }
+
+        buffer.flip();
+        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount);
+    }
+
 
     private Column buildListFixedNumericColumn(String name, String[][] cells, int colIdx, int rowCount, boolean isInt)
             throws KException {
@@ -278,6 +360,44 @@ public class CSVLoader extends DataFrameLoader {
 
         if (canInt) return ColumnKind.SCALAR_INT;
         if (canDouble) return ColumnKind.SCALAR_DOUBLE;
+        boolean canLogical = true;
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) continue;
+            String t = v.trim().toLowerCase();
+            if (!(t.equals("true") || t.equals("false") || t.equals("1") || t.equals("0"))) {
+                canLogical = false;
+                break;
+            }
+        }
+        if (canLogical) return ColumnKind.SCALAR_LOGICAL;
+
+        boolean canDate = true;
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) continue;
+            try {
+                java.time.LocalDate.parse(v.trim());
+            } catch (Exception e) {
+                canDate = false;
+                break;
+            }
+        }
+        if (canDate) return ColumnKind.SCALAR_DATE;
+
+        boolean canTimestamp = true;
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) continue;
+            try {
+                java.time.Instant.parse(v.trim());
+            } catch (Exception e) {
+                canTimestamp = false;
+                break;
+            }
+        }
+        if (canTimestamp) return ColumnKind.SCALAR_TIMESTAMP;
+
         return ColumnKind.SCALAR_STRING;
     }
 
@@ -360,4 +480,4 @@ public class CSVLoader extends DataFrameLoader {
             return t.substring(1, t.length() - 1);
         return t;
     }
-}    
+}
