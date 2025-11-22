@@ -104,10 +104,15 @@ public class CSVLoader extends DataFrameLoader {
         LIST_STRING,
         SCALAR_LOGICAL,
         SCALAR_DATE,
+<<<<<<< HEAD
         SCALAR_TIMESTAMP,
         LIST_LOGICAL,
         LIST_DATE,
         LIST_TIMESTAMP,
+=======
+        SCALAR_TIMESTAMP
+
+>>>>>>> 79a3b55887581500bf10e4ca9b65f376048d2b2e
     }
 
 

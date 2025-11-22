@@ -313,9 +313,6 @@ public class GossipServer extends Server {
         return peers;
     }
 
-    public DataTransferServer getDataTransferServer() {
-        return dataTransferServer;
-    }
 
     public InetSocketAddress getDataTransferServerInetSocketAddress() {
         return dataTransferServer.getInetSocketAddress();

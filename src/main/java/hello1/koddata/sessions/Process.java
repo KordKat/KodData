@@ -2,11 +2,15 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.concurrent.KTask;
+import hello1.koddata.concurrent.cluster.ConsistentCriteria;
+import hello1.koddata.concurrent.cluster.Replica;
 import hello1.koddata.engine.Value;
+import hello1.koddata.exception.KException;
+import hello1.koddata.utils.Serializable;
 
 import java.util.function.Consumer;
 
-public class Process {
+public class Process implements Replica {
     private static IdCounter idCounter = new IdCounter();
     private long processId;
     private long workerId;
@@ -45,4 +49,13 @@ public class Process {
 
     }
 
+    @Override
+    public ConsistentCriteria getConsistencyCriteria() {
+        return null;
+    }
+
+    @Override
+    public void update(ConsistentCriteria latest) {
+
+    }
 }

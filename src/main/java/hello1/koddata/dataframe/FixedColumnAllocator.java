@@ -79,4 +79,6 @@ public class FixedColumnAllocator extends ColumnAllocator {
 
         return mem;
     }
+
+    // [null bitmap] [data]
 }
