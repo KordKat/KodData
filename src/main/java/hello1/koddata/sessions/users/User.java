@@ -1,6 +1,8 @@
 package hello1.koddata.sessions.users;
 
 import hello1.koddata.Main;
+import hello1.koddata.concurrent.cluster.ConsistentCriteria;
+import hello1.koddata.concurrent.cluster.Replica;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
@@ -10,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class User {
+public class User implements Replica {
 
     private List<Session> userSession;
     private Session currentlySession;
@@ -50,5 +52,15 @@ public class User {
     }
     public void setUserData(UserData userData) {
         this.userData = userData;
+    }
+
+    @Override
+    public ConsistentCriteria getConsistencyCriteria() {
+        return null;
+    }
+
+    @Override
+    public void update(ConsistentCriteria latest) {
+
     }
 }

@@ -106,7 +106,7 @@ public class CSVLoader extends DataFrameLoader {
         SCALAR_DATE,
         SCALAR_TIMESTAMP
 
-        }
+    }
 
 
     private Column buildScalarIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
