@@ -7,8 +7,11 @@ import hello1.koddata.sessions.users.UserManager;
 import hello1.koddata.utils.SerialVersionId;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
@@ -29,11 +32,68 @@ public class Bootstrap {
 
     private static final Properties config = new Properties();
 
-    public void start(String[] args) {
-
+    public void start(String[] args) throws IOException {
+        configure(args);
+        startServer();
     }
 
-    public void end(){
+    public void end() throws IOException, InterruptedException {
+        dataTransferServer.stop();
+        userServiceServer.stop();
+        gossipServer.stop();
+        Thread.sleep(5000); //ensure every is closed properly
+        userManager.saveUserData();
+    }
+
+    private void configure(String[] args)throws IOException{
+        assert args.length >= 1;
+
+        String cfgFile = args[0];
+        config.load(new FileInputStream(cfgFile));
+        String nodeFileName = config.getProperty("nodefile", "nodes.txt");
+        nodeCfgFile = new File(nodeFileName);
+        rootPath = Path.of(URI.create(config.getProperty("root", "koddata/")));
+        userManager = new UserManager(this);
+        sessionManager = new SessionManager();
+
+        int dataBufferSize = Integer.parseInt(config.getProperty("server.data.bufferSize"));
+        boolean dataTcpNoDelay = Boolean.parseBoolean(config.getProperty("server.data.tcoNoDelay"));
+        boolean dataReuseAddr = Boolean.parseBoolean(config.getProperty("server.data.reuseAddr"));
+        boolean dataKeepAlive = Boolean.parseBoolean(config.getProperty("server.data.keepAlive"));
+
+        dataTransferSocketFactory = new SocketFactory.Builder()
+                .readBufferSize(dataBufferSize)
+                .sendBufferSize(dataBufferSize)
+                .tcpNoDelay(dataTcpNoDelay)
+                .reuseAddress(dataReuseAddr)
+                .keepAlive(dataKeepAlive)
+                .get();
+
+        int gossipBufferSize = Integer.parseInt(config.getProperty("server.gossip.bufferSize"));
+        boolean gossipTcpNoDelay = Boolean.parseBoolean(config.getProperty("server.gossip.tcoNoDelay"));
+        boolean gossipReuseAddr = Boolean.parseBoolean(config.getProperty("server.gossip.reuseAddr"));
+        boolean gossipKeepAlive = Boolean.parseBoolean(config.getProperty("server.gossip.keepAlive"));
+
+        gossipServerFactory = new SocketFactory.Builder()
+                .readBufferSize(gossipBufferSize)
+                .sendBufferSize(gossipBufferSize)
+                .tcpNoDelay(gossipTcpNoDelay)
+                .reuseAddress(gossipReuseAddr)
+                .keepAlive(gossipKeepAlive)
+                .get();
+
+        int userBufferSize = Integer.parseInt(config.getProperty("server.user.bufferSize"));
+        boolean userTcpNoDelay = Boolean.parseBoolean(config.getProperty("server.user.tcoNoDelay"));
+        boolean userReuseAddr = Boolean.parseBoolean(config.getProperty("server.user.reuseAddr"));
+        boolean userKeepAlive = Boolean.parseBoolean(config.getProperty("server.user.keepAlive"));
+
+        userServiceServerFactory = new SocketFactory.Builder()
+                .readBufferSize(userBufferSize)
+                .sendBufferSize(userBufferSize)
+                .tcpNoDelay(userTcpNoDelay)
+                .reuseAddress(userReuseAddr)
+                .keepAlive(userKeepAlive)
+                .get();
 
     }
 
