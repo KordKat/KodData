@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class ConsistentCriteria implements Serializable {
 
     private HashMap<String, Object> values = new HashMap<>();
-
+    private long latestUpdate;
     public ConsistentCriteria addCriteria(String name, Object value){
         values.put(name, value);
         return this;
@@ -39,6 +39,10 @@ public class ConsistentCriteria implements Serializable {
             }
         }
         return eq;
+    }
+
+    public boolean isNewerThan(ConsistentCriteria other){
+        return other.latestUpdate < latestUpdate;
     }
 
     @Override

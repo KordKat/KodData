@@ -5,5 +5,4 @@ public interface Replica {
     ConsistentCriteria getConsistencyCriteria();
 
     void update(ConsistentCriteria latest);
-
 }

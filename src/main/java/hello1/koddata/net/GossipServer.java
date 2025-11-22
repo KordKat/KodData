@@ -1,15 +1,16 @@
 package hello1.koddata.net;
 
+import hello1.koddata.engine.Bootstrap;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.nio.charset.StandardCharsets;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -23,20 +24,18 @@ public class GossipServer extends Server {
     private static final long THRESHOLD = 5;
     private static final float GOSSIP_FRACTION = 0.3f;
 
-    private final Properties config;
     private DataTransferServer dataTransferServer;
 
     private final ConcurrentMap<InetSocketAddress, NodeStatus> statusMap = new ConcurrentHashMap<>();
 
-    public GossipServer(InetSocketAddress inetSocketAddress, SocketFactory socketFactory, Properties properties) throws KException {
+    public GossipServer(InetSocketAddress inetSocketAddress, SocketFactory socketFactory) throws KException {
         super(inetSocketAddress, socketFactory);
-        String peerString = properties.getProperty("peers", "");
+        String peerString = Bootstrap.getConfig().getProperty("peers", "");
         String[] peerList = peerString.split(",");
         peers = new HashSet<>();
         for (String peer : peerList) {
             peers.add(convertToInetSocketAddress(peer.trim().toLowerCase()));
         }
-        config = properties;
     }
 
     private InetSocketAddress convertToInetSocketAddress(String hostname) throws KException {
@@ -48,6 +47,10 @@ public class GossipServer extends Server {
         String portStr = hostname.substring(colonIndex + 1);
         int port = Integer.parseInt(portStr);
         return new InetSocketAddress(host, port);
+    }
+
+    public void setDataTransferServer(DataTransferServer dataTransferServer) {
+        this.dataTransferServer = dataTransferServer;
     }
 
     @Override
@@ -73,10 +76,6 @@ public class GossipServer extends Server {
             serverChannel = factory.createServer(inetSocketAddress.getPort());
             selector = Selector.open();
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-            if(dataTransferServer == null || !dataTransferServer.running){
-                dataTransferServer = new DataTransferServer(new InetSocketAddress(inetSocketAddress.getHostName(), Integer.parseInt((String) config.get("dts.port"))), factory);
-                dataTransferServer.start();
-            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -145,48 +144,14 @@ public class GossipServer extends Server {
 
     public void consistentCheck(InetSocketAddress peer) {
         ConcurrentMap<String, ReplicatedResourceClusterReference<?>> resources = ReplicatedResourceClusterReference.resources;
-        NodeStatus ns = statusMap.get(peer);
-        if (ns == null) return;
-        SocketChannel ch = ns.getChannel();
-
-        try {
-            if (ch == null || !ch.isConnected() || !ch.isOpen()) {
-                ch = SocketChannel.open(peer);
-                ch.configureBlocking(false);
-                ns.setChannel(ch);
+        if(dataTransferServer != null && dataTransferServer.running){
+            try {
+                dataTransferServer.transfer(peer, resources);
+            } catch (IOException | KException ignored) {
             }
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bos.write(NetUtils.OPCODE_CONSISTENT_CHECK_REQUEST);
-
-            bos.write(ByteBuffer.allocate(4).putInt(resources.size()).array());
-
-            for (Map.Entry<String, ReplicatedResourceClusterReference<?>> r : resources.entrySet()) {
-                String name = r.getValue().getResourceName();
-                byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-                byte[] criteriaBytes = r.getValue().get().getConsistencyCriteria().serialize();
-
-                bos.write(ByteBuffer.allocate(4).putInt(nameBytes.length).array());
-                bos.write(nameBytes);
-
-                bos.write(ByteBuffer.allocate(4).putInt(criteriaBytes.length).array());
-                bos.write(criteriaBytes);
-            }
-
-            byte[] dataset = bos.toByteArray();
-            ByteBuffer buf = ByteBuffer.allocate(dataset.length);
-            buf.put(dataset);
-            buf.flip();
-
-            while(buf.hasRemaining()){
-                if(ch.write(buf) == 0) Thread.yield();
-            }
-        } catch (Exception ignored) {
         }
     }
 
-    public void updateConsistent(){
-
-    }
 
     private void sendHeartbeat(InetSocketAddress peer) {
         NodeStatus ns = statusMap.get(peer);
@@ -299,7 +264,7 @@ public class GossipServer extends Server {
                 if(!statusMap.containsKey(isa)) return;
                 ByteBuffer buf = ByteBuffer.allocate(5);
                 buf.put(NetUtils.OPCODE_INFO_DATA_PORT);
-                buf.putInt(Integer.parseInt((String) config.get("dts.port")));
+                buf.putInt(Integer.parseInt((String) Bootstrap.getConfig().get("server.data.port")));
                 buf.flip();
                 byte[] d = new byte[buf.capacity()];
                 buf.get(d);
@@ -336,6 +301,7 @@ public class GossipServer extends Server {
     }
 
     private byte[] encodeNodeStatus() {
+
         return new byte[0];
     }
 

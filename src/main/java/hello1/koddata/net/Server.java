@@ -13,7 +13,7 @@ public class Server {
     protected Selector selector;
     protected ServerSocketChannel serverChannel;
     protected SocketChannel channel;
-    protected volatile boolean running = false;
+    public volatile boolean running = false;
 
     public Server(InetSocketAddress inetSocketAddress, SocketFactory socketFactory){
         this.inetSocketAddress = inetSocketAddress;

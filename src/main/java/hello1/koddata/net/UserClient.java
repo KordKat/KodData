@@ -2,8 +2,8 @@ package hello1.koddata.net;
 
 import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.users.User;
-import io.netty.buffer.ByteBuf;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -15,10 +15,10 @@ public class UserClient {
 
     private User user;
     private Session currentSession;
-    private Selector selector;
-    private SocketChannel socketChannel;
+    private final Selector selector;
+    private final SocketChannel socketChannel;
 
-    private Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
 
     public UserClient(Selector selector, SocketChannel sc){
         this.selector = selector;
@@ -41,13 +41,35 @@ public class UserClient {
         this.currentSession = currentSession;
     }
 
-    public synchronized void write(ByteBuffer buffer){
+    public void write(ByteBuffer buffer){
         writeQueue.offer(buffer);
         SelectionKey key = socketChannel.keyFor(selector);
         if(key != null && key.isValid()){
             key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
             selector.wakeup();
         }
+    }
+
+    public void processWrite() throws IOException {
+        while(!writeQueue.isEmpty()){
+            ByteBuffer buffer = writeQueue.peek();
+            socketChannel.write(buffer);
+
+            if(buffer.hasRemaining()){
+                return;
+            }
+
+            writeQueue.poll();
+        }
+
+        SelectionKey key = socketChannel.keyFor(selector);
+        if(key != null && key.isValid()){
+            key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+        }
+    }
+
+    public boolean isLoggedIn(){
+        return user != null;
     }
 
 }

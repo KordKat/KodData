@@ -8,36 +8,46 @@ import hello1.koddata.sessions.SessionData;
 import hello1.koddata.sessions.SessionManager;
 import hello1.koddata.utils.Serializable;
 
+import java.nio.charset.StandardCharsets;
+
 public class SessionBlockChannelState extends ChannelState {
 
     private SessionManager sessionManager;
-    private long sessionId;
-    private DataName name; 
 
-    public SessionBlockChannelState(int chunkSize, SessionManager sessionManager, long sessionId, String name, String index) {
+    public SessionBlockChannelState(int chunkSize, SessionManager sessionManager) {
         super(chunkSize);
         this.sessionManager = sessionManager;
-        this.sessionId = sessionId;
-        this.name = new DataName(name, index);
     }
 
     @Override
     public void perform() throws KException {
-        if(bytesReceived >= payloadLength){
-            //todo performing put it into session
+        try {
+            long sessionId = payloadBuffer.getLong();
+
+            int nameLen = payloadBuffer.getInt();
+            byte[] nameBytes = new byte[nameLen];
+            payloadBuffer.get(nameBytes);
+            String name = new String(nameBytes, StandardCharsets.UTF_8);
+
+            int indexLen = payloadBuffer.getInt();
+            byte[] indexBytes = new byte[indexLen];
+            payloadBuffer.get(indexBytes);
+            String index = new String(indexBytes, StandardCharsets.UTF_8);
+
             int wireId = payloadBuffer.getInt();
+
             Session session = sessionManager.getSession(sessionId);
-            SessionData sd = session.getSessionData();
-            Class<? extends Serializable> wire = Serializable.searchWireClass(wireId);
-            try {
+            if(session != null){
+                SessionData sd = session.getSessionData();
+                Class<? extends Serializable> wire = Serializable.searchWireClass(wireId);
                 Serializable serializable = wire.newInstance();
                 byte[] buf = new byte[payloadBuffer.remaining()];
                 payloadBuffer.get(buf);
                 serializable.deserialize(buf);
-                sd.assignVariable(name, serializable);
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new KException(ExceptionCode.KD00000, e.getMessage());
+                sd.assignVariable(new DataName(name, index), serializable);
             }
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new KException(ExceptionCode.KD00000, e.getMessage());
         }
     }
 }

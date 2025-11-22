@@ -1,8 +1,13 @@
 package hello1.koddata.net;
 
+import hello1.koddata.exception.ExceptionCode;
+import hello1.koddata.exception.KException;
+import hello1.koddata.utils.Serializable;
+
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class NodeStatus {
+public class NodeStatus implements Serializable {
 
     private volatile boolean isAvailable;
     private volatile float cpuLoad;
@@ -75,5 +80,39 @@ public class NodeStatus {
 
     public void setClientPort(int clientPort) {
         this.clientPort = clientPort;
+    }
+
+    @Override
+    public byte[] serialize() throws KException {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(
+                    1 + (4 * 4) + (2 * 4)
+            );
+
+            buffer.put((byte) (isAvailable ? 1 : 0));
+            buffer.putFloat(cpuLoad);
+            buffer.putFloat(memoryLoad);
+            buffer.putFloat(diskUsage);
+            buffer.putFloat(fullDisk);
+            buffer.putInt(dataTransferPort);
+            buffer.putInt(clientPort);
+
+            return buffer.array();
+        } catch (Exception e) {
+            throw new KException(ExceptionCode.KD00000, "Failed to serialize NodeStatus");
+        }
+    }
+
+    @Override
+    public void deserialize(byte[] b) {
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+
+        this.isAvailable = buffer.get() == 1;
+        this.cpuLoad = buffer.getFloat();
+        this.memoryLoad = buffer.getFloat();
+        this.diskUsage = buffer.getFloat();
+        this.fullDisk = buffer.getFloat();
+        this.dataTransferPort = buffer.getInt();
+        this.clientPort = buffer.getInt();
     }
 }

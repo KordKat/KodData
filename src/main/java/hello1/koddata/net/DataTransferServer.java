@@ -12,11 +12,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 import hello1.koddata.Main;
@@ -24,6 +22,9 @@ import hello1.koddata.engine.DataName;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.io.ChannelState;
+import hello1.koddata.io.ServerStateChannelState;
+import hello1.koddata.io.SessionBlockChannelState;
+import hello1.koddata.io.UserFileChannelState;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.utils.Serializable;
 import hello1.koddata.utils.ref.ClusterReference;
@@ -31,24 +32,17 @@ import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
 public class DataTransferServer extends Server implements Runnable {
 
-    private static final byte OP_REQUEST_DATA = 0x00;
-    private static final byte OP_RESPONSE_DATA = 0x01;
-
-    private static final byte OP_SESSION_DATA_SEND = 0x10;
-    private static final byte OP_SESSION_DATA_REQUEST = 0x11;
-
-    private static final byte OP_RESOURCE_REQUEST = 0x20;
-    private static final byte OP_RESOURCE_SEND = 0x21;
-
     private static final byte MODE_SESSION_BLOCK = 0x30;
     private static final byte MODE_USER_FILE = 0x31;
     private static final byte MODE_SERVER_STATE = 0x32;
+    public static final byte MODE_SERVER_STATE_FEEDBACK = 0x33;
 
     private Set<InetSocketAddress> peers;
     private ConcurrentMap<InetSocketAddress, SocketChannel> sockets;
     private ConcurrentMap<SocketChannel, InetSocketAddress> channelToAddress;
+    private ConcurrentMap<SocketChannel, ChannelState> readStates;
+    private ConcurrentMap<SocketChannel, Queue<ByteBuffer>> writeQueues;
 
-    public volatile boolean running;
     private Thread serverThread;
     private Selector selector;
     private ServerSocketChannel ssc;
@@ -58,6 +52,8 @@ public class DataTransferServer extends Server implements Runnable {
         peers = new HashSet<>();
         sockets = new ConcurrentHashMap<>();
         channelToAddress = new ConcurrentHashMap<>();
+        readStates = new ConcurrentHashMap<>();
+        writeQueues = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -87,9 +83,8 @@ public class DataTransferServer extends Server implements Runnable {
 
     @Override
     public void run() {
-        readerLoop();
+        eventLoop();
     }
-
 
     public void addPeer(InetSocketAddress isa) throws IOException {
         peers.add(isa);
@@ -125,14 +120,22 @@ public class DataTransferServer extends Server implements Runnable {
         SocketChannel ch = serverChannel.accept();
         if (ch != null) {
             ch.configureBlocking(false);
-
             sockets.put((InetSocketAddress) ch.getRemoteAddress(), ch);
             channelToAddress.put(ch, (InetSocketAddress) ch.getRemoteAddress());
             ch.register(selector, SelectionKey.OP_READ);
         }
     }
 
-    //to session block
+    private void queueWrite(SocketChannel ch, ByteBuffer buffer) {
+        writeQueues.computeIfAbsent(ch, k -> new ConcurrentLinkedQueue<>()).add(buffer);
+        SelectionKey key = ch.keyFor(selector);
+        if (key != null && key.isValid()) {
+            key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
+            selector.wakeup();
+        }
+    }
+
+    //sending variable across of node
     public void transfer(InetSocketAddress node, Serializable serializable, long sessionId, String name, String index) throws KException {
         SocketChannel ch = sockets.get(node);
         if (ch == null || !ch.isConnected()) {
@@ -140,8 +143,10 @@ public class DataTransferServer extends Server implements Runnable {
         }
         byte[] data = serializable.serialize();
         byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-        byte[] indexBytes = index == null ? new byte[]{0} : index.getBytes(StandardCharsets.UTF_8);
-        long capacity = data.length + 21 + nameBytes.length + indexBytes.length;
+        byte[] indexBytes = index == null ? new byte[0] : index.getBytes(StandardCharsets.UTF_8);
+
+        long capacity = 8 + 1 + 8 + 4 + nameBytes.length + 4 + indexBytes.length + 4 + data.length;
+
         ByteBuffer buf = ByteBuffer.allocate((int) capacity);
         Integer wireId = Serializable.searchWireId(serializable.getClass());
         byte mode = MODE_SESSION_BLOCK;
@@ -151,21 +156,17 @@ public class DataTransferServer extends Server implements Runnable {
         buf.putLong(capacity);
         buf.put(mode);
         buf.putLong(sessionId);
+        buf.putInt(nameBytes.length);
         buf.put(nameBytes);
+        buf.putInt(indexBytes.length);
         buf.put(indexBytes);
         buf.putInt(wireId);
         buf.put(data);
         buf.flip();
-        try {
-            while (buf.hasRemaining()) {
-                ch.write(buf);
-            }
-        } catch (IOException e) {
-
-        }
+        queueWrite(ch, buf);
     }
 
-    //to user file
+    //sending file across of node
     public void transfer(InetSocketAddress node, Serializable serializable, long userId, String fileName) throws KException {
         SocketChannel ch = sockets.get(node);
         if (ch == null || !ch.isConnected()) {
@@ -173,28 +174,23 @@ public class DataTransferServer extends Server implements Runnable {
         }
 
         byte[] data = serializable.serialize();
-        Integer wireId = Serializable.searchWireId(serializable.getClass());
         byte[] fName = fileName.getBytes(StandardCharsets.UTF_8);
-        long capacity = data.length + 17 + fName.length;
+
+        long capacity = 8 + 1 + 8 + 4 + fName.length + data.length;
         byte mode = MODE_USER_FILE;
         ByteBuffer buf = ByteBuffer.allocate((int) capacity);
 
-        buf.putLong(capacity); //8
-        buf.put(mode); //1
-        buf.putLong(userId); //8
+        buf.putLong(capacity);
+        buf.put(mode);
+        buf.putLong(userId);
+        buf.putInt(fName.length);
         buf.put(fName);
         buf.put(data);
         buf.flip();
-
-        try {
-            while (buf.hasRemaining()) {
-                ch.write(buf);
-            }
-        } catch (IOException e) {
-
-        }
+        queueWrite(ch, buf);
     }
 
+    //sending node replicated resource for consistency
     public void transfer(InetSocketAddress node, ConcurrentMap<String, ReplicatedResourceClusterReference<?>> resources) throws KException, IOException {
         SocketChannel ch = sockets.get(node);
         if (ch == null || !ch.isConnected()) {
@@ -202,6 +198,8 @@ public class DataTransferServer extends Server implements Runnable {
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bos.write(ByteBuffer.allocate(4).putInt(resources.size()).array());
+
         for (Map.Entry<String, ReplicatedResourceClusterReference<?>> r : resources.entrySet()) {
             String name = r.getValue().getResourceName();
             byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
@@ -218,25 +216,27 @@ public class DataTransferServer extends Server implements Runnable {
         byte mode = MODE_SERVER_STATE;
         long capacity = 8 + 1 + dataset.length;
 
-        ByteBuffer buf = ByteBuffer.allocate((int) capacity);
+        ByteBuffer buf = ByteBuffer.allocate(8 + 1 + dataset.length);
         buf.putLong(capacity);
         buf.put(mode);
         buf.put(dataset);
         buf.flip();
 
-        try {
-            while (buf.hasRemaining()) {
-                ch.write(buf);
-            }
-        } catch (IOException e) {
-
-        }
+        queueWrite(ch, buf);
     }
 
-    public void readerLoop() {
-        final int READ_BUFFER_SIZE = 64 * 1024; // 64KB chunks
-        Map<SocketChannel, ChannelState> states = new ConcurrentHashMap<>();
+    //feedback when data is inconsistent
+    public void sendFeedback(SocketChannel ch, byte[] data) {
+        long capacity = 8 + 1 + data.length;
+        ByteBuffer buf = ByteBuffer.allocate((int)capacity);
+        buf.putLong(capacity);
+        buf.put(MODE_SERVER_STATE_FEEDBACK);
+        buf.put(data);
+        buf.flip();
+        queueWrite(ch, buf);
+    }
 
+    public void eventLoop() {
         while (running) {
             try {
                 selector.select();
@@ -260,13 +260,90 @@ public class DataTransferServer extends Server implements Runnable {
                     }
 
                     if (key.isReadable()) {
-                        SocketChannel ch = (SocketChannel) key.channel();
+                        handleRead(key);
+                    }
 
+                    if (key.isWritable()) {
+                        handleWrite(key);
                     }
                 }
             } catch (IOException e) {
-
             }
+        }
+    }
+
+    private void handleWrite(SelectionKey key) throws IOException {
+        SocketChannel ch = (SocketChannel) key.channel();
+        Queue<ByteBuffer> queue = writeQueues.get(ch);
+        if (queue == null || queue.isEmpty()) {
+            key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+            return;
+        }
+        ByteBuffer buffer = queue.peek();
+        if (buffer != null) {
+            ch.write(buffer);
+            if (!buffer.hasRemaining()) {
+                queue.poll();
+            }
+        }
+        if (queue.isEmpty()) {
+            key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+        }
+    }
+
+    private void handleRead(SelectionKey key) {
+        SocketChannel ch = (SocketChannel) key.channel();
+        ChannelState state = readStates.get(ch);
+
+        try {
+            if (state == null) {
+                ByteBuffer headerBuf = ByteBuffer.allocate(9);
+                int read = ch.read(headerBuf);
+                if (read == -1) {
+                    closeChannel(ch, key);
+                    return;
+                }
+                if (read < 9) return;
+                headerBuf.flip();
+                long capacity = headerBuf.getLong();
+                byte mode = headerBuf.get();
+
+                switch (mode) {
+                    case MODE_SESSION_BLOCK:
+                        state = new SessionBlockChannelState((int) capacity, Main.bootstrap.getSessionManager());
+                        break;
+                    case MODE_USER_FILE:
+                        state = new UserFileChannelState((int) capacity, Main.bootstrap.getUserManager());
+                        break;
+                    case MODE_SERVER_STATE:
+                        state = new ServerStateChannelState((int) capacity, this, ch, false);
+                        break;
+                    case MODE_SERVER_STATE_FEEDBACK:
+                        state = new ServerStateChannelState((int) capacity, this, ch, true);
+                        break;
+                    default:
+                        closeChannel(ch, key);
+                        return;
+                }
+                state.payloadLength = capacity - 9;
+                readStates.put(ch, state);
+            }
+
+            int bytesRead = ch.read(state.payloadBuffer);
+            if (bytesRead == -1) {
+                closeChannel(ch, key);
+                return;
+            }
+            state.bytesReceived += bytesRead;
+
+            if (state.bytesReceived >= state.payloadLength) {
+                state.payloadBuffer.flip();
+                state.perform();
+                readStates.remove(ch);
+            }
+
+        } catch (Exception e) {
+            closeChannel(ch, key);
         }
     }
 
@@ -274,20 +351,14 @@ public class DataTransferServer extends Server implements Runnable {
         return null;
     }
 
-    private Object deserializeLargeObject(Path file) throws Exception {
-        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(file))) {
-            return ois.readObject();
-        }
-    }
-
-    private void closeChannel(SocketChannel ch, SelectionKey key, Map<SocketChannel, ChannelState> states) {
+    private void closeChannel(SocketChannel ch, SelectionKey key) {
         try {
             key.cancel();
-            states.remove(ch);
+            sockets.values().remove(ch);
+            readStates.remove(ch);
+            writeQueues.remove(ch);
             ch.close();
         } catch (IOException ignored) {}
     }
-
-
 
 }
