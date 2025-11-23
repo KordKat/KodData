@@ -1,6 +1,7 @@
 package hello1.koddata.database;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import hello1.koddata.utils.Either;
 
 import java.sql.ResultSet;
 
@@ -23,7 +24,7 @@ public class CqlDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public ResultSet executeQuery(String query) {
+    public Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> executeQuery(String query) {
         return null;
     }
 }

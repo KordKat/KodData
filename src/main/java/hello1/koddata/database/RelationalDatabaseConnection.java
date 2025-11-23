@@ -1,5 +1,7 @@
 package hello1.koddata.database;
 
+import hello1.koddata.utils.Either;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -40,7 +42,7 @@ public class RelationalDatabaseConnection implements DatabaseConnection {
 
 
     @Override
-    public ResultSet executeQuery(String query) {
+    public Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> executeQuery(String query) {
         try {
             if (connection == null) connect();
             Statement st = connection.createStatement();
