@@ -4,7 +4,7 @@ import hello1.koddata.utils.collection.ImmutableArray;
 
 public class Pipeline extends Expression {
 
-    ImmutableArray<Expression> pipeline;
+    public ImmutableArray<Expression> pipeline;
 
     public Pipeline(ImmutableArray<Expression> pipelineFunctions){
         super(StatementType.PIPELINE_FUNC);

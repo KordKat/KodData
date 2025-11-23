@@ -4,7 +4,7 @@ import hello1.koddata.utils.collection.ImmutableArray;
 
 public class BlockStatement extends Statement {
 
-    final ImmutableArray<Statement> statements;
+    public final ImmutableArray<Statement> statements;
 
     public BlockStatement(ImmutableArray<Statement> statements) {
         super(StatementType.BLOCK);
