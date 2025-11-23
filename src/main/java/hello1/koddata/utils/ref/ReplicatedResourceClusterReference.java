@@ -48,4 +48,8 @@ public class ReplicatedResourceClusterReference<T extends Replica> extends Uniqu
         get().update(get().getConsistencyCriteria());
     }
 
+    public void notifyUpdate(){
+        latestUpdate = System.currentTimeMillis();
+    }
+
 }

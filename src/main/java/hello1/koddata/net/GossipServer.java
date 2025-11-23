@@ -360,4 +360,34 @@ public class GossipServer extends Server {
     public InetSocketAddress getDataTransferServerInetSocketAddress() {
         return dataTransferServer.getInetSocketAddress();
     }
+
+    public Set<NodeStatus> selectNode(long dfSize) {
+
+        float requiredSpace = (float) dfSize;
+
+        List<NodeStatus> candidates = statusMap.values()
+                .stream()
+                .filter(NodeStatus::isAvailable)
+                .filter(n -> (n.getMemoryLoad()) < 1)
+                .sorted((a, b) -> {
+                    double freeA = a.getFullMemory() * (1 - a.getMemoryLoad());
+                    double freeB = b.getFullMemory() * (1 - b.getMemoryLoad());
+                    return Double.compare(freeB, freeA);
+                })
+                .toList();
+
+        Set<NodeStatus> selected = new LinkedHashSet<>();
+        float accumulated = 0;
+
+        for (NodeStatus node : candidates) {
+            selected.add(node);
+            accumulated += (node.getFullDisk() - node.getDiskUsage());
+
+            if (accumulated >= requiredSpace) {
+                return selected;
+            }
+        }
+        return Collections.emptySet();
+    }
+
 }

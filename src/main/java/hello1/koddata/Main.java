@@ -17,7 +17,7 @@ public class Main {
 
     public static Bootstrap bootstrap;
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         bootstrap = new Bootstrap();
         bootstrap.start(args);
 //        String test = "$a <- max 12**(3-5) \"hello\";";

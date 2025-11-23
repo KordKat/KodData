@@ -12,6 +12,7 @@ public class NodeStatus implements Serializable {
     private volatile boolean isAvailable;
     private volatile float cpuLoad;
     private volatile float memoryLoad;
+    private volatile double fullMemory;
     private volatile float diskUsage;
     private volatile float fullDisk;
     private SocketChannel channel;
@@ -42,6 +43,9 @@ public class NodeStatus implements Serializable {
         return channel;
     }
 
+    public double getFullMemory() {
+        return fullMemory;
+    }
 
     public void setAvailable(boolean available) {
         isAvailable = available;
@@ -67,6 +71,10 @@ public class NodeStatus implements Serializable {
         this.memoryLoad = memoryLoad;
     }
 
+    public void setFullMemory(float fullMemory) {
+        this.fullMemory = fullMemory;
+    }
+
     public int getDataTransferPort() {
         return dataTransferPort;
     }
@@ -88,12 +96,13 @@ public class NodeStatus implements Serializable {
     public byte[] serialize() throws KException {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(
-                    1 + (4 * 4) + (2 * 4)
+                    1 + (4 * 4) + (2 * 4) + 8
             );
 
             buffer.put((byte) (isAvailable ? 1 : 0));
             buffer.putFloat(cpuLoad);
             buffer.putFloat(memoryLoad);
+            buffer.putDouble(fullMemory);
             buffer.putFloat(diskUsage);
             buffer.putFloat(fullDisk);
             buffer.putInt(dataTransferPort);
@@ -112,6 +121,7 @@ public class NodeStatus implements Serializable {
         this.isAvailable = buffer.get() == 1;
         this.cpuLoad = buffer.getFloat();
         this.memoryLoad = buffer.getFloat();
+        this.fullMemory = buffer.getDouble();
         this.diskUsage = buffer.getFloat();
         this.fullDisk = buffer.getFloat();
         this.dataTransferPort = buffer.getInt();
