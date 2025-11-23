@@ -5,6 +5,7 @@ import hello1.koddata.engine.QueryExecution;
 public class KTask extends Thread {
 
     private final QueryExecution execution;
+    private boolean isCancelled = false;
 
     public KTask(QueryExecution execution) {
         this.execution = execution;
@@ -12,7 +13,7 @@ public class KTask extends Thread {
 
     @Override
     public void run() {
-        super.run();
+
     }
 
     public QueryExecution getExecution() {
@@ -20,16 +21,12 @@ public class KTask extends Thread {
     }
 
     public void cancel() {
-        // TODO: implement task cancellation
         this.interrupt();
+        isCancelled = true;
     }
 
     public boolean isCancelled() {
-        // TODO: return cancellation status
-        return false;
-    }
 
-    public void awaitCompletion() throws InterruptedException {
-        // TODO: wait for task to complete
+        return isCancelled;
     }
 }
