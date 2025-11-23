@@ -8,8 +8,8 @@ import java.util.List;
 
 public class VariableColumnAllocator extends ColumnAllocator {
 //do it
-    private final List<VariableElement> values;
-    private final boolean[] notNullFlags;
+    private List<VariableElement> values;
+    private boolean[] notNullFlags;
 
     public VariableColumnAllocator(List<VariableElement> values, boolean[] notNullFlags) {
         super(notNullFlags.length, 0);
@@ -54,7 +54,9 @@ public class VariableColumnAllocator extends ColumnAllocator {
 
         ReadOnlyMemory mem = ReadOnlyMemory.allocate(totalBytes);
         mem.initData(combined);
-
+        values = null;
+        notNullFlags = null;
+        System.gc();
         return mem;
     }
 

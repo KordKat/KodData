@@ -9,8 +9,8 @@ import sun.misc.Unsafe;
 import java.nio.ByteBuffer;
 
 public class FixedColumnAllocator extends ColumnAllocator {
-    private final ByteBuffer dataBuffer;
-    private final boolean[] notNullFlags;
+    private ByteBuffer dataBuffer;
+    private boolean[] notNullFlags;
 
     public FixedColumnAllocator(ByteBuffer dataBuffer, boolean[] notNullFlags, int elementSize) throws KException {
         super(notNullFlags.length, elementSize);
@@ -76,7 +76,9 @@ public class FixedColumnAllocator extends ColumnAllocator {
 
         ReadOnlyMemory mem = ReadOnlyMemory.allocate(totalBytes);
         mem.initData(combined);
-
+        dataBuffer = null;
+        notNullFlags = null;
+        System.gc();
         return mem;
     }
 

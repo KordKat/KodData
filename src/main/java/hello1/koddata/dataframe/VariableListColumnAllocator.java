@@ -9,9 +9,9 @@ import java.util.List;
 
 public class VariableListColumnAllocator extends VariableColumnAllocator {
 //do it
-    private final List<List<VariableElement>> lists;
-    private final List<boolean[]> perListNotNullFlags;
-    private final boolean[] columnNotNullFlags;
+    private List<List<VariableElement>> lists;
+    private List<boolean[]> perListNotNullFlags;
+    private boolean[] columnNotNullFlags;
     private final int rows;
 
     public VariableListColumnAllocator(List<List<VariableElement>> lists,
@@ -75,6 +75,10 @@ public class VariableListColumnAllocator extends VariableColumnAllocator {
 
         ReadOnlyMemory mem = ReadOnlyMemory.allocate(totalBytes);
         mem.initData(combined);
+        lists = null;
+        perListNotNullFlags = null;
+        columnNotNullFlags = null;
+        System.gc();
         return mem;
     }
 
