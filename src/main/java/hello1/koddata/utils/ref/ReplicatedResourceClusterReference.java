@@ -24,6 +24,7 @@ public class ReplicatedResourceClusterReference<T extends Replica> extends Uniqu
         super(referent, cleaner);
         latestUpdate = System.currentTimeMillis();
         this.identifier = identifier;
+        resources.put(getResourceName(), this);
     }
 
     public ReplicatedResourceClusterReference(T referent, Sebastian cleaner){
@@ -41,6 +42,10 @@ public class ReplicatedResourceClusterReference<T extends Replica> extends Uniqu
     @Override
     public String getResourceName() {
         return ClusterReference.class.getName() + "::" + super.get().getClass().getName() + "::" + identifier;
+    }
+
+    public void updateReplica(){
+        get().update(get().getConsistencyCriteria());
     }
 
 }

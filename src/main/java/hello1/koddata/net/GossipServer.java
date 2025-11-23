@@ -21,8 +21,9 @@ public class GossipServer extends Server {
     private final ExecutorService senderExec = Executors.newFixedThreadPool(4);
     private final ExecutorService readerExec = Executors.newSingleThreadExecutor();
 
-    private static final long THRESHOLD = 5;
     private static final float GOSSIP_FRACTION = 0.3f;
+    // 10 Seconds timeout constant
+    private static final long FAILURE_TIMEOUT_MS = 10000;
 
     private DataTransferServer dataTransferServer;
 
@@ -34,7 +35,9 @@ public class GossipServer extends Server {
         String[] peerList = peerString.split(",");
         peers = new HashSet<>();
         for (String peer : peerList) {
-            peers.add(convertToInetSocketAddress(peer.trim().toLowerCase()));
+            if (!peer.trim().isEmpty()) {
+                peers.add(convertToInetSocketAddress(peer.trim().toLowerCase()));
+            }
         }
     }
 
@@ -56,6 +59,8 @@ public class GossipServer extends Server {
     @Override
     public void start() {
         running = true;
+        long now = System.currentTimeMillis();
+
         for (InetSocketAddress inet : peers) {
             NodeStatus ns = new NodeStatus();
             try {
@@ -63,6 +68,7 @@ public class GossipServer extends Server {
                 channel.configureBlocking(false);
                 ns.setAvailable(true);
                 ns.setChannel(channel);
+                ns.setLastHeartbeatTime(now);
                 statusMap.put(inet, ns);
 
                 ByteBuffer greeting = ByteBuffer.allocate(1);
@@ -70,6 +76,8 @@ public class GossipServer extends Server {
                 greeting.flip();
                 channel.write(greeting);
             } catch (IOException ignored) {
+                ns.setAvailable(false); // Mark unavailable if connection fails initially
+                statusMap.put(inet, ns);
             }
         }
         try {
@@ -85,18 +93,21 @@ public class GossipServer extends Server {
 
     public void run() {
         if (!running) return;
-        List<InetSocketAddress> selectedPeers;
 
-        if (peers.size() <= THRESHOLD) {
-            selectedPeers = new ArrayList<>(peers);
-        } else {
-            List<InetSocketAddress> shuffled = new ArrayList<>(peers);
-            Collections.shuffle(shuffled);
+        long currentTime = System.currentTimeMillis();
 
-            int count = Math.max(1, (int) (peers.size() * GOSSIP_FRACTION));
-
-            selectedPeers = shuffled.subList(0, count);
+        for (Map.Entry<InetSocketAddress, NodeStatus> entry : statusMap.entrySet()) {
+            NodeStatus ns = entry.getValue();
+            if (ns.isAvailable() && (currentTime - ns.getLastHeartbeatTime() > FAILURE_TIMEOUT_MS)) {
+                ns.setAvailable(false);
+            }
         }
+
+        List<InetSocketAddress> allPeers = new ArrayList<>(peers);
+        Collections.shuffle(allPeers);
+
+        int count = Math.max(1, (int) (peers.size() * GOSSIP_FRACTION));
+        List<InetSocketAddress> selectedPeers = allPeers.subList(0, Math.min(count, allPeers.size()));
 
         for (InetSocketAddress peer : selectedPeers) {
             senderExec.submit(() -> {
@@ -119,8 +130,10 @@ public class GossipServer extends Server {
             bye.put(NetUtils.OPCODE_SHUTDOWN);
             bye.flip();
             try {
-                ns.getChannel().write(bye);
-                ns.getChannel().close();
+                if (ns.getChannel() != null && ns.getChannel().isOpen()) {
+                    ns.getChannel().write(bye);
+                    ns.getChannel().close();
+                }
             } catch (IOException ignored) {
             }
         }
@@ -151,7 +164,6 @@ public class GossipServer extends Server {
             }
         }
     }
-
 
     private void sendHeartbeat(InetSocketAddress peer) {
         NodeStatus ns = statusMap.get(peer);
@@ -229,12 +241,15 @@ public class GossipServer extends Server {
             statusMap.put(addr, ns);
         }
         ns.setAvailable(true);
+        ns.setLastHeartbeatTime(System.currentTimeMillis());
         ns.setChannel(ch);
         ch.keyFor(selector).attach(ns);
     }
 
     private void readFromPeer(SelectionKey key, ByteBuffer buffer) {
         SocketChannel ch = (SocketChannel) key.channel();
+        NodeStatus ns = (NodeStatus) key.attachment();
+
         buffer.clear();
         try {
             int n = ch.read(buffer);
@@ -242,24 +257,33 @@ public class GossipServer extends Server {
                 if (n == -1) {
                     key.cancel();
                     ch.close();
+                    if(ns != null) ns.setAvailable(false);
                 }
                 return;
             }
+
+            if (ns != null) {
+                ns.setLastHeartbeatTime(System.currentTimeMillis());
+                ns.setAvailable(true);
+            }
+
             buffer.flip();
             byte opcode = buffer.get();
+
             if (opcode == NetUtils.OPCODE_HEARTBEAT) return;
+
             if (opcode == NetUtils.OPCODE_STATUS) {
                 byte[] body = new byte[buffer.remaining()];
                 buffer.get(body);
                 processStatusMessage(ch, body);
-            }else if(opcode == NetUtils.OPCODE_INFO_DATA_PORT){
+            } else if(opcode == NetUtils.OPCODE_INFO_DATA_PORT) {
                 byte[] body = new byte[buffer.remaining()];
                 buffer.get(body);
-                buffer.flip();
-                int i = buffer.getInt();
+                ByteBuffer portBuf = ByteBuffer.wrap(body);
+                int i = portBuf.getInt();
                 InetSocketAddress isa = (InetSocketAddress) ch.getRemoteAddress();
                 dataTransferServer.addPeer(new InetSocketAddress(isa.getHostName(), i));
-            }else if(opcode == NetUtils.OPCODE_STARTUP){
+            } else if(opcode == NetUtils.OPCODE_STARTUP) {
                 InetSocketAddress isa = (InetSocketAddress) ch.getRemoteAddress();
                 if(!statusMap.containsKey(isa)) return;
                 ByteBuffer buf = ByteBuffer.allocate(5);
@@ -276,6 +300,7 @@ public class GossipServer extends Server {
             } catch (IOException ignored2) {
             }
             key.cancel();
+            if(ns != null) ns.setAvailable(false);
         }
     }
 
@@ -286,9 +311,18 @@ public class GossipServer extends Server {
         } catch (IOException e) {
             return;
         }
-        NodeStatus status = decodeReceivedStatus(payload);
-        if (status != null) {
-            statusMap.put(addr, status);
+        NodeStatus receivedStatus = decodeReceivedStatus(payload);
+
+        if (receivedStatus != null) {
+            NodeStatus current = statusMap.get(addr);
+            if (current != null) {
+                current.setLastHeartbeatTime(System.currentTimeMillis());
+                current.setAvailable(receivedStatus.isAvailable());
+            } else {
+                receivedStatus.setChannel(ch);
+                receivedStatus.setLastHeartbeatTime(System.currentTimeMillis());
+                statusMap.put(addr, receivedStatus);
+            }
         }
     }
 
@@ -301,21 +335,29 @@ public class GossipServer extends Server {
     }
 
     private byte[] encodeNodeStatus() {
-
-        return new byte[0];
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + 1);
+        buffer.putLong(System.currentTimeMillis());
+        buffer.put((byte) 1);
+        return buffer.array();
     }
 
     private NodeStatus decodeReceivedStatus(byte[] data) {
-        return null;
+        if (data.length < 9) return null; // Basic validation
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+
+        long remoteTimestamp = buffer.getLong();
+        boolean isAvailable = buffer.get() == 1;
+
+        NodeStatus status = new NodeStatus();
+        status.setAvailable(isAvailable);
+        return status;
     }
 
     public Set<InetSocketAddress> getPeers() {
         return peers;
     }
 
-
     public InetSocketAddress getDataTransferServerInetSocketAddress() {
         return dataTransferServer.getInetSocketAddress();
     }
-
 }

@@ -45,5 +45,5 @@ public class ColumnArray {
         return columns.containsKey(name);
     }
 
-
+    public DataFrameRecord[] toRecords(){}
 }

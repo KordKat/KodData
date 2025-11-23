@@ -83,16 +83,14 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
             String data = jsonDataTransformer.transform(dataNameDFR);
             byte[] dataByteArray = data.getBytes(StandardCharsets.UTF_8);
             ByteBuffer dataByteBuffer = ByteBuffer.wrap(dataByteArray);
-            try {
-                try(AsynchronousFileChannel afc = AsynchronousFileChannel.open(
-                        filePathPa.resolve(fileNameString),
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.READ)){
-                    afc.write(dataByteBuffer , 0);
-                };
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            try(AsynchronousFileChannel afc = AsynchronousFileChannel.open(
+                    filePathPa.resolve(fileNameString),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.READ)) {
+                afc.write(dataByteBuffer, 0);
+            }catch (IOException ex){
+                throw new KException(ExceptionCode.KD00010, "Cannot export file: " + fileNameString + " ex: " + ex.getMessage());
             }
         }
         return null;

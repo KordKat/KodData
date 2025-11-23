@@ -6,20 +6,16 @@ import hello1.koddata.sessions.SessionManager;
 import hello1.koddata.sessions.users.UserManager;
 import hello1.koddata.utils.SerialVersionId;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Properties;
 
 public class Bootstrap {
 
     private long serialVersionId = SerialVersionId.get;
-    private File nodeCfgFile;
     private GossipServer gossipServer;
     private Path rootPath;
     private UserManager userManager;
@@ -41,7 +37,7 @@ public class Bootstrap {
         dataTransferServer.stop();
         userServiceServer.stop();
         gossipServer.stop();
-        Thread.sleep(5000); //ensure every is closed properly
+        Thread.sleep(5000); //ensure everything is closed properly
         userManager.saveUserData();
     }
 
@@ -50,8 +46,6 @@ public class Bootstrap {
 
         String cfgFile = args[0];
         config.load(new FileInputStream(cfgFile));
-        String nodeFileName = config.getProperty("nodefile", "nodes.txt");
-        nodeCfgFile = new File(nodeFileName);
         rootPath = Path.of(URI.create(config.getProperty("root", "koddata/")));
         userManager = new UserManager(this);
         sessionManager = new SessionManager();
@@ -135,10 +129,6 @@ public class Bootstrap {
 
     public Path getRootPath() {
         return rootPath;
-    }
-
-    public File getNodeCfgFile() {
-        return nodeCfgFile;
     }
 
     public UserManager getUserManager() {

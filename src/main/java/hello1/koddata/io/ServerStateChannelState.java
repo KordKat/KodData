@@ -53,10 +53,12 @@ public class ServerStateChannelState extends ChannelState {
                         consistentCriteria.deserialize(critBytes);
                         if(!consistentCriteria.isNewerThan(localRef.get().getConsistencyCriteria())) {
                             localRef.get().getConsistencyCriteria().deserialize(critBytes);
+                            localRef.updateReplica();
                         }
                     } else {
                         if (remoteReplica.getConsistencyCriteria().isNewerThan(localReplica.getConsistencyCriteria())) {
                             localRef.get().getConsistencyCriteria().deserialize(critBytes);
+                            localRef.updateReplica();
                         } else if (localReplica.getConsistencyCriteria().isNewerThan(remoteReplica.getConsistencyCriteria())) {
                             feedbackBos.write(ByteBuffer.allocate(4).putInt(nameBytes.length).array());
                             feedbackBos.write(nameBytes);

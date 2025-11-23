@@ -17,6 +17,7 @@ public class NodeStatus implements Serializable {
     private SocketChannel channel;
     private volatile int dataTransferPort;
     private volatile int clientPort;
+    private long lastHeartbeatTime;
     public boolean isAvailable() {
         return isAvailable;
     }
@@ -82,6 +83,7 @@ public class NodeStatus implements Serializable {
         this.clientPort = clientPort;
     }
 
+
     @Override
     public byte[] serialize() throws KException {
         try {
@@ -114,5 +116,13 @@ public class NodeStatus implements Serializable {
         this.fullDisk = buffer.getFloat();
         this.dataTransferPort = buffer.getInt();
         this.clientPort = buffer.getInt();
+    }
+
+    public void setLastHeartbeatTime(long lastHeartbeatTime) {
+        this.lastHeartbeatTime = lastHeartbeatTime;
+    }
+
+    public long getLastHeartbeatTime() {
+        return lastHeartbeatTime;
     }
 }
