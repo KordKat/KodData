@@ -15,6 +15,8 @@ import hello1.koddata.kodlang.ast.Statement;
 import hello1.koddata.net.NodeStatus;
 import hello1.koddata.sessions.users.User;
 import hello1.koddata.utils.collection.ImmutableArray;
+import hello1.koddata.utils.ref.EmptyCleaner;
+import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
@@ -36,8 +38,6 @@ public class Session implements Replica {
     private HashMap<Long, Process> processes;
     private SessionData sessionData;
 
-
-
     public enum State {
         RUNNING(0),
         IDLE(1),
@@ -51,14 +51,19 @@ public class Session implements Replica {
 
 
     private State state;
-
-    private Session(SessionSettings settings ,User user){
+    private ReplicatedResourceClusterReference<Session> ref;
+    private Session(SessionSettings settings , User user){
         sessionId = idCounter.count();
         startedTime = System.currentTimeMillis();
         lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
         this.settings = settings;
         this.user = user;
+    }
+
+    private void setRef(ReplicatedResourceClusterReference<Session> ref) {
+        this.ref = ref;
+        ref.notifyUpdate();
     }
 
     public long executeCode(String code, SocketChannel socketChannel) throws KException {
@@ -72,7 +77,8 @@ public class Session implements Replica {
     public static Session newSession(User user){
         SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
         Session session = new Session(sessionSettings , user);
-        Main.bootstrap.getSessionManager().putSession(session.sessionId, session);
+        session.setRef(new ReplicatedResourceClusterReference<>(session, new EmptyCleaner(), session.sessionId));
+        Main.bootstrap.getSessionManager().putSession(session.sessionId, session.ref);
         return session;
     }
 
@@ -94,6 +100,7 @@ public class Session implements Replica {
 
     public void state(State state){
         this.state = state;
+        ref.notifyUpdate();
     }
 
     public State state(){
@@ -110,10 +117,6 @@ public class Session implements Replica {
         }
     }
 
-    public long run(byte[] b){
-        return -1;
-    }
-
     public void terminate(){
         for(Process process : processes.values()){
             process.interrupt();
@@ -121,7 +124,7 @@ public class Session implements Replica {
 
         processes.clear();
         state = State.TERMINATED;
-
+        ref.notifyUpdate();
     }
 
     public SessionSettings getSettings() {
@@ -135,13 +138,15 @@ public class Session implements Replica {
     @Override
     public ConsistentCriteria getConsistencyCriteria() {
         ConsistentCriteria criteria = new ConsistentCriteria();
+        criteria.setLatestUpdate(ref.getLatestUpdate());
         criteria.addCriteria("state", state);
-        criteria.addCriteria("processes_count", processes.size());
-        return null;
+        return criteria;
     }
 
     @Override
     public void update(ConsistentCriteria latest) {
-
+        if(latest.isNewerThan(this.getConsistencyCriteria())){
+            state = (State) latest.get("state");
+        }
     }
 }

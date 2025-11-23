@@ -58,33 +58,33 @@ public class CSVLoader extends DataFrameLoader {
                 ColumnKind kind = kinds[c];
 
                 try {
-                    Column column;
-                    switch (kind) {
-                        case SCALAR_INT -> column = buildScalarIntColumn(name, cells, c, rowCount);
-                        case SCALAR_DOUBLE -> column = buildScalarDoubleColumn(name, cells, c, rowCount);
-                        case SCALAR_STRING -> column = buildScalarStringColumn(name, cells, c, rowCount);
-                        case LIST_INT -> column = buildListFixedNumericColumn(name, cells, c, rowCount, true);
-                        case LIST_DOUBLE -> column = buildListFixedNumericColumn(name, cells, c, rowCount, false);
-                        case LIST_STRING -> column = buildListStringColumn(name, cells, c, rowCount);
+                    Column column = switch (kind) {
+                        case SCALAR_INT -> buildScalarIntColumn(name, cells, c, rowCount);
+                        case SCALAR_DOUBLE -> buildScalarDoubleColumn(name, cells, c, rowCount);
+                        case SCALAR_STRING -> buildScalarStringColumn(name, cells, c, rowCount);
+                        case LIST_INT -> buildListFixedNumericColumn(name, cells, c, rowCount, true);
+                        case LIST_DOUBLE -> buildListFixedNumericColumn(name, cells, c, rowCount, false);
+                        case LIST_STRING -> buildListStringColumn(name, cells, c, rowCount);
 
-                        case SCALAR_LOGICAL -> column = buildScalarLogicalColumn(name, cells, c, rowCount);
+                        case SCALAR_LOGICAL -> buildScalarLogicalColumn(name, cells, c, rowCount);
 
-                        case SCALAR_DATE -> column = buildScalarDateColumn(name, cells, c, rowCount);
+                        case SCALAR_DATE -> buildScalarDateColumn(name, cells, c, rowCount);
 
-                        case SCALAR_TIMESTAMP -> column = buildScalarTimestampColumn(name, cells, c, rowCount);
+                        case SCALAR_TIMESTAMP -> buildScalarTimestampColumn(name, cells, c, rowCount);
 
                         case LIST_LOGICAL ->
-                                column = buildListLogicalColumn(name, cells, c, rowCount);
+                                buildListLogicalColumn(name, cells, c, rowCount);
 
                         case LIST_DATE ->
-                                column = buildListDateColumn(name, cells, c, rowCount);
+                                buildListDateColumn(name, cells, c, rowCount);
 
                         case LIST_TIMESTAMP ->
-                                column = buildListTimestampColumn(name, cells, c, rowCount);
+                                buildListTimestampColumn(name, cells, c, rowCount);
 
 
                         default -> throw new IllegalStateException();
-                    }
+                    };
+
                     result.add(column);
                 } catch (KException e) {
                     throw new RuntimeException("Failed column: " + name, e);

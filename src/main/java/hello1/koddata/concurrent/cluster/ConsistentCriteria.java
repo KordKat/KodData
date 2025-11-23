@@ -76,4 +76,8 @@ public class ConsistentCriteria implements Serializable {
             throw new RuntimeException("Deserialization failed", e);
         }
     }
+
+    public void setLatestUpdate(long latestUpdate) {
+        this.latestUpdate = latestUpdate;
+    }
 }

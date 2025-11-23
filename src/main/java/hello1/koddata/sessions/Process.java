@@ -10,7 +10,7 @@ import hello1.koddata.utils.Serializable;
 
 import java.util.function.Consumer;
 
-public class Process implements Replica {
+public class Process {
     private static IdCounter idCounter = new IdCounter();
     private long processId;
     private long workerId;
@@ -46,16 +46,6 @@ public class Process implements Replica {
     }
 
     public void interrupt(){
-
-    }
-
-    @Override
-    public ConsistentCriteria getConsistencyCriteria() {
-        return null;
-    }
-
-    @Override
-    public void update(ConsistentCriteria latest) {
 
     }
 }

@@ -19,6 +19,7 @@ public class Column implements Serializable, KodResourceNaming {
     private String memoryGroupName;
     private ColumnMetaData metaData;
     private Memory memory;
+    private byte columnKind;
     private int sizePerElement;
     private int startIdx;
     private int endIdx;
@@ -37,6 +38,7 @@ public class Column implements Serializable, KodResourceNaming {
         }
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new FixedColumnAllocator(dataBuffer, notNullFlags, elementSize));
+        columnKind = 0;
         this.startIdx = startIdx;
         this.endIdx = endIdx;
     }
@@ -47,7 +49,7 @@ public class Column implements Serializable, KodResourceNaming {
 
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new VariableColumnAllocator(values, notNullFlags));
-
+        columnKind = 1;
         this.startIdx = startIdx;
         this.endIdx = endIdx;
     }
@@ -59,6 +61,7 @@ public class Column implements Serializable, KodResourceNaming {
 
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new FixedListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags,elementSize));
+        columnKind = 2;
         this.startIdx = startIdx;
         this.endIdx = endIdx;
     }
@@ -70,13 +73,10 @@ public class Column implements Serializable, KodResourceNaming {
         id = columnIdCounter.count();
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new VariableListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags));
+        columnKind = 3;
         this.startIdx = startIdx;
         this.endIdx = endIdx;
 
-    }
-
-    public Column(String name, int sizePerElement, String memoryGroupName, ByteBuffer dataBuffer, boolean[] notNullFlags, int elementSize) throws KException {
-        this(name, sizePerElement, memoryGroupName, dataBuffer, notNullFlags, elementSize, 0, dataBuffer.position() / sizePerElement);
     }
 
     public void setupMetadata(String name, int sizePerElement, String memoryGroupName, boolean isVariable){
