@@ -1,5 +1,7 @@
 package hello1.koddata.dataframe;
 
+import hello1.koddata.engine.Value;
+import hello1.koddata.exception.KException;
 import hello1.koddata.memory.MemoryGroup;
 import hello1.koddata.utils.collection.ImmutableArray;
 
@@ -45,5 +47,9 @@ public class ColumnArray {
         return columns.containsKey(name);
     }
 
-    public DataFrameRecord[] toRecords(){}
+    public DataFrameRecord[] toRecords() throws KException {
+        return null;
+    }
+
+
 }

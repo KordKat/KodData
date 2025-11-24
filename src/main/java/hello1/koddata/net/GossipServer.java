@@ -305,23 +305,45 @@ public class GossipServer extends Server {
     }
 
     private void processStatusMessage(SocketChannel ch, byte[] payload) {
-        InetSocketAddress addr;
-        try {
-            addr = (InetSocketAddress) ch.getRemoteAddress();
-        } catch (IOException e) {
-            return;
-        }
-        NodeStatus receivedStatus = decodeReceivedStatus(payload);
+        Map<InetSocketAddress, NodeStatus> receivedStatus = decodeReceivedStatus(payload);
 
-        if (receivedStatus != null) {
-            NodeStatus current = statusMap.get(addr);
-            if (current != null) {
-                current.setLastHeartbeatTime(System.currentTimeMillis());
-                current.setAvailable(receivedStatus.isAvailable());
+        long currentTime = System.currentTimeMillis();
+
+        for (Map.Entry<InetSocketAddress, NodeStatus> receivedEntry : receivedStatus.entrySet()) {
+            InetSocketAddress peerAddr = receivedEntry.getKey();
+            NodeStatus receivedNs = receivedEntry.getValue();
+
+            if (peerAddr.equals(inetSocketAddress)) {
+                continue;
+            }
+            NodeStatus currentNs = statusMap.get(peerAddr);
+
+            if (currentNs == null) {
+                receivedNs.setChannel(null);
+                statusMap.put(peerAddr, receivedNs);
+
+                peers.add(peerAddr);
+
             } else {
-                receivedStatus.setChannel(ch);
-                receivedStatus.setLastHeartbeatTime(System.currentTimeMillis());
-                statusMap.put(addr, receivedStatus);
+
+                long currentHeartbeat = currentNs.getLastHeartbeatTime();
+                long receivedHeartbeat = receivedNs.getLastHeartbeatTime();
+
+                if (receivedHeartbeat > currentHeartbeat) {
+                    SocketChannel existingChannel = currentNs.getChannel();
+
+                    currentNs.setAvailable(receivedNs.isAvailable());
+                    currentNs.setLastHeartbeatTime(receivedHeartbeat);
+                    currentNs.setMemoryLoad(receivedNs.getMemoryLoad());
+                    currentNs.setFullMemory((float) receivedNs.getFullMemory());
+                    currentNs.setDiskUsage(receivedNs.getDiskUsage());
+                    currentNs.setFullDisk(receivedNs.getFullDisk());
+
+                    currentNs.setChannel(existingChannel);
+
+                } else if (receivedHeartbeat < (currentTime - FAILURE_TIMEOUT_MS) && currentNs.isAvailable()) {
+
+                }
             }
         }
     }
@@ -335,22 +357,92 @@ public class GossipServer extends Server {
     }
 
     private byte[] encodeNodeStatus() {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + 1);
-        buffer.putLong(System.currentTimeMillis());
-        buffer.put((byte) 1);
+
+        int size = 4; // for the number of nodes (int)
+
+        for (Map.Entry<InetSocketAddress, NodeStatus> entry : statusMap.entrySet()) {
+            InetSocketAddress addr = entry.getKey();
+            size += 4 + addr.getAddress().getHostAddress().getBytes().length + 4;
+            size += 1 + 8 + 4;
+            size += 8 + 8 + 8;
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.putInt(statusMap.size());
+
+        for (Map.Entry<InetSocketAddress, NodeStatus> entry : statusMap.entrySet()) {
+            InetSocketAddress addr = entry.getKey();
+            NodeStatus ns = entry.getValue();
+
+            byte[] ipBytes = addr.getAddress().getHostAddress().getBytes();
+            buffer.putInt(ipBytes.length);
+            buffer.put(ipBytes);
+            buffer.putInt(addr.getPort());
+
+            buffer.put((byte) (ns.isAvailable() ? 1 : 0));
+            buffer.putLong(ns.getLastHeartbeatTime());
+            buffer.putFloat(ns.getMemoryLoad());
+            buffer.putDouble(ns.getFullMemory());
+            buffer.putDouble(ns.getDiskUsage());
+            buffer.putDouble(ns.getFullDisk());
+        }
+
         return buffer.array();
+
     }
 
-    private NodeStatus decodeReceivedStatus(byte[] data) {
-        if (data.length < 9) return null; // Basic validation
+    private Map<InetSocketAddress, NodeStatus> decodeReceivedStatus(byte[] data) {
+        Map<InetSocketAddress, NodeStatus> receivedStatus = new HashMap<>();
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
-        long remoteTimestamp = buffer.getLong();
-        boolean isAvailable = buffer.get() == 1;
+        if (data.length == 0 || buffer.remaining() < 4) {
+            return receivedStatus; // Handle empty/invalid data
+        }
 
-        NodeStatus status = new NodeStatus();
-        status.setAvailable(isAvailable);
-        return status;
+        // 1. Get number of nodes
+        int numNodes = buffer.getInt();
+
+        // 2. Loop to read status for each node
+        for (int i = 0; i < numNodes; i++) {
+            try {
+                // IP Address
+                int ipLen = buffer.getInt();
+                byte[] ipBytes = new byte[ipLen];
+                buffer.get(ipBytes);
+                String ip = new String(ipBytes);
+
+                // Port
+                int port = buffer.getInt();
+                InetSocketAddress addr = new InetSocketAddress(ip, port);
+
+                // NodeStatus data
+                byte availableByte = buffer.get();
+                boolean isAvailable = availableByte == 1;
+                long lastHeartbeatTime = buffer.getLong();
+                float memoryLoad = buffer.getFloat();
+                double fullMemory = buffer.getDouble();
+                double diskUsage = buffer.getDouble();
+                double fullDisk = buffer.getDouble();
+
+                // Create and set NodeStatus (requires a way to set these values)
+                NodeStatus ns = new NodeStatus(); // Assuming NodeStatus has a no-arg constructor
+                // You will need setter methods in NodeStatus for these fields
+                ns.setAvailable(isAvailable);
+                ns.setLastHeartbeatTime(lastHeartbeatTime);
+                ns.setMemoryLoad(memoryLoad);
+                ns.setFullMemory((float) fullMemory);
+                ns.setDiskUsage((float) diskUsage);
+                ns.setFullDisk((float) fullDisk);
+
+                receivedStatus.put(addr, ns);
+
+            } catch (Exception e) {
+                // Log or handle decoding errors, then continue to the next node data if possible
+                break;
+            }
+        }
+
+        return receivedStatus;
     }
 
     public Set<InetSocketAddress> getPeers() {

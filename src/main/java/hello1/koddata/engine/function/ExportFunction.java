@@ -2,6 +2,7 @@ package hello1.koddata.engine.function;
 
 import hello1.koddata.Main;
 import hello1.koddata.dataframe.CSVDataTransformer;
+import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.DataFrameRecord;
 import hello1.koddata.dataframe.JsonDataTransformer;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
@@ -9,6 +10,7 @@ import hello1.koddata.engine.DataSource;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+import hello1.koddata.sessions.SessionData;
 import hello1.koddata.sessions.users.User;
 
 import java.io.IOException;
@@ -24,12 +26,24 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
     @Override
     public Value<CompletableFuture<DataFrameLoader>> execute() throws KException {
         if (!arguments.containsKey("dataName")){
-            throw new KException(ExceptionCode.KDE0012,"Remove function need argument databaseName");
+            throw new KException(ExceptionCode.KDE0012,"export function need argument databaseName");
         }
         Value<?> dataName = arguments.get("dataName");
-        if (!(dataName.get() instanceof DataFrameRecord[] dataNameDFR)) {
-            throw new KException(ExceptionCode.KDE0012, "databaseName should be dataName");
+        if (!(dataName.get() instanceof String dataNameS)) {
+            throw new KException(ExceptionCode.KDE0012, "Invalid type: argument 'dataName' ");
         }
+
+        if (!arguments.containsKey("sessionName")){
+            throw new KException(ExceptionCode.KDE0012,"export function need argument session name");
+        }
+        Value<?> sessionName = arguments.get("sessionName");
+        if (!(sessionName.get() instanceof String sessionNameS)) {
+            throw new KException(ExceptionCode.KDE0012, "");
+        }
+        SessionData sessionData = new SessionData(sessionNameS);
+        ColumnArray dataNameCA = sessionData.getSessionDataFrame().get(dataNameS);
+        DataFrameRecord[] dataNameDFR = dataNameCA.toRecords();
+
         if (!arguments.containsKey("dataType")){
             throw new KException(ExceptionCode.KDE0012,"Remove function need argument databaseName");
         }
