@@ -4,8 +4,8 @@ import hello1.koddata.utils.collection.ImmutableArray;
 
 public class BranchPipeline extends Pipeline {
 
-    final ImmutableArray<WhenCaseStatement> whens;
-    final ElseCaseStatement elseCase;
+    public final ImmutableArray<WhenCaseStatement> whens;
+    public final ElseCaseStatement elseCase;
 
     public BranchPipeline(ImmutableArray<WhenCaseStatement> whens, ElseCaseStatement elseCase) {
         super(StatementType.BRANCH);

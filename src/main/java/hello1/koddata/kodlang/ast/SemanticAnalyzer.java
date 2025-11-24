@@ -70,13 +70,6 @@ public class SemanticAnalyzer {
             analyze(index);
         }
 
-        else if (statement instanceof ApplyStatement applyStatement){
-            Expression expression = applyStatement.expression;
-            Expression pipeline = applyStatement.pipeline;
-            analyze(expression);
-            analyze(pipeline);
-        }
-
         else if (statement instanceof ArrayLiteral arrayLiteral){
             ImmutableArray<Expression> literals = arrayLiteral.literals;
             for (Expression e : literals){
@@ -92,16 +85,6 @@ public class SemanticAnalyzer {
             for (WhenCaseStatement e : whens){
                 analyze(e);
             }
-        }
-
-        else if (statement instanceof DeleteStatement deleteStatement){
-            Expression del = deleteStatement.del;
-            analyze(del);
-        }
-
-        else if (statement instanceof DownloadStatement downloadStatement){
-            Expression downloadStatemen = downloadStatement.src;
-            analyze(downloadStatemen);
         }
 
         else if (statement instanceof ElseCaseStatement elseCaseStatement){
@@ -148,21 +131,6 @@ public class SemanticAnalyzer {
             analyze(doPipe);
         }
 
-    }
-
-    private static NIdentifier getNIdentifier(DatabaseConnectExpression databaseConnectExpression) throws KException {
-        NIdentifier databaseT = databaseConnectExpression.databaseT;
-        StringLiteral databaseName = databaseConnectExpression.databaseName;
-        StringLiteral user = databaseConnectExpression.user;
-        StringLiteral pass = databaseConnectExpression.pass;
-        NumberLiteral port = databaseConnectExpression.port;
-        StringLiteral host = databaseConnectExpression.host;
-
-
-        if(databaseT == null || databaseName == null || user == null || pass == null || port == null || host == null){
-            throw new KException(ExceptionCode.KDC0001,"some value is null");
-        }
-        return databaseT;
     }
 
 }

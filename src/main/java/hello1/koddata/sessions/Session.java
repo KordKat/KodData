@@ -66,14 +66,6 @@ public class Session implements Replica {
         ref.notifyUpdate();
     }
 
-    public long executeCode(String code, SocketChannel socketChannel) throws KException {
-        Token[] tokens = Lexer.analyze(code.toCharArray());
-        Parser parser = new Parser(new ImmutableArray<>(tokens));
-        Statement statement = parser.parseStatement();
-        new SemanticAnalyzer().analyze(statement);
-        return StatementExecutor.executeStatement(statement, this, socketChannel);
-    }
-
     public static Session newSession(User user){
         SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
         Session session = new Session(sessionSettings , user);

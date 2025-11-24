@@ -2,9 +2,9 @@ package hello1.koddata.kodlang.ast;
 
 public class BinaryExpression extends Expression {
 
-    final Expression left;
-    final Expression right;
-    final Operator op;
+    public final Expression left;
+    public final Expression right;
+    public final Operator op;
     public enum Operator {
         ADD,
         SUB,

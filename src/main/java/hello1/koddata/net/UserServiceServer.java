@@ -106,10 +106,9 @@ public class UserServiceServer extends Server {
             buffer.get(bytes);
             String code = new String(bytes).trim();
 
-            Session session = client.getCurrentSession();
-            if(session != null && !code.isEmpty()){
-                long taskId = session.executeCode(code, channel);
-                client.write(ByteBuffer.wrap(("Task " + taskId + " started").getBytes(StandardCharsets.UTF_8)));
+            if(client != null && !code.isEmpty() && client.getCurrentSession() != null){
+                client.executeCode(code);
+
             }
         }
     }

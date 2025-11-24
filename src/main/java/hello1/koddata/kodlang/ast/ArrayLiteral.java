@@ -4,7 +4,7 @@ import hello1.koddata.utils.collection.ImmutableArray;
 
 public class ArrayLiteral extends Expression {
 
-    final ImmutableArray<Expression> literals;
+    public final ImmutableArray<Expression> literals;
     public ArrayLiteral(ImmutableArray<Expression> literals){
         super(StatementType.ARRAY_LITERAL);
         this.literals = literals;

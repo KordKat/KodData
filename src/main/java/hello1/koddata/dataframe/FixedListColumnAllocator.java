@@ -58,15 +58,17 @@ public class FixedListColumnAllocator extends VariableColumnAllocator {
             List<byte[]> list = lists.get(i);
             boolean[] perListNulls = perListNotNullFlags.get(i);
 
-            byte[] perListNullBitmap = buildNullBitmap(perListNulls);
-            System.arraycopy(perListNullBitmap, 0, combined, pos, perListNullBitmap.length);
-            pos += perListNullBitmap.length;
+
 
             int listSize = list.size();
             combined[pos++] = (byte) ((listSize >> 24) & 0xFF);
             combined[pos++] = (byte) ((listSize >> 16) & 0xFF);
             combined[pos++] = (byte) ((listSize >> 8) & 0xFF);
             combined[pos++] = (byte) (listSize & 0xFF);
+
+            byte[] perListNullBitmap = buildNullBitmap(perListNulls);
+            System.arraycopy(perListNullBitmap, 0, combined, pos, perListNullBitmap.length);
+            pos += perListNullBitmap.length;
 
             for (int j = 0; j < listSize; j++) {
                 if (!perListNulls[j]) {
