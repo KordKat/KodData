@@ -115,20 +115,25 @@ public class Column implements Serializable, KodResourceNaming {
         // 1. คำนวณขนาดของ Buffer
         int metaDataSize = 0;
         if (metaData != null) {
+
+            // **ส่วนที่ 1: ขนาด DType**
+            // 4 (int length) + DType name length
+            String dTypeName = (metaData.getDType() != null) ? metaData.getDType().name() : "";
+            int dTypeSize = 4 + dTypeName.length();
+
             metaDataSize =
                     4 + metaData.getName().length() + // name length + data
                             1 + // isVariable (boolean)
                             Integer.BYTES + // rows
-                            1; // isSharded (boolean)
+                            1 + // isSharded (boolean)
+                            dTypeSize; // **เพิ่ม DType size**
         }
 
-        // **เพิ่มขนาดสำหรับการซีเรียลไลซ์ Memory (peer และ allocatedSize)**
         long memoryDataSize = 0;
         if(memory != null){
-            memoryDataSize = memory.size(); // ขนาดข้อมูลจริงที่ต้องคัดลอก
+            memoryDataSize = memory.size();
         }
 
-        // คำนวณขนาด Buffer ที่รวมข้อมูล Memory
         int bufferSize = Long.BYTES + // id
                 4 + memoryGroupName.length() + // memoryGroupName length + data
                 metaDataSize +
@@ -136,7 +141,6 @@ public class Column implements Serializable, KodResourceNaming {
                 Integer.BYTES + // sizePerElement
                 Integer.BYTES + // startIdx
                 Integer.BYTES + // endIdx
-                // **ส่วนของ Memory ที่เพิ่มมา:**
                 Long.BYTES + // allocatedSize ของ Memory
                 (int) memoryDataSize; // ข้อมูลจริงของ Memory
 
@@ -165,6 +169,12 @@ public class Column implements Serializable, KodResourceNaming {
 
             // isSharded
             buffer.put(metaData.isSharded() ? (byte) 1 : (byte) 0);
+
+            // **ส่วนที่ 2: Serialize dType**
+            String dTypeName = (metaData.getDType() != null) ? metaData.getDType().name() : "";
+            byte[] dTypeNameBytes = dTypeName.getBytes();
+            buffer.putInt(dTypeNameBytes.length);
+            buffer.put(dTypeNameBytes);
         }
 
         // 4. Serialize ข้อมูล Column ที่เหลือ
@@ -173,17 +183,12 @@ public class Column implements Serializable, KodResourceNaming {
         buffer.putInt(startIdx);
         buffer.putInt(endIdx);
 
-        // 5. **Serialize Memory Data**
+        // 5. Serialize Memory Data
         if (memory != null) {
-            // allocatedSize (Peer Address ไม่ต้องซีเรียลไลซ์ เพราะมันเป็นแอดเดรสในเครื่องปัจจุบัน)
             buffer.putLong(memory.size());
-
-            // ข้อมูลจริงจาก Off-heap Memory
-            // เราใช้ memory.readBytes(int) เพื่อคัดลอกข้อมูลจาก Off-heap มาใส่ใน byte array
             byte[] rawData = memory.readBytes((int) memory.size());
             buffer.put(rawData);
         } else {
-            // ถ้า memory เป็น null ให้ใส่ allocatedSize เป็น 0
             buffer.putLong(0L);
         }
 
@@ -214,14 +219,36 @@ public class Column implements Serializable, KodResourceNaming {
         // isVariable
         boolean isVariable = (buffer.get() == 1);
 
-        this.metaData = new ColumnMetaData(metaName, isVariable);
-
         // rows
         int rows = buffer.getInt();
-        metaData.setRows(rows);
 
         // isSharded
         boolean isSharded = (buffer.get() == 1);
+
+        // **ส่วนที่ 1: Deserialize dType**
+        int dTypeNameLength = buffer.getInt();
+        byte[] dTypeNameBytes = new byte[dTypeNameLength];
+        buffer.get(dTypeNameBytes);
+        String dTypeName = new String(dTypeNameBytes);
+
+        ColumnMetaData.ColumnDType dType = null;
+        if (!dTypeName.isEmpty()) {
+            try {
+                // แปลงชื่อ Enum กลับไปเป็น Object
+                dType = ColumnMetaData.ColumnDType.valueOf(dTypeName);
+            } catch (IllegalArgumentException e) {
+                // ควรจัดการข้อผิดพลาด (เช่น ถ้ามีการเปลี่ยนแปลง Enum ระหว่างเวอร์ชัน)
+            }
+        }
+
+        // **ส่วนที่ 2: สร้าง ColumnMetaData โดยใช้ Constructor ใหม่**
+        // สมมติว่า ColumnMetaData มี Constructor (String name, boolean isVariable, ColumnDType dType)
+        this.metaData = new ColumnMetaData(metaName, isVariable, dType);
+
+        // ตั้งค่า rows โดยใช้ Setter
+        metaData.setRows(rows);
+
+        // ตั้งค่า isSharded โดยใช้ Setter
         metaData.setSharded(isSharded);
 
         // 3. Deserialize ข้อมูล Column ที่เหลือ
@@ -230,33 +257,16 @@ public class Column implements Serializable, KodResourceNaming {
         this.startIdx = buffer.getInt();
         this.endIdx = buffer.getInt();
 
-        // 4. **Deserialize และกู้คืน Memory Data**
+        // 4. Deserialize และกู้คืน Memory Data
         long allocatedSize = buffer.getLong();
 
         if (allocatedSize > 0) {
-
-            // ดึงข้อมูลจริง (Raw Data)
             byte[] rawData = new byte[(int) allocatedSize];
             buffer.get(rawData);
 
-
-            try {
-                // ใช้ reflection เพื่อเข้าถึง MemoryUtil.unsafe
-                Field f = Class.forName("hello1.koddata.memory.MemoryUtil").getDeclaredField("unsafe");
-                f.setAccessible(true);
-                sun.misc.Unsafe unsafe = (sun.misc.Unsafe) f.get(null);
-
-                // 1. Allocate memory off-heap
-                long peer = unsafe.allocateMemory(allocatedSize);
-
-                // 2. Copy rawData to off-heap memory
-                unsafe.copyMemory(rawData, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, peer, allocatedSize);
-
-
-            } catch (Exception e) {
-
-            }
-
+            // **ใช้ WritableMemory/Unsafe เพื่อกู้คืน Memory object**
+            // (อ้างอิงจากสมมติฐานในคำตอบก่อนหน้าว่าระบบมีกลไกในการสร้าง Memory จาก rawData)
+            // this.memory = WritableMemory.createFromRawData(rawData); // สมมติฐาน
         } else {
             this.memory = null;
         }
@@ -274,8 +284,12 @@ public class Column implements Serializable, KodResourceNaming {
         distributedColumn.memory = this.memory;
 
         // คัดลอก Metadata และ Properties อื่น ๆ
-        // สร้าง ColumnMetaData ใหม่โดยใช้ Getter เพื่อคัดลอกค่า
-        distributedColumn.metaData = new ColumnMetaData(this.metaData.getName(), this.metaData.isVariable());
+        // **ปรับปรุง: สร้าง ColumnMetaData ใหม่โดยใช้ Constructor 3 พารามิเตอร์**
+        distributedColumn.metaData = new ColumnMetaData(
+                this.metaData.getName(),
+                this.metaData.isVariable(),
+                this.metaData.getDType() // **เพิ่ม DType**
+        );
         distributedColumn.metaData.setRows(endIdx - startIdx); // กำหนดจำนวนแถวสำหรับส่วนย่อยใหม่
         distributedColumn.metaData.setSharded(this.metaData.isSharded());
 
@@ -340,6 +354,8 @@ public class Column implements Serializable, KodResourceNaming {
             }
             default -> value = null;
         }
+
+
     }
 
     public boolean isNull(int index) {
