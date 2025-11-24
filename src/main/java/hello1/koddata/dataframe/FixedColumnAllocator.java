@@ -53,8 +53,8 @@ public class FixedColumnAllocator extends ColumnAllocator {
                 if (notNullFlags[i]) {
                     unsafe.copyMemory(null, srcAddr, combined, Unsafe.ARRAY_BYTE_BASE_OFFSET + writePos, super.sizePerElement);
                     writePos += super.sizePerElement;
+                    offset += super.sizePerElement;
                 }
-                offset += super.sizePerElement;
             }
 
         } else if (dataBuffer.hasArray()) {

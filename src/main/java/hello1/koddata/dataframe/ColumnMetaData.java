@@ -4,12 +4,29 @@ import hello1.koddata.utils.SerialVersionId;
 
 public class ColumnMetaData {
 
+    public enum ColumnDType {
+        SCALAR_INT,
+        SCALAR_DOUBLE,
+        SCALAR_STRING,
+        LIST_INT,
+        LIST_DOUBLE,
+        LIST_STRING,
+        SCALAR_LOGICAL,
+        SCALAR_DATE,
+        SCALAR_TIMESTAMP,
+        LIST_LOGICAL,
+        LIST_DATE,
+        LIST_TIMESTAMP;
+    }
+
     private final String name;
     private boolean isVariable;
     private int rows;
     private boolean isSharded = false;
+    private ColumnDType dType;
+
     private long serialVersionId = SerialVersionId.get;
-    public ColumnMetaData(String name, boolean isVariable){
+    public ColumnMetaData(String name, boolean isVariable, ColumnDType dType){
         this.name = name;
         this.isVariable = isVariable;
     }
@@ -36,5 +53,9 @@ public class ColumnMetaData {
 
     public boolean isVariable() {
         return isVariable;
+    }
+
+    public ColumnDType getDType() {
+        return dType;
     }
 }

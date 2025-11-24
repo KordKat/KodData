@@ -26,7 +26,7 @@ public class StatementExecutor {
     }
 
     private static Value<?> evaluateExpression(Expression expression, UserClient client){
-        
+
         return new NullValue(new Object());
     }
 
