@@ -52,7 +52,7 @@ public class Column implements Serializable, KodResourceNaming {
     }
 
     public Column(String name, List<VariableElement> values, String memoryGroupName, boolean[] notNullFlags, int startIdx, int endIdx, ColumnMetaData.ColumnDType dType) throws KException {
-        setupMetadata(name, sizePerElement, memoryGroupName, true);
+        setupMetadata(name, sizePerElement, memoryGroupName, true, dType);
         id = columnIdCounter.count();
 
         memory = MemoryGroup.get(memoryGroupName)
