@@ -46,7 +46,8 @@ public class RelationalDatabaseConnection implements DatabaseConnection {
         try {
             if (connection == null) connect();
             Statement st = connection.createStatement();
-            return st.executeQuery(query);
+            return Either.left(st.executeQuery(query));
+            //          if Cassandra ===== return Either.right(st.executeQuery(query));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

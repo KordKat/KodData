@@ -5,10 +5,15 @@ import hello1.koddata.dataframe.DataFrame;
 import hello1.koddata.dataframe.DataFrameSchema;
 import hello1.koddata.dataframe.VariableElement;
 import hello1.koddata.database.DatabaseConnection;
+import hello1.koddata.utils.Either;
 
 import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,68 +32,100 @@ public class DatabaseLoader extends DataFrameLoader {
     @Override
     public void load(InputStream in) {
         try {
-
-            if (query == null) {
-                throw new RuntimeException("DatabaseLoader: query must not be null");
-            }
-            if (memoryGroupName == null) {
-                throw new RuntimeException("DatabaseLoader: memoryGroupName must not be null");
-            }
+            if (query == null) throw new RuntimeException("DatabaseLoader: query must not be null");
+            if (memoryGroupName == null) throw new RuntimeException("memoryGroupName must not be null");
 
             conn.connect();
-            ResultSet rs = conn.executeQuery(query);
-            ResultSetMetaData meta = rs.getMetaData();
 
-            int colCount = meta.getColumnCount();
-            List<String> names = new ArrayList<>();
+            Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> result = conn.executeQuery(query);
 
-            for (int i = 1; i <= colCount; i++) {
-                names.add(meta.getColumnName(i));
+            if (result.isLeft()) {
+                loadJdbc(result.getLeft());
+            } else {
+                loadCql(result.getRight());
             }
-
-            List<List<String>> table = new ArrayList<>();
-
-            while (rs.next()) {
-                List<String> row = new ArrayList<>(colCount);
-                for (int i = 1; i <= colCount; i++) {
-                    Object obj = rs.getObject(i);
-                    row.add(obj == null ? null : obj.toString());
-                }
-                table.add(row);
-            }
-
-            columns = new Column[colCount];
-            String[] keys = new String[colCount];
-            int[] sizes = new int[colCount];
-
-            for (int c = 0; c < colCount; c++) {
-                String name = names.get(c);
-                boolean[] flags = new boolean[table.size()];
-                List<VariableElement> values = new ArrayList<>(table.size());
-
-                for (int r = 0; r < table.size(); r++) {
-                    String v = table.get(r).get(c);
-                    if (v != null) {
-                        flags[r] = true;
-                        values.add(VariableElement.newStringElement(v));
-                    } else {
-                        values.add(VariableElement.newElement(new byte[0]));
-                    }
-                }
-
-                Column col = new Column(name, values, memoryGroupName, flags, 0, table.size());
-                columns[c] = col;
-                keys[c] = name;
-                sizes[c] = -1;
-            }
-
-            DataFrameSchema schema = new DataFrameSchema(keys, sizes);
-            frame = new DataFrame(schema, "database");
 
             conn.close();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void loadJdbc(ResultSet rs) throws Exception {
+        ResultSetMetaData meta = rs.getMetaData();
+        int colCount = meta.getColumnCount();
+
+        List<String> names = new ArrayList<>();
+        for (int i = 1; i <= colCount; i++) names.add(meta.getColumnName(i));
+
+        List<List<String>> table = new ArrayList<>();
+
+        while (rs.next()) {
+            List<String> row = new ArrayList<>(colCount);
+            for (int i = 1; i <= colCount; i++) {
+                Object v = rs.getObject(i);
+                row.add(v == null ? null : v.toString());
+            }
+            table.add(row);
+        }
+
+        buildDataFrame(names, table);
+    }
+
+    private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cqlResult) throws Exception {
+        ColumnDefinitions defs = cqlResult.getColumnDefinitions();
+        int colCount = defs.size();
+
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < colCount; i++) {
+            names.add(defs.get(i).getName().asInternal());
+        }
+
+        List<List<String>> table = new ArrayList<>();
+        for (Row row : cqlResult) {
+            List<String> r = new ArrayList<>(colCount);
+            for (int i = 0; i < colCount; i++) {
+                Object v = row.getObject(i);
+                r.add(v == null ? null : v.toString());
+            }
+            table.add(r);
+        }
+
+        buildDataFrame(names, table);
+    }
+
+    private void buildDataFrame(List<String> names, List<List<String>> table) throws Exception {
+
+        int colCount = names.size();
+
+        columns = new Column[colCount];
+        String[] keys = new String[colCount];
+        int[] sizes = new int[colCount];
+
+        for (int c = 0; c < colCount; c++) {
+            String name = names.get(c);
+
+            boolean[] flags = new boolean[table.size()];
+            List<VariableElement> values = new ArrayList<>(table.size());
+
+            for (int r = 0; r < table.size(); r++) {
+                String v = table.get(r).get(c);
+                if (v != null) {
+                    flags[r] = true;
+                    values.add(VariableElement.newStringElement(v));
+                } else {
+                    values.add(VariableElement.newElement(new byte[0]));
+                }
+            }
+
+            Column col = new Column(name, values, memoryGroupName, flags, 0, table.size());
+            columns[c] = col;
+            keys[c] = name;
+            sizes[c] = -1;
+        }
+
+        DataFrameSchema schema = new DataFrameSchema(keys, sizes);
+        frame = new DataFrame(schema, "database");
     }
 }
