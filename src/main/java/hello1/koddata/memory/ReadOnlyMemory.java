@@ -13,6 +13,11 @@ public class ReadOnlyMemory extends Memory{
         isWrite = false;
     }
 
+    public ReadOnlyMemory(Memory ref){
+        super(ref.peer, ref.size());
+        this.isWrite = true;
+    }
+
     public static ReadOnlyMemory allocate(long bytes){
         return new ReadOnlyMemory(Memory.getPeer(bytes), bytes);
     }

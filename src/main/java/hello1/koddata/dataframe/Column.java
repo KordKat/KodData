@@ -8,7 +8,9 @@ import hello1.koddata.memory.MemoryGroup;
 import hello1.koddata.net.NodeStatus;
 import hello1.koddata.utils.KodResourceNaming;
 import hello1.koddata.utils.Serializable;
+import sun.misc.Unsafe;
 
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
@@ -100,12 +102,181 @@ public class Column implements Serializable, KodResourceNaming {
 
     @Override
     public byte[] serialize() {
-        return null;
+        // 1. คำนวณขนาดของ Buffer
+        int metaDataSize = 0;
+        if (metaData != null) {
+            metaDataSize =
+                    4 + metaData.getName().length() + // name length + data
+                            1 + // isVariable (boolean)
+                            Integer.BYTES + // rows
+                            1; // isSharded (boolean)
+        }
+
+        // **เพิ่มขนาดสำหรับการซีเรียลไลซ์ Memory (peer และ allocatedSize)**
+        long memoryDataSize = 0;
+        if(memory != null){
+            memoryDataSize = memory.size(); // ขนาดข้อมูลจริงที่ต้องคัดลอก
+        }
+
+        // คำนวณขนาด Buffer ที่รวมข้อมูล Memory
+        int bufferSize = Long.BYTES + // id
+                4 + memoryGroupName.length() + // memoryGroupName length + data
+                metaDataSize +
+                Byte.BYTES + // columnKind
+                Integer.BYTES + // sizePerElement
+                Integer.BYTES + // startIdx
+                Integer.BYTES + // endIdx
+                // **ส่วนของ Memory ที่เพิ่มมา:**
+                Long.BYTES + // allocatedSize ของ Memory
+                (int) memoryDataSize; // ข้อมูลจริงของ Memory
+
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+
+        // 2. Serialize ข้อมูล Column หลัก
+        buffer.putLong(id);
+
+        // memoryGroupName
+        byte[] memoryGroupNameBytes = memoryGroupName.getBytes();
+        buffer.putInt(memoryGroupNameBytes.length);
+        buffer.put(memoryGroupNameBytes);
+
+        // 3. Serialize ColumnMetaData
+        if (metaData != null) {
+            // name
+            byte[] metaNameBytes = metaData.getName().getBytes();
+            buffer.putInt(metaNameBytes.length);
+            buffer.put(metaNameBytes);
+
+            // isVariable
+            buffer.put(metaData.isVariable() ? (byte) 1 : (byte) 0);
+
+            // rows
+            buffer.putInt(metaData.getRows());
+
+            // isSharded
+            buffer.put(metaData.isSharded() ? (byte) 1 : (byte) 0);
+        }
+
+        // 4. Serialize ข้อมูล Column ที่เหลือ
+        buffer.put(columnKind);
+        buffer.putInt(sizePerElement);
+        buffer.putInt(startIdx);
+        buffer.putInt(endIdx);
+
+        // 5. **Serialize Memory Data**
+        if (memory != null) {
+            // allocatedSize (Peer Address ไม่ต้องซีเรียลไลซ์ เพราะมันเป็นแอดเดรสในเครื่องปัจจุบัน)
+            buffer.putLong(memory.size());
+
+            // ข้อมูลจริงจาก Off-heap Memory
+            // เราใช้ memory.readBytes(int) เพื่อคัดลอกข้อมูลจาก Off-heap มาใส่ใน byte array
+            byte[] rawData = memory.readBytes((int) memory.size());
+            buffer.put(rawData);
+        } else {
+            // ถ้า memory เป็น null ให้ใส่ allocatedSize เป็น 0
+            buffer.putLong(0L);
+        }
+
+        return buffer.array();
     }
 
     @Override
     public void deserialize(byte[] b) {
+        ByteBuffer buffer = ByteBuffer.wrap(b);
 
+        // 1. Deserialize ข้อมูล Column หลัก
+        this.id = buffer.getLong();
+
+        // memoryGroupName
+        int nameLength = buffer.getInt();
+        byte[] nameBytes = new byte[nameLength];
+        buffer.get(nameBytes);
+        this.memoryGroupName = new String(nameBytes);
+
+        // 2. Deserialize ColumnMetaData
+
+        // name
+        int metaNameLength = buffer.getInt();
+        byte[] metaNameBytes = new byte[metaNameLength];
+        buffer.get(metaNameBytes);
+        String metaName = new String(metaNameBytes);
+
+        // isVariable
+        boolean isVariable = (buffer.get() == 1);
+
+        this.metaData = new ColumnMetaData(metaName, isVariable);
+
+        // rows
+        int rows = buffer.getInt();
+        metaData.setRows(rows);
+
+        // isSharded
+        boolean isSharded = (buffer.get() == 1);
+        metaData.setSharded(isSharded);
+
+        // 3. Deserialize ข้อมูล Column ที่เหลือ
+        this.columnKind = buffer.get();
+        this.sizePerElement = buffer.getInt();
+        this.startIdx = buffer.getInt();
+        this.endIdx = buffer.getInt();
+
+        // 4. **Deserialize และกู้คืน Memory Data**
+        long allocatedSize = buffer.getLong();
+
+        if (allocatedSize > 0) {
+
+            // ดึงข้อมูลจริง (Raw Data)
+            byte[] rawData = new byte[(int) allocatedSize];
+            buffer.get(rawData);
+
+
+            try {
+                // ใช้ reflection เพื่อเข้าถึง MemoryUtil.unsafe
+                Field f = Class.forName("hello1.koddata.memory.MemoryUtil").getDeclaredField("unsafe");
+                f.setAccessible(true);
+                sun.misc.Unsafe unsafe = (sun.misc.Unsafe) f.get(null);
+
+                // 1. Allocate memory off-heap
+                long peer = unsafe.allocateMemory(allocatedSize);
+
+                // 2. Copy rawData to off-heap memory
+                unsafe.copyMemory(rawData, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, peer, allocatedSize);
+
+
+            } catch (Exception e) {
+
+            }
+
+        } else {
+            this.memory = null;
+        }
+    }
+
+    public Column distributeColumn(int startIdx, int endIdx){
+        // สร้างอ็อบเจกต์ Column ใหม่
+        Column distributedColumn = new Column();
+
+        // ใช้อ้างอิง ID เดิม เพื่อชี้ไปยัง Memory เดียวกัน
+        distributedColumn.id = this.id;
+
+        // อ้างอิง Memory และ Memory Group Name เดิม
+        distributedColumn.memoryGroupName = this.memoryGroupName;
+        distributedColumn.memory = this.memory;
+
+        // คัดลอก Metadata และ Properties อื่น ๆ
+        // สร้าง ColumnMetaData ใหม่โดยใช้ Getter เพื่อคัดลอกค่า
+        distributedColumn.metaData = new ColumnMetaData(this.metaData.getName(), this.metaData.isVariable());
+        distributedColumn.metaData.setRows(endIdx - startIdx); // กำหนดจำนวนแถวสำหรับส่วนย่อยใหม่
+        distributedColumn.metaData.setSharded(this.metaData.isSharded());
+
+        distributedColumn.columnKind = this.columnKind;
+        distributedColumn.sizePerElement = this.sizePerElement;
+
+        // กำหนดช่วงดัชนีใหม่
+        distributedColumn.startIdx = startIdx;
+        distributedColumn.endIdx = endIdx;
+
+        return distributedColumn;
     }
 
     public String getMemoryGroupName() {

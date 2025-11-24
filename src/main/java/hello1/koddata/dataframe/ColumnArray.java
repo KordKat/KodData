@@ -3,12 +3,13 @@ package hello1.koddata.dataframe;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.KException;
 import hello1.koddata.memory.MemoryGroup;
+import hello1.koddata.utils.Serializable;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class ColumnArray {
+public class ColumnArray implements Serializable {
 
     private ConcurrentMap<String, Column> columns = new ConcurrentHashMap<>();
 
@@ -51,5 +52,18 @@ public class ColumnArray {
         return null;
     }
 
+    public ColumnArray distributeColumn(){
 
+    }
+
+
+    @Override
+    public byte[] serialize() throws KException {
+        return new byte[0];
+    }
+
+    @Override
+    public void deserialize(byte[] b) {
+
+    }
 }
