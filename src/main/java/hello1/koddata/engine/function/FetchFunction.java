@@ -53,7 +53,7 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                 return new Value<>(CompletableFuture.supplyAsync(() -> {
                     DataFrameLoader dataFrameLoader = null;
                     if (finalDataSource.get().equals(DataSource.JSON)){
-                        dataFrameLoader = new JsonLoader();
+                        dataFrameLoader = new JsonLoader(memoryGroupNameString);
                     }
                     else {
 
@@ -74,15 +74,27 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
         }
         else {
             if(source.get() instanceof DatabaseConnection databaseConnection){
+                if (!arguments.containsKey("memoryGroupName")){
+                    throw new KException(ExceptionCode.KDE0012,"You need to write memoryGroupName to use fetch function in csv or json");
+                }
+                Value<?> memoryGroupName = arguments.get("memoryGroupName");
+                if (!(memoryGroupName.get() instanceof String memoryGroupNameString)) {
+                    throw new KException(ExceptionCode.KDE0012, "memoryGroupName should be string");
+                }
+
                 if(!arguments.containsKey("query")){
                     throw new KException(ExceptionCode.KDE0012,"Function fetch database need argument query");
                 }
 
+
                 Value<?> query = arguments.get("query");
-                if (query.get() instanceof String s){
+                if (query.get() instanceof String queryString){
                     return new Value<>(CompletableFuture.supplyAsync(() -> {
-                        DataFrameLoader dataFrameLoader = null;
-                        dataFrameLoader = new DatabaseLoader(databaseConnection);
+                        DataFrameLoader dataFrameLoader;
+
+
+
+                        dataFrameLoader = new DatabaseLoader(databaseConnection, queryString , memoryGroupNameString);
                         try {
                             dataFrameLoader.load(null);
                         } catch (IOException e) {

@@ -14,14 +14,9 @@ import java.util.List;
 public class CSVLoader extends DataFrameLoader {
 
     private final String memoryGroupName;
-    private List<Column> columns = List.of();
 
     public CSVLoader(String memoryGroupName) {
         this.memoryGroupName = memoryGroupName;
-    }
-
-    public List<Column> getColumns() {
-        return columns;
     }
 
     @Override
@@ -30,11 +25,11 @@ public class CSVLoader extends DataFrameLoader {
 
             List<String> lines = readAllLines(bis);
             if (lines.isEmpty()) {
-                columns = List.of();
+
                 return;
             }
 
-            String[] columnNames = splitCsvLine(lines.get(0));
+            String[] columnNames = splitCsvLine(lines.getFirst());
             int columnCount = columnNames.length;
 
             int rowCount = lines.size() - 1;
@@ -51,7 +46,7 @@ public class CSVLoader extends DataFrameLoader {
 
             ColumnKind[] kinds = inferColumnKinds(cells, columnCount, rowCount);
 
-            List<Column> result = new ArrayList<>(columnCount);
+            Column[] result = new Column[columnCount];
 
             for (int c = 0; c < columnCount; c++) {
                 String name = columnNames[c];
@@ -66,26 +61,17 @@ public class CSVLoader extends DataFrameLoader {
                         case LIST_DOUBLE -> buildListFixedNumericColumn(name, cells, c, rowCount, false);
                         case LIST_STRING -> buildListStringColumn(name, cells, c, rowCount);
 
+
                         case SCALAR_LOGICAL -> buildScalarLogicalColumn(name, cells, c, rowCount);
-
                         case SCALAR_DATE -> buildScalarDateColumn(name, cells, c, rowCount);
-
                         case SCALAR_TIMESTAMP -> buildScalarTimestampColumn(name, cells, c, rowCount);
+                        case LIST_LOGICAL -> buildListLogicalColumn(name, cells, c, rowCount);
+                        case LIST_DATE -> buildListDateColumn(name, cells, c, rowCount);
+                        case LIST_TIMESTAMP -> buildListTimestampColumn(name, cells, c, rowCount);
 
-                        case LIST_LOGICAL ->
-                                buildListLogicalColumn(name, cells, c, rowCount);
-
-                        case LIST_DATE ->
-                                buildListDateColumn(name, cells, c, rowCount);
-
-                        case LIST_TIMESTAMP ->
-                                buildListTimestampColumn(name, cells, c, rowCount);
-
-
-                        default -> throw new IllegalStateException();
                     };
+                    result[c] = column;
 
-                    result.add(column);
                 } catch (KException e) {
                     throw new RuntimeException("Failed column: " + name, e);
                 }

@@ -30,7 +30,6 @@ public class JsonLoader extends DataFrameLoader {
 
             List<String> keys = new ArrayList<>(rows.get(0).keySet());
             int colCount = keys.size();
-            int rowCount = rows.size();
             columns = new Column[colCount];
 
             String[] schemaNames = new String[colCount];
@@ -51,6 +50,7 @@ public class JsonLoader extends DataFrameLoader {
             }
 
             frame = new DataFrame(new DataFrameSchema(schemaNames, schemaSizes), "json");
+            // เจ้าของกำหนดชื่อเอง มีหน้าที่แค่รับค่าเข้ามา
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -177,12 +177,6 @@ public class JsonLoader extends DataFrameLoader {
             return r;
         }
 
-        // null
-        if (s.startsWith("null", i)) {
-            r.value = null;
-            r.nextPos = i + 4;
-            return r;
-        }
 
         // number
         int j = i;
@@ -222,8 +216,7 @@ public class JsonLoader extends DataFrameLoader {
         DATE, TIMESTAMP,
         LIST_INT, LIST_LONG, LIST_DOUBLE,
         LIST_STRING,
-        LIST_DATE, LIST_TIMESTAMP,
-        LIST_MIXED
+        LIST_DATE, LIST_TIMESTAMP
     }
 
     private ColumnType detectType(List<Object> values) {
@@ -293,8 +286,7 @@ public class JsonLoader extends DataFrameLoader {
             if (listAllDouble) return ColumnType.LIST_DOUBLE;
             if (listAllString) return ColumnType.LIST_STRING;
             if (listAllDate) return ColumnType.LIST_DATE;
-            if (listAllTimestamp) return ColumnType.LIST_TIMESTAMP;
-            return ColumnType.LIST_MIXED;
+            return ColumnType.LIST_TIMESTAMP;
         }
 
         return ColumnType.STRING;
