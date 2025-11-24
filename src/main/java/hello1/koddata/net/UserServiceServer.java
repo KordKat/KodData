@@ -1,5 +1,6 @@
 package hello1.koddata.net;
 
+import hello1.koddata.Main;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
 
@@ -11,6 +12,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +22,8 @@ public class UserServiceServer extends Server {
 
     private Selector selector;
     private ServerSocketChannel ssc;
+
+    private final ConcurrentMap<Long, UserUploadFileState> uploadFileStateMap = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<InetSocketAddress, SocketChannel> clients = new ConcurrentHashMap<>();
 
@@ -102,13 +106,45 @@ public class UserServiceServer extends Server {
 
         if(bytesRead > 0){
             buffer.flip();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            String code = new String(bytes).trim();
+            byte mode = buffer.get();
 
-            if(client != null && !code.isEmpty() && client.getCurrentSession() != null){
-                client.executeCode(code);
+            if (mode == 1) {
+                UserUploadFileState state = uploadFileStateMap.get(client.getCurrentSession().id());
+                if (state == null) {
+                    int capacity = buffer.getInt();
+                    state = new UserUploadFileState(capacity, client.getCurrentSession().id());
+                    uploadFileStateMap.put(client.getCurrentSession().id(), state);
 
+                    state.payloadLength = capacity - 4;
+                    state.payloadBuffer.limit((int) state.payloadLength); // prevent over-write
+                }
+
+                int toRead = buffer.remaining();
+
+                int remaining = Math.toIntExact(state.payloadLength - state.payloadBuffer.position());
+
+                int chunk = Math.min(toRead, remaining);
+
+                byte[] temp = new byte[chunk];
+                buffer.get(temp);
+                state.payloadBuffer.put(temp);
+
+                if (!state.payloadBuffer.hasRemaining()) {
+
+                    try {
+                        state.perform();
+                    } finally {
+                        uploadFileStateMap.remove(client.getCurrentSession().id());
+                    }
+                }
+            }else {
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+                String code = new String(bytes).trim();
+
+                if (client != null && !code.isEmpty() && client.getCurrentSession() != null) {
+                    client.executeCode(code);
+                }
             }
         }
     }
