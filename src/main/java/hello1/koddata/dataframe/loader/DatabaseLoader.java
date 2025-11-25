@@ -33,12 +33,13 @@ public class DatabaseLoader extends DataFrameLoader {
     public void load(InputStream in, int startRow, int endRow) {
         try {
             conn.connect();
-            Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> res = conn.executeQuery(query);
+            Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> res =
+                    conn.executeQuery(query);
 
             if (res.isLeft()) {
-                loadJdbc(res.getLeft());
+                loadJdbc(res.getLeft(), startRow, endRow);
             } else {
-                loadCql(res.getRight());
+                loadCql(res.getRight(), startRow, endRow);
             }
 
             conn.close();
@@ -48,7 +49,8 @@ public class DatabaseLoader extends DataFrameLoader {
         }
     }
 
-    private void loadJdbc(ResultSet rs) throws Exception {
+
+    private void loadJdbc(ResultSet rs, int startRow, int endRow) throws Exception {
         ResultSetMetaData meta = rs.getMetaData();
         int colCount = meta.getColumnCount();
 
@@ -59,39 +61,72 @@ public class DatabaseLoader extends DataFrameLoader {
 
         List<List<String>> table = new ArrayList<>();
 
+        int currentRow = 0;
+
         while (rs.next()) {
+
+            // ก่อน startRow  ข้าม
+            if (currentRow < startRow) {
+                currentRow++;
+                continue;
+            }
+
+            // ถ้าเกิน endRow หยุด
+            if (currentRow > endRow) break;
+
+            // อยู่ในช่วงที่ต้องการ ให้เก็บแถว
             List<String> row = new ArrayList<>(colCount);
             for (int i = 1; i <= colCount; i++) {
                 Object v = rs.getObject(i);
                 row.add(v == null ? null : v.toString());
             }
             table.add(row);
+
+            currentRow++;
         }
 
         buildFromTable(names, table);
     }
 
-    private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cql) throws Exception {
-        ColumnDefinitions definitions = cql.getColumnDefinitions();
-        int colCount = definitions.size();
+    private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cql,
+                         int startRow, int endRow) throws Exception {
+
+        ColumnDefinitions defs = cql.getColumnDefinitions();
+        int colCount = defs.size();
 
         List<String> names = new ArrayList<>();
         for (int i = 0; i < colCount; i++) {
-            names.add(definitions.get(i).getName().asInternal());
+            names.add(defs.get(i).getName().asInternal());
         }
 
         List<List<String>> table = new ArrayList<>();
+
+        int currentRow = 0;
         for (Row r : cql) {
+
+            // มาก่อน startRow ให้ข้าม
+            if (currentRow < startRow) {
+                currentRow++;
+                continue;
+            }
+
+            // ถ้าเกิน endRow ให้หยุดทันที
+            if (currentRow > endRow) break;
+
+            // อยู่ในช่วง ให้เก็บ
             List<String> row = new ArrayList<>(colCount);
             for (int i = 0; i < colCount; i++) {
                 Object v = r.getObject(i);
                 row.add(v == null ? null : v.toString());
             }
             table.add(row);
+
+            currentRow++;
         }
 
         buildFromTable(names, table);
     }
+
 
     private void buildFromTable(List<String> names, List<List<String>> table) throws Exception {
         int rowCount = table.size();
