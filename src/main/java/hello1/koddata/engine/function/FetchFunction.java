@@ -4,7 +4,6 @@ import hello1.koddata.database.DatabaseConnection;
 import hello1.koddata.dataframe.loader.CSVLoader;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
 import hello1.koddata.dataframe.loader.DatabaseLoader;
-import hello1.koddata.dataframe.loader.JsonLoader;
 import hello1.koddata.engine.DataSource;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;

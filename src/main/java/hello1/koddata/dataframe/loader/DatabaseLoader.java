@@ -1,6 +1,7 @@
 package hello1.koddata.dataframe.loader;
 
 import hello1.koddata.dataframe.Column;
+import hello1.koddata.dataframe.ColumnMetaData;
 import hello1.koddata.dataframe.VariableElement;
 import hello1.koddata.exception.KException;
 import hello1.koddata.database.DatabaseConnection;
@@ -166,7 +167,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
 
         buf.flip();
-        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount);
+        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_INT);
     }
 
     private Column buildScalarDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
@@ -183,7 +184,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
 
         buf.flip();
-        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount);
+        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_DOUBLE);
     }
 
     private Column buildScalarStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
@@ -200,7 +201,7 @@ public class DatabaseLoader extends DataFrameLoader {
             }
         }
 
-        return new Column(name, list, memoryGroupName, flags, 0, rowCount);
+        return new Column(name, list, memoryGroupName, flags, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_STRING);
     }
 
     private Column buildScalarLogicalColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
@@ -218,7 +219,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
 
         buf.flip();
-        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount);
+        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_LOGICAL);
     }
 
     private Column buildScalarDateColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
@@ -236,7 +237,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
 
         buf.flip();
-        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount);
+        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_DATE);
     }
 
     private Column buildScalarTimestampColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
@@ -254,7 +255,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
 
         buf.flip();
-        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount);
+        return new Column(name, sz, memoryGroupName, buf, flags, sz, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP);
     }
 
     private Column buildListFixedNumericColumn(String name, String[][] cells, int colIdx, int rowCount, boolean isInt)
@@ -304,7 +305,7 @@ public class DatabaseLoader extends DataFrameLoader {
             perFlags.add(flags);
         }
 
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount);
+        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_DOUBLE);
     }
 
     private Column buildListStringColumn(String name, String[][] cells, int colIdx, int rowCount)
@@ -347,7 +348,7 @@ public class DatabaseLoader extends DataFrameLoader {
             perFlags.add(flags);
         }
 
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, 0, rowCount);
+        return new Column(name, memoryGroupName, lists, perFlags, colFlags, 0, rowCount, ColumnMetaData.ColumnDType.LIST_STRING);
     }
 
     private Column buildListLogicalColumn(String name, String[][] cells, int colIdx, int rowCount)
@@ -392,7 +393,7 @@ public class DatabaseLoader extends DataFrameLoader {
             perFlags.add(flags);
         }
 
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount);
+        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_LOGICAL);
     }
 
     private Column buildListDateColumn(String name, String[][] cells, int colIdx, int rowCount)
@@ -442,7 +443,7 @@ public class DatabaseLoader extends DataFrameLoader {
             perFlags.add(flags);
         }
 
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount);
+        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_DATE);
     }
 
     private Column buildListTimestampColumn(String name, String[][] cells, int colIdx, int rowCount)
@@ -492,7 +493,7 @@ public class DatabaseLoader extends DataFrameLoader {
             perFlags.add(flags);
         }
 
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount);
+        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_TIMESTAMP);
     }
 
 
