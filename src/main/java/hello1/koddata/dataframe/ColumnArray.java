@@ -7,8 +7,10 @@ import hello1.koddata.memory.MemoryGroup;
 import hello1.koddata.utils.Serializable;
 import hello1.koddata.utils.collection.ImmutableArray;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -17,6 +19,9 @@ public class ColumnArray implements Serializable {
     private ConcurrentMap<String, Column> columns = new ConcurrentHashMap<>();
 
     private MemoryGroup memoryGroup;
+
+
+    private Set<InetSocketAddress> selectedNodes;
 
     public ColumnArray(ImmutableArray<Column> columns, MemoryGroup memoryGroup){
         this.memoryGroup = memoryGroup;
@@ -164,6 +169,10 @@ public class ColumnArray implements Serializable {
 
     @Override
     public void deserialize(byte[] b) {
+
+    }
+
+    public ColumnArray getPart(int part){
 
     }
 }

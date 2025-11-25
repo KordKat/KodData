@@ -95,4 +95,6 @@ public class SessionData {
     public Map<String, Value<?>> getVariables() {
         return variables;
     }
+
+
 }

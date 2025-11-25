@@ -41,7 +41,7 @@ public class ReplicatedResourceClusterReference<T extends Replica> extends Uniqu
 
     @Override
     public String getResourceName() {
-        return ClusterReference.class.getName() + "::" + super.get().getClass().getName() + "::" + identifier;
+        return ReplicatedResourceClusterReference.class.getName() + "::" + super.get().getClass().getName() + "::" + identifier;
     }
 
     public void updateReplica(){

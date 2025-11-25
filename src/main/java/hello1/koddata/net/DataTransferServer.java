@@ -21,7 +21,6 @@ import hello1.koddata.io.UserFileChannelState;
 import hello1.koddata.sessions.SessionManager;
 import hello1.koddata.sessions.users.UserManager;
 import hello1.koddata.utils.Serializable;
-import hello1.koddata.utils.ref.ClusterReference;
 import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
 
 public class DataTransferServer extends Server implements Runnable {
@@ -266,7 +265,6 @@ public class DataTransferServer extends Server implements Runnable {
         }
     }
 
-    // feedback when data is inconsistent (feedback is small; send single chunk)
     public void sendFeedback(SocketChannel ch, byte[] data) {
         try {
             sendChunkedPayload(ch, MODE_SERVER_STATE_FEEDBACK, data);
@@ -305,7 +303,6 @@ public class DataTransferServer extends Server implements Runnable {
                     }
                 }
             } catch (IOException e) {
-                // swallow, allow loop to continue if running
             }
         }
     }
@@ -329,14 +326,12 @@ public class DataTransferServer extends Server implements Runnable {
         }
     }
 
-    // ---------- RECEIVING: now chunk-aware ----------
     private void handleRead(SelectionKey key) {
         SocketChannel ch = (SocketChannel) key.channel();
         ChannelState state = readStates.get(ch);
 
         try {
             if (state == null) {
-                // read chunk header first (29 bytes)
                 ByteBuffer headerBuf = ByteBuffer.allocate(CHUNK_HEADER_SIZE);
                 int read = ch.read(headerBuf);
                 if (read == -1) {
@@ -344,7 +339,6 @@ public class DataTransferServer extends Server implements Runnable {
                     return;
                 }
                 if (read < CHUNK_HEADER_SIZE) {
-                    // partial header read: create a temporary ChunkReceiveState that stores header progress
                     ChunkReceiveState crs = new ChunkReceiveState();
                     crs.headerBuffer = headerBuf;
                     crs.headerBuffer.position(read);
@@ -360,7 +354,6 @@ public class DataTransferServer extends Server implements Runnable {
                 int chunkIndex = headerBuf.getInt();
                 int chunkPayloadSize = headerBuf.getInt();
 
-                // Create state to read the payload for this chunk
                 ChunkReceiveState crs = new ChunkReceiveState();
                 crs.totalSize = totalSize;
                 crs.mode = mode;
@@ -374,11 +367,9 @@ public class DataTransferServer extends Server implements Runnable {
 
                 readStates.put(ch, crs);
             } else {
-                // if we have an existing state, it might be a header partial or payload partial
                 if (state instanceof ChunkReceiveState) {
                     ChunkReceiveState crs = (ChunkReceiveState) state;
 
-                    // If headerBuffer exists and hasn't been filled, continue reading header
                     if (crs.headerBuffer != null && crs.headerBuffer.hasRemaining()) {
                         int r = ch.read(crs.headerBuffer);
                         if (r == -1) {
@@ -386,10 +377,8 @@ public class DataTransferServer extends Server implements Runnable {
                             return;
                         }
                         if (crs.headerBuffer.hasRemaining()) {
-                            // still partial header
                             return;
                         } else {
-                            // header finished, parse it and allocate payload buffer
                             crs.headerBuffer.flip();
                             crs.totalSize = crs.headerBuffer.getLong();
                             crs.mode = crs.headerBuffer.get();
@@ -400,11 +389,10 @@ public class DataTransferServer extends Server implements Runnable {
                             crs.payloadBuffer = ByteBuffer.allocate(crs.chunkPayloadSize);
                             crs.payloadLength = crs.chunkPayloadSize;
                             crs.bytesReceived = 0;
-                            crs.headerBuffer = null; // no longer needed
+                            crs.headerBuffer = null;
                         }
                     }
 
-                    // Now read payload portion
                     if (crs.payloadBuffer != null && crs.payloadBuffer.hasRemaining()) {
                         int bytesRead = ch.read(crs.payloadBuffer);
                         if (bytesRead == -1) {
@@ -415,14 +403,11 @@ public class DataTransferServer extends Server implements Runnable {
                     }
 
                     if (crs.payloadBuffer != null && !crs.payloadBuffer.hasRemaining()) {
-                        // payload completed for this chunk; persist chunk and update assembly
                         crs.payloadBuffer.flip();
                         saveChunkAndMaybeAssemble(crs);
-                        // remove state so next read starts header for next chunk
                         readStates.remove(ch);
                     }
                 } else {
-                    // existing non-chunk state: fallback (shouldn't happen in new protocol)
                     int bytesRead = ch.read(state.payloadBuffer);
                     if (bytesRead == -1) {
                         closeChannel(ch, key);
@@ -438,12 +423,10 @@ public class DataTransferServer extends Server implements Runnable {
                 }
             }
         } catch (Exception e) {
-            // on error, close channel and remove partial states
             closeChannel(ch, key);
         }
     }
 
-    // Save the chunk bytes to disk and, if message complete, assemble and dispatch
     private void saveChunkAndMaybeAssemble(ChunkReceiveState crs) {
         try {
             long messageId = crs.messageId;
@@ -499,10 +482,6 @@ public class DataTransferServer extends Server implements Runnable {
 
         } catch (Exception ignored) {
         }
-    }
-
-    public <T> T requestData(ClusterReference<T> ref){
-        return null;
     }
 
     private void closeChannel(SocketChannel ch, SelectionKey key) {
