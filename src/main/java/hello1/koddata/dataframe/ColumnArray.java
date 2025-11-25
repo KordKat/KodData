@@ -8,6 +8,7 @@ import hello1.koddata.utils.Serializable;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -164,12 +165,86 @@ public class ColumnArray implements Serializable {
 
     @Override
     public byte[] serialize() throws KException {
-        return new byte[0];
+        // 1. ดึง Column ทั้งหมดและเตรียม List สำหรับเก็บข้อมูล serialized
+        List<byte[]> serializedColumns = new ArrayList<>(columns.size());
+        List<String> columnNames = new ArrayList<>(columns.size());
+        long totalSize = Integer.BYTES; // ขนาดเริ่มต้นสำหรับเก็บจำนวน Column
+
+        for (ConcurrentMap.Entry<String, Column> entry : columns.entrySet()) {
+            String name = entry.getKey();
+            Column column = entry.getValue();
+
+            // 2. Serialize Column แต่ละตัว
+            byte[] columnData = column.serialize();
+
+            // 3. คำนวณขนาดที่ต้องใช้ในการเก็บชื่อ Column (ความยาว + ตัวอักษร)
+            byte[] nameBytes = name.getBytes();
+            long nameDataSize = Integer.BYTES + nameBytes.length;
+
+            // 4. คำนวณขนาดที่ต้องใช้ในการเก็บข้อมูล Column (ความยาว + ข้อมูล)
+            long columnDataSize = Integer.BYTES + columnData.length;
+
+            totalSize += nameDataSize + columnDataSize;
+
+            serializedColumns.add(columnData);
+            columnNames.add(name);
+        }
+
+        // 5. จัดสรร ByteBuffer
+        ByteBuffer buffer = ByteBuffer.allocate((int) totalSize);
+
+        // 6. ใส่จำนวน Column
+        buffer.putInt(columns.size());
+
+        // 7. วนลูปเพื่อใส่ชื่อ Column และข้อมูล Column ที่ถูก Serialize แล้ว
+        for (int i = 0; i < serializedColumns.size(); i++) {
+            // ชื่อ Column
+            byte[] nameBytes = columnNames.get(i).getBytes();
+            buffer.putInt(nameBytes.length);
+            buffer.put(nameBytes);
+
+            // ข้อมูล Column
+            byte[] columnData = serializedColumns.get(i);
+            buffer.putInt(columnData.length);
+            buffer.put(columnData);
+        }
+
+        return buffer.array();
     }
 
     @Override
     public void deserialize(byte[] b) {
+        ByteBuffer buffer = ByteBuffer.wrap(b);
 
+        // 1. อ่านจำนวน Column
+        int numColumns = buffer.getInt();
+
+        // 2. เตรียม Map ใหม่เพื่อเก็บ Column ที่กู้คืน
+        this.columns = new ConcurrentHashMap<>(numColumns);
+        // this.memoryGroup จะถูกทิ้งไว้เป็น null หรือตามค่าเริ่มต้น
+        // (เพราะไม่มีข้อมูลให้กู้คืนและไม่มี Setter/Public field)
+
+        // 3. วนลูปเพื่อกู้คืน Column
+        for (int i = 0; i < numColumns; i++) {
+            // อ่านชื่อ Column
+            int nameLength = buffer.getInt();
+            byte[] nameBytes = new byte[nameLength];
+            buffer.get(nameBytes);
+            String columnName = new String(nameBytes);
+
+            // อ่านข้อมูล Column
+            int dataLength = buffer.getInt();
+            byte[] columnData = new byte[dataLength];
+            buffer.get(columnData);
+
+            // 4. สร้าง Column object และเรียก deserialize
+            // จำเป็นต้องมี Constructor ว่าง public Column() ในคลาส Column
+            Column column = new Column();
+            column.deserialize(columnData); // กู้คืนสถานะของ Column
+
+            // 5. เพิ่ม Column เข้าใน Map
+            this.columns.put(columnName, column);
+        }
     }
 
     public ColumnArray getPart(int part){
