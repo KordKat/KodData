@@ -21,10 +21,10 @@ public class CSVLoader extends DataFrameLoader {
     }
 
     @Override
-    public void load(InputStream in) throws IOException {
+    public void load(InputStream in, int startRow, int endRow) throws IOException {
         try (BufferedInputStreamPromax bis = new BufferedInputStreamPromax(in, 8192)) {
 
-            List<String> lines = readAllLines(bis);
+            List<String> lines = readAllLines(bis, startRow, endRow);
             if (lines.isEmpty()) {
 
                 return;
@@ -33,7 +33,7 @@ public class CSVLoader extends DataFrameLoader {
             String[] columnNames = splitCsvLine(lines.getFirst());
             int columnCount = columnNames.length;
 
-            int rowCount = lines.size() - 1;
+            int rowCount = lines.size();
             String[][] cells = new String[rowCount][columnCount];
 
             for (int r = 0; r < rowCount; r++) {
@@ -609,7 +609,7 @@ public class CSVLoader extends DataFrameLoader {
 
 
 
-    private List<String> readAllLines(BufferedInputStreamPromax in) throws IOException {
+    private List<String> readAllLines(BufferedInputStreamPromax in, int startRow, int endRow) throws IOException {
         List<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int b;

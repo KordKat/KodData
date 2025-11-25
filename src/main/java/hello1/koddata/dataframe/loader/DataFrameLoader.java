@@ -12,7 +12,7 @@ public abstract class DataFrameLoader {
     protected DataFrame frame;
     protected Column[] columns;
 
-    public abstract void load(InputStream in) throws IOException;
+    public abstract void load(InputStream in, int startRow, int endRow) throws IOException;
 
     public DataFrame getFrame() {
         return frame;

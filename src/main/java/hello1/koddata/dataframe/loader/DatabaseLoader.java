@@ -30,7 +30,7 @@ public class DatabaseLoader extends DataFrameLoader {
     }
 
     @Override
-    public void load(InputStream in) {
+    public void load(InputStream in, int startRow, int endRow) {
         try {
             conn.connect();
             Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> res = conn.executeQuery(query);

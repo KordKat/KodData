@@ -8,6 +8,9 @@ import java.nio.file.Path;
 
 public abstract class ChannelState {
     private volatile long id;
+
+    private String shardId;
+
     public ByteBuffer headerBuffer = ByteBuffer.allocate(24); // header size
     public ByteBuffer payloadBuffer;
 
@@ -36,6 +39,14 @@ public abstract class ChannelState {
 
     public long getId() {
         return id;
+    }
+
+    public void setShardId(String shardId) {
+        this.shardId = shardId;
+    }
+
+    public String getShardId() {
+        return shardId;
     }
 }
 
