@@ -609,21 +609,36 @@ public class CSVLoader extends DataFrameLoader {
 
 
 
-    private List<String> readAllLines(BufferedInputStreamPromax in, int startRow, int endRow) throws IOException {
+    private List<String> readAllLines(BufferedInputStreamPromax in, int startRow, int endRow)
+            throws IOException {
         List<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int b;
+        int currentRow = 0;
 
         while ((b = in.read()) != -1) {
+
             if (b == '\n') {
-                lines.add(sb.toString());
+                String line = sb.toString();
                 sb.setLength(0);
-            } else if (b != '\r') {
+                // ถ้ายังไม่ถึง startRow ให้ข้าม
+                if (currentRow >= startRow && currentRow <= endRow) {
+                    lines.add(line);
+                }
+                // ถ้าเกิน endRow หยุดเลย
+                if (currentRow > endRow) {
+                    break;
+                }
+                currentRow++;
+            }
+            else if (b != '\r') {
                 sb.append((char) b);
             }
         }
-
-        if (sb.length() > 0) lines.add(sb.toString());
+        // ถ้าไฟล์ไม่มี \n สุดท้าย
+        if (sb.length() > 0 && currentRow >= startRow && currentRow <= endRow) {
+            lines.add(sb.toString());
+        }
         return lines;
     }
 
