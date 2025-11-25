@@ -273,33 +273,195 @@ public class Column implements Serializable, KodResourceNaming {
         }
     }
 
-    public Column distributeColumn(int startIdx, int endIdx){
-        // สร้างอ็อบเจกต์ Column ใหม่
-        Column distributedColumn = new Column();
+    public Column distributeColumn(int startIdx, int endIdx) throws KException {
+        int newRowCount = endIdx - startIdx;
 
-        // ใช้อ้างอิง ID เดิม เพื่อชี้ไปยัง Memory เดียวกัน
-        distributedColumn.id = this.id;
+        // 1. สร้าง Null Flags สำหรับ Slice ใหม่
+        boolean[] newNotNullFlags = new boolean[newRowCount];
+        for (int i = 0; i < newRowCount; i++) {
+            newNotNullFlags[i] = !isNull(this.startIdx + startIdx + i);
+        }
 
-        // อ้างอิง Memory และ Memory Group Name เดิม
-        distributedColumn.memoryGroupName = this.memoryGroupName;
-        distributedColumn.memory = this.memory;
+        Column distributedColumn = null;
+        ColumnMetaData.ColumnDType dType = metaData.getDType();
 
-        // คัดลอก Metadata และ Properties อื่น ๆ
-        // **ปรับปรุง: สร้าง ColumnMetaData ใหม่โดยใช้ Constructor 3 พารามิเตอร์**
-        distributedColumn.metaData = new ColumnMetaData(
-                this.metaData.getName(),
-                this.metaData.isVariable(),
-                this.metaData.getDType() // **เพิ่ม DType**
-        );
-        distributedColumn.metaData.setRows(endIdx - startIdx); // กำหนดจำนวนแถวสำหรับส่วนย่อยใหม่
-        distributedColumn.metaData.setSharded(this.metaData.isSharded());
+        // 2. ดึงข้อมูลและสร้าง Column ใหม่ตามประเภท (ColumnKind)
+        switch (columnKind) {
+            case 0: { // Fixed Scalar
+                long nullBitmapSize = (rows + 7) / 8;
+                long dataStartOffset = nullBitmapSize + ((long) (this.startIdx + startIdx) * sizePerElement);
+                int dataLength = newRowCount * sizePerElement;
 
-        distributedColumn.columnKind = this.columnKind;
-        distributedColumn.sizePerElement = this.sizePerElement;
+                byte[] slicedData = memory.readBytes(dataStartOffset, dataLength);
+                ByteBuffer dataBuffer = ByteBuffer.wrap(slicedData);
 
-        // กำหนดช่วงดัชนีใหม่
-        distributedColumn.startIdx = startIdx;
-        distributedColumn.endIdx = endIdx;
+                distributedColumn = new Column(metaData.getName(), sizePerElement, memoryGroupName, dataBuffer, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
+                break;
+            }
+            case 1: { // Variable Scalar (Strict Compact/Dense Logic)
+                List<VariableElement> values = new ArrayList<>();
+
+                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Skip ข้อมูลก่อนหน้า startIdx จริง)
+                long cursor = (rows + 7) / 8;
+                for (int i = 0; i < this.startIdx + startIdx; i++) {
+                    if (!isNull(i)) {
+                        byte[] sizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int size = ByteBuffer.wrap(sizeBytes).getInt();
+                        cursor += Integer.BYTES + size;
+                    }
+                }
+
+                // 2.2 อ่านข้อมูลจริงในช่วง Slice
+                for (int i = 0; i < newRowCount; i++) {
+                    if (newNotNullFlags[i]) { // ถ้า Row ไม่เป็น Null
+                        byte[] sizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int size = ByteBuffer.wrap(sizeBytes).getInt();
+                        cursor += Integer.BYTES;
+
+                        byte[] data = memory.readBytes(cursor, size);
+                        cursor += size;
+
+                        values.add(new VariableElement(data)); // เพิ่มเฉพาะ Non-Null
+                    }
+                    // ถ้าเป็น Null: ข้ามการเพิ่มใน values
+                }
+
+                distributedColumn = new Column(metaData.getName(), values, memoryGroupName, newNotNullFlags, 0, newRowCount, dType);
+                break;
+            }
+            case 2: { // Fixed List (Strict Compact/Dense Logic for Row and Element)
+                List<List<byte[]>> lists = new ArrayList<>();
+                List<boolean[]> perListNotNullFlags = new ArrayList<>();
+
+                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Compact Logic)
+                long cursor = (rows + 7) / 8;
+                for(int i=0; i < this.startIdx + startIdx; i++){
+                    if(!isNull(i)){
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        cursor += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        cursor += bitmapBytes;
+
+                        cursor += (long) listSize * sizePerElement;
+                    }
+                }
+
+                // 2.2 อ่านข้อมูล Slice
+                for(int i=0; i < newRowCount; i++){
+                    if(newNotNullFlags[i]){ // ถ้า Row ไม่เป็น Null
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        cursor += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmapRaw = memory.readBytes(cursor, bitmapBytes);
+                        cursor += bitmapBytes;
+
+                        boolean[] listFlags = new boolean[listSize];
+                        for(int bit=0; bit<listSize; bit++){
+                            listFlags[bit] = (listBitmapRaw[bit/8] & (1 << (bit%8))) != 0;
+                        }
+                        perListNotNullFlags.add(listFlags); // เพิ่ม listFlags เดิม
+
+                        // *** การเปลี่ยนแปลง: elementList เป็น Dense List ***
+                        List<byte[]> elementList = new ArrayList<>();
+                        for(int j=0; j<listSize; j++){
+                            if(listFlags[j]){ // ถ้า Element ไม่เป็น Null
+                                byte[] el = memory.readBytes(cursor, sizePerElement);
+                                elementList.add(el); // เพิ่มเฉพาะ Non-Null Element
+                            }
+                            cursor += sizePerElement;
+                            // ถ้าเป็น Null: ข้ามการเพิ่มใน elementList
+                        }
+                        lists.add(elementList); // เพิ่มเฉพาะ Non-Null Row
+                    }
+                    // ถ้าเป็น Null: ข้ามการเพิ่มใน lists และ perListNotNullFlags
+                }
+
+                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
+                break;
+            }
+            case 3: { // Variable List (Strict Compact/Dense Logic for Row and Element)
+                List<List<VariableElement>> lists = new ArrayList<>();
+                List<boolean[]> perListNotNullFlags = new ArrayList<>();
+
+                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Compact Logic)
+                long cursor = (rows + 7) / 8;
+                for(int i=0; i < this.startIdx + startIdx; i++){
+                    if(!isNull(i)){
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        cursor += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmap = memory.readBytes(cursor, bitmapBytes);
+                        cursor += bitmapBytes;
+
+                        // Skip elements inside list
+                        for(int j=0; j<listSize; j++){
+                            boolean isElNotNull = (listBitmap[j/8] & (1 << (j%8))) != 0;
+                            if(isElNotNull){
+                                byte[] elSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
+                                cursor += Integer.BYTES + elSize;
+                            }
+                        }
+                    }
+                }
+
+                // 2.2 อ่านข้อมูล Slice
+                for(int i = 0; i < newRowCount; i++){
+                    if(newNotNullFlags[i]){ // ถ้า Row ไม่เป็น Null
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        cursor += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmapRaw = memory.readBytes(cursor, bitmapBytes);
+                        cursor += bitmapBytes;
+
+                        boolean[] listFlags = new boolean[listSize];
+                        for(int bit = 0; bit < listSize; bit++){
+                            listFlags[bit] = (listBitmapRaw[bit/8] & (1 << (bit%8))) != 0;
+                        }
+                        perListNotNullFlags.add(listFlags); // เพิ่ม listFlags เดิม
+
+                        // *** การเปลี่ยนแปลง: elementList เป็น Dense List ***
+                        List<VariableElement> elementList = new ArrayList<>();
+                        for(int j = 0; j < listSize; j++){
+                            if(listFlags[j]){ // ถ้า Element ไม่เป็น Null
+                                byte[] elSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
+                                cursor += Integer.BYTES;
+
+                                byte[] elData = memory.readBytes(cursor, elSize);
+                                cursor += elSize;
+                                elementList.add(new VariableElement(elData)); // เพิ่มเฉพาะ Non-Null Element
+                            }
+                            // ถ้าเป็น Null: ข้ามการเพิ่มใน elementList
+                        }
+                        lists.add(elementList); // เพิ่มเฉพาะ Non-Null Row
+                    }
+                    // ถ้าเป็น Null: ข้ามการเพิ่มใน lists และ perListNotNullFlags
+                }
+
+                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, 0, newRowCount, dType);
+                break;
+            }
+        }
+
+        // 3. Resource Identity และ Metadata View
+        if (distributedColumn != null) {
+            distributedColumn.id = this.id;
+
+            distributedColumn.startIdx = this.startIdx + startIdx;
+            distributedColumn.endIdx = this.startIdx + endIdx;
+
+            distributedColumn.metaData.setRows(newRowCount);
+            distributedColumn.metaData.setSharded(true);
+        }
 
         return distributedColumn;
     }
@@ -494,6 +656,195 @@ public class Column implements Serializable, KodResourceNaming {
         return value;
     }
 
+    public Value<?> readRow(int index, DataFrameCursor dataFrameCursor){
+
+        int nullbitmapsize = ((rows + 7) / 8);
+        byte[] nullbitmap = memory.readBytes(nullbitmapsize);
+        boolean isNull = isNull(index, nullbitmap);
+        if(isNull){
+            return new NullValue(new Object());
+        }
+        Value<?> value = null;
+        switch (columnKind){
+            case 0 -> {
+                if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_INT)){
+                    byte[] b = memory.readBytes(dataFrameCursor.getCursor(), Integer.BYTES);
+                    ByteBuffer buffer = ByteBuffer.wrap(b);
+                    Number n = buffer.getInt();
+                    value = new Value<>(n);
+                    dataFrameCursor.setCursor(dataFrameCursor.getCursor() + Integer.BYTES);
+                } else if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_DOUBLE)){
+                    byte[] b = memory.readBytes(dataFrameCursor.getCursor(), Double.BYTES);
+                    ByteBuffer buffer = ByteBuffer.wrap(b);
+                    Number n = buffer.getDouble();
+                    value = new Value<>(n);
+                    dataFrameCursor.setCursor(dataFrameCursor.getCursor() + Double.BYTES);
+                } else if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_LOGICAL)){
+                    byte[] b = memory.readBytes(dataFrameCursor.getCursor(), 1);
+                    ByteBuffer buffer = ByteBuffer.wrap(b);
+                    Boolean n = buffer.get() == 1;
+                    value = new Value<>(n);
+                    dataFrameCursor.setCursor(dataFrameCursor.getCursor() + 1);
+                }else if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_DATE)){
+                    byte[] b = memory.readBytes(dataFrameCursor.getCursor(), 8);
+                    ByteBuffer buffer = ByteBuffer.wrap(b);
+                    long l = buffer.getLong();
+                    value = new Value<>(new Date(l));
+                    dataFrameCursor.setCursor(dataFrameCursor.getCursor() + 8);
+                }else if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP)){
+                    byte[] b = memory.readBytes(dataFrameCursor.getCursor(), 8);
+                    ByteBuffer buffer = ByteBuffer.wrap(b);
+                    long l = buffer.getLong();
+                    value = new Value<>(new Timestamp(l));
+                    dataFrameCursor.setCursor(dataFrameCursor.getCursor() + 8);
+                }
+            }
+            case 1 -> {
+//                แบบ variable
+//                byte[] size = memory.readBytes(offset, 4);
+                // 1. อ่านขนาดของ Element (4 bytes) จากตำแหน่ง dataOffset
+                byte[] sizeBytes = memory.readBytes(dataFrameCursor.getCursor(), Integer.BYTES);
+                ByteBuffer sizeBuffer = ByteBuffer.wrap(sizeBytes);
+                int dataLength = sizeBuffer.getInt();
+
+                // 2. ข้าม 4 bytes ของขนาด, อ่านข้อมูลจริง (dataLength bytes)
+                long valueOffset = dataFrameCursor.getCursor() + Integer.BYTES;
+                byte[] dataBytes = memory.readBytes(valueOffset, dataLength);
+
+                // 3. แปลง byte array เป็น Value<?>
+                // โค้ดต้นฉบับไม่ได้ระบุประเภทข้อมูล (DType) สำหรับ Variable Length อย่างชัดเจน
+                // (เช่น String, byte[]) ผมจะสมมติว่าข้อมูลที่อ่านได้คือ byte[] หรือ String (แล้วแต่การใช้งานใน VariableElement)
+                // แต่เนื่องจาก DType ไม่ได้ถูกใช้ในการแปลง (เหมือนใน case 0) ผมจึงแปลงเป็น byte[] เพื่อให้ใช้งานได้:
+                dataFrameCursor.setCursor(dataFrameCursor.getCursor() + 4);
+                dataFrameCursor.setCursor(dataFrameCursor.getCursor() + dataLength);
+                if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_STRING)){
+                    // สมมติเป็น String
+                    String s = new String(dataBytes);
+                    value = new Value<>(s);
+                } else {
+                    // ใช้ byte[] เป็นค่าเริ่มต้นสำหรับข้อมูลแบบ Variable length
+                    value = new Value<>(dataBytes);
+                }
+            }
+            case 2 ->{
+//                แบบ list of fix length
+                // 1. อ่านขนาดของ List (4 bytes)
+                byte[] listSizeBytes = memory.readBytes(dataFrameCursor.getCursor(), Integer.BYTES);
+                ByteBuffer listSizeBuffer = ByteBuffer.wrap(listSizeBytes);
+                int listSize = listSizeBuffer.getInt();
+
+                long currentOffset = dataFrameCursor.getCursor() + Integer.BYTES; // ข้าม List Size
+
+                // 2. คำนวณและอ่าน Per-List Null Bitmap
+                int perListNullBitmapBytes = (listSize + 7) / 8;
+                byte[] perListNullBitmap = memory.readBytes(currentOffset, perListNullBitmapBytes);
+                currentOffset += perListNullBitmapBytes;
+
+                // 3. อ่าน Element ข้อมูลจริง (List)
+                List<Value<?>> listValues = new ArrayList<>();
+                int elementSize = getSizePerElement();
+
+                // ดึง DType ของ Column เพื่อใช้ในการแปลงค่า Element ภายใน
+                ColumnMetaData.ColumnDType listDType = getMetaData().getDType();
+
+                for (int j = 0; j < listSize; j++) {
+                    boolean isElementNotNull = (perListNullBitmap[j / 8] & (1 << (j % 8))) != 0;
+
+                    if (!isElementNotNull) {
+                        listValues.add(new NullValue(new Object())); // Element เป็น Null
+                        continue;
+                    }
+
+                    // อ่าน Element ที่มีขนาดคงที่
+                    byte[] elementBytes = memory.readBytes(currentOffset, elementSize);
+                    ByteBuffer elementBuffer = ByteBuffer.wrap(elementBytes);
+                    Value<?> elementValue;
+
+                    // ตรรกะการแปลงค่า DType ภายใน List (List DType -> Element Type)
+                    if (listDType.equals(ColumnMetaData.ColumnDType.LIST_INT)) {
+                        elementValue = new Value<>(elementBuffer.getInt());
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_DOUBLE)) {
+                        elementValue = new Value<>(elementBuffer.getDouble());
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_LOGICAL)) {
+                        elementValue = new Value<>(elementBuffer.get() == 1);
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_DATE) || listDType.equals(ColumnMetaData.ColumnDType.LIST_TIMESTAMP)) {
+                        // Date/Timestamp ใช้ Long
+                        elementValue = (listDType.equals(ColumnMetaData.ColumnDType.LIST_DATE)) ?
+                                new Value<>(new Date(elementBuffer.getLong())) :
+                                new Value<>(new Timestamp(elementBuffer.getLong()));
+                    } else {
+                        // สำหรับ DType อื่นๆ หรือไม่รู้จัก ให้ใช้ byte[] เป็นค่าเริ่มต้น
+                        elementValue = new Value<>(elementBytes);
+                    }
+
+                    listValues.add(elementValue);
+                    currentOffset += elementSize; // เลื่อน Offset
+                }
+                dataFrameCursor.setCursor(currentOffset);
+                value = new Value<>(listValues); // คืนค่าเป็น Value ที่บรรจุ List<Value<?>>
+            }
+            case 3 ->{
+//                แบบ list variable length
+                long currentOffset = dataFrameCursor.getCursor();
+
+                // 1. อ่าน List Size (4 bytes)
+                byte[] listSizeBytes = memory.readBytes(currentOffset, Integer.BYTES);
+                ByteBuffer listSizeBuffer = ByteBuffer.wrap(listSizeBytes);
+                int listSize = listSizeBuffer.getInt();
+                currentOffset += Integer.BYTES; // ข้าม List Size
+
+                // 2. คำนวณและอ่าน Per-List Null Bitmap
+                int perListNullBitmapBytes = (listSize + 7) / 8;
+                byte[] perListNullBitmap = memory.readBytes(currentOffset, perListNullBitmapBytes);
+                currentOffset += perListNullBitmapBytes;
+
+                // 3. อ่าน Element ข้อมูลจริง (List)
+                List<Value<?>> listValues = new ArrayList<>();
+                ColumnMetaData.ColumnDType listDType = getMetaData().getDType();
+
+                for (int j = 0; j < listSize; j++) {
+                    boolean isElementNotNull = (perListNullBitmap[j / 8] & (1 << (j % 8))) != 0;
+
+                    if (!isElementNotNull) {
+                        listValues.add(new NullValue(new Object())); // Element เป็น Null
+                        continue;
+                    }
+
+                    // Element เป็นแบบ Variable Length: [Size (4 bytes)][Data (N bytes)]
+
+                    // 3a. อ่านขนาดของ Element (4 bytes)
+                    byte[] elementSizeBytes = memory.readBytes(currentOffset, Integer.BYTES);
+                    ByteBuffer elementSizeBuffer = ByteBuffer.wrap(elementSizeBytes);
+                    int elementDataSize = elementSizeBuffer.getInt();
+                    currentOffset += Integer.BYTES;
+
+                    // 3b. อ่านข้อมูลจริง
+                    byte[] elementBytes = memory.readBytes(currentOffset, elementDataSize);
+
+                    // 3c. แปลงค่า DType
+                    Value<?> elementValue;
+
+                    // Note: สำหรับ Variable Length DType ที่สำคัญคือ String (LIST_STRING)
+                    if (listDType.equals(ColumnMetaData.ColumnDType.LIST_STRING)) {
+                        String s = new String(elementBytes);
+                        elementValue = new Value<>(s);
+                    } else {
+                        // สำหรับ DType อื่นๆ หรือไม่รู้จัก ให้ใช้ byte[]
+                        elementValue = new Value<>(elementBytes);
+                    }
+
+                    listValues.add(elementValue);
+                    currentOffset += elementDataSize; // เลื่อน Offset ข้ามข้อมูลจริง
+                }
+                dataFrameCursor.setCursor(currentOffset);
+                value = new Value<>(listValues); // คืนค่าเป็น Value ที่บรรจุ List<Value<?>>
+            }
+            default -> value = null;
+        }
+
+        return value;
+    }
+
     public boolean isNull(int index) {
         int nullbitmapsize = ((rows + 7) / 8);
         byte[] nullbitmap = memory.readBytes(nullbitmapsize);
@@ -505,4 +856,6 @@ public class Column implements Serializable, KodResourceNaming {
         boolean isNotNull = (nullbitmap[index / 8] & (1 << (index % 8))) != 0;
         return !isNotNull;
     }
+
+
 }
