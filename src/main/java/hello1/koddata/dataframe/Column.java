@@ -15,6 +15,7 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -318,7 +319,7 @@ public class Column implements Serializable, KodResourceNaming {
         if(isNull){
             return new NullValue(new Object());
         }
-        Value<?> value;
+        Value<?> value = null;
         switch (columnKind){
             case 0 -> {
                 if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_INT)){
@@ -349,13 +350,148 @@ public class Column implements Serializable, KodResourceNaming {
                 }
             }
             case 1 -> {
-                byte[] size = memory.readBytes(offset, 4);
+//                แบบ variable
+//                byte[] size = memory.readBytes(offset, 4);
+                // 1. อ่านขนาดของ Element (4 bytes) จากตำแหน่ง dataOffset
+                byte[] sizeBytes = memory.readBytes(offset, Integer.BYTES);
+                ByteBuffer sizeBuffer = ByteBuffer.wrap(sizeBytes);
+                int dataLength = sizeBuffer.getInt();
 
+                // 2. ข้าม 4 bytes ของขนาด, อ่านข้อมูลจริง (dataLength bytes)
+                long valueOffset = offset + Integer.BYTES;
+                byte[] dataBytes = memory.readBytes(valueOffset, dataLength);
+
+                // 3. แปลง byte array เป็น Value<?>
+                // โค้ดต้นฉบับไม่ได้ระบุประเภทข้อมูล (DType) สำหรับ Variable Length อย่างชัดเจน
+                // (เช่น String, byte[]) ผมจะสมมติว่าข้อมูลที่อ่านได้คือ byte[] หรือ String (แล้วแต่การใช้งานใน VariableElement)
+                // แต่เนื่องจาก DType ไม่ได้ถูกใช้ในการแปลง (เหมือนใน case 0) ผมจึงแปลงเป็น byte[] เพื่อให้ใช้งานได้:
+
+                if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_STRING)){
+                    // สมมติเป็น String
+                    String s = new String(dataBytes);
+                    value = new Value<>(s);
+                } else {
+                    // ใช้ byte[] เป็นค่าเริ่มต้นสำหรับข้อมูลแบบ Variable length
+                    value = new Value<>(dataBytes);
+                }
+            }
+            case 2 ->{
+//                แบบ list of fix length
+                // 1. อ่านขนาดของ List (4 bytes)
+                byte[] listSizeBytes = memory.readBytes(offset, Integer.BYTES);
+                ByteBuffer listSizeBuffer = ByteBuffer.wrap(listSizeBytes);
+                int listSize = listSizeBuffer.getInt();
+
+                long currentOffset = offset + Integer.BYTES; // ข้าม List Size
+
+                // 2. คำนวณและอ่าน Per-List Null Bitmap
+                int perListNullBitmapBytes = (listSize + 7) / 8;
+                byte[] perListNullBitmap = memory.readBytes(currentOffset, perListNullBitmapBytes);
+                currentOffset += perListNullBitmapBytes;
+
+                // 3. อ่าน Element ข้อมูลจริง (List)
+                List<Value<?>> listValues = new ArrayList<>();
+                int elementSize = getSizePerElement();
+
+                // ดึง DType ของ Column เพื่อใช้ในการแปลงค่า Element ภายใน
+                ColumnMetaData.ColumnDType listDType = getMetaData().getDType();
+
+                for (int j = 0; j < listSize; j++) {
+                    boolean isElementNotNull = (perListNullBitmap[j / 8] & (1 << (j % 8))) != 0;
+
+                    if (!isElementNotNull) {
+                        listValues.add(new NullValue(new Object())); // Element เป็น Null
+                        continue;
+                    }
+
+                    // อ่าน Element ที่มีขนาดคงที่
+                    byte[] elementBytes = memory.readBytes(currentOffset, elementSize);
+                    ByteBuffer elementBuffer = ByteBuffer.wrap(elementBytes);
+                    Value<?> elementValue;
+
+                    // ตรรกะการแปลงค่า DType ภายใน List (List DType -> Element Type)
+                    if (listDType.equals(ColumnMetaData.ColumnDType.LIST_INT)) {
+                        elementValue = new Value<>(elementBuffer.getInt());
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_DOUBLE)) {
+                        elementValue = new Value<>(elementBuffer.getDouble());
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_LOGICAL)) {
+                        elementValue = new Value<>(elementBuffer.get() == 1);
+                    } else if (listDType.equals(ColumnMetaData.ColumnDType.LIST_DATE) || listDType.equals(ColumnMetaData.ColumnDType.LIST_TIMESTAMP)) {
+                        // Date/Timestamp ใช้ Long
+                        elementValue = (listDType.equals(ColumnMetaData.ColumnDType.LIST_DATE)) ?
+                                new Value<>(new Date(elementBuffer.getLong())) :
+                                new Value<>(new Timestamp(elementBuffer.getLong()));
+                    } else {
+                        // สำหรับ DType อื่นๆ หรือไม่รู้จัก ให้ใช้ byte[] เป็นค่าเริ่มต้น
+                        elementValue = new Value<>(elementBytes);
+                    }
+
+                    listValues.add(elementValue);
+                    currentOffset += elementSize; // เลื่อน Offset
+                }
+
+                value = new Value<>(listValues); // คืนค่าเป็น Value ที่บรรจุ List<Value<?>>
+            }
+            case 3 ->{
+//                แบบ list variable length
+                long currentOffset = offset;
+
+                // 1. อ่าน List Size (4 bytes)
+                byte[] listSizeBytes = memory.readBytes(currentOffset, Integer.BYTES);
+                ByteBuffer listSizeBuffer = ByteBuffer.wrap(listSizeBytes);
+                int listSize = listSizeBuffer.getInt();
+                currentOffset += Integer.BYTES; // ข้าม List Size
+
+                // 2. คำนวณและอ่าน Per-List Null Bitmap
+                int perListNullBitmapBytes = (listSize + 7) / 8;
+                byte[] perListNullBitmap = memory.readBytes(currentOffset, perListNullBitmapBytes);
+                currentOffset += perListNullBitmapBytes;
+
+                // 3. อ่าน Element ข้อมูลจริง (List)
+                List<Value<?>> listValues = new ArrayList<>();
+                ColumnMetaData.ColumnDType listDType = getMetaData().getDType();
+
+                for (int j = 0; j < listSize; j++) {
+                    boolean isElementNotNull = (perListNullBitmap[j / 8] & (1 << (j % 8))) != 0;
+
+                    if (!isElementNotNull) {
+                        listValues.add(new NullValue(new Object())); // Element เป็น Null
+                        continue;
+                    }
+
+                    // Element เป็นแบบ Variable Length: [Size (4 bytes)][Data (N bytes)]
+
+                    // 3a. อ่านขนาดของ Element (4 bytes)
+                    byte[] elementSizeBytes = memory.readBytes(currentOffset, Integer.BYTES);
+                    ByteBuffer elementSizeBuffer = ByteBuffer.wrap(elementSizeBytes);
+                    int elementDataSize = elementSizeBuffer.getInt();
+                    currentOffset += Integer.BYTES;
+
+                    // 3b. อ่านข้อมูลจริง
+                    byte[] elementBytes = memory.readBytes(currentOffset, elementDataSize);
+
+                    // 3c. แปลงค่า DType
+                    Value<?> elementValue;
+
+                    // Note: สำหรับ Variable Length DType ที่สำคัญคือ String (LIST_STRING)
+                    if (listDType.equals(ColumnMetaData.ColumnDType.LIST_STRING)) {
+                        String s = new String(elementBytes);
+                        elementValue = new Value<>(s);
+                    } else {
+                        // สำหรับ DType อื่นๆ หรือไม่รู้จัก ให้ใช้ byte[]
+                        elementValue = new Value<>(elementBytes);
+                    }
+
+                    listValues.add(elementValue);
+                    currentOffset += elementDataSize; // เลื่อน Offset ข้ามข้อมูลจริง
+                }
+
+                value = new Value<>(listValues); // คืนค่าเป็น Value ที่บรรจุ List<Value<?>>
             }
             default -> value = null;
         }
 
-
+        return value;
     }
 
     public boolean isNull(int index) {
