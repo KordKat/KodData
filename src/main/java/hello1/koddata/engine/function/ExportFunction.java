@@ -25,31 +25,22 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
 
     @Override
     public Value<CompletableFuture<DataFrameLoader>> execute() throws KException {
-        if (!arguments.containsKey("dataName")){
-            throw new KException(ExceptionCode.KDE0012,"export function need argument databaseName");
-        }
-        Value<?> dataName = arguments.get("dataName");
-        if (!(dataName.get() instanceof String dataNameS)) {
-            throw new KException(ExceptionCode.KDE0012, "Invalid type: argument 'dataName' ");
-        }
 
-        if (!arguments.containsKey("sessionName")){
-            throw new KException(ExceptionCode.KDE0012,"export function need argument session name");
+        if(!arguments.containsKey("dataframe")){
+            throw new KException(ExceptionCode.KDE0012,"argument dataframe is missing");
         }
-        Value<?> sessionName = arguments.get("sessionName");
-        if (!(sessionName.get() instanceof String sessionNameS)) {
-            throw new KException(ExceptionCode.KDE0012, "");
+        Value<?> df = arguments.get("dataframe");
+        if(!(df.get() instanceof ColumnArray ca)){
+            throw new KException(ExceptionCode.KD00005, "only dataframe can export");
         }
-        SessionData sessionData = new SessionData(sessionNameS);
-        ColumnArray dataNameCA = sessionData.getSessionDataFrame().get(dataNameS);
-        DataFrameRecord[] dataNameDFR = dataNameCA.toRecords();
+        DataFrameRecord[] dataNameDFR = ca.toRecords();
 
         if (!arguments.containsKey("dataType")){
             throw new KException(ExceptionCode.KDE0012,"Remove function need argument databaseName");
         }
         Value<?> dataType = arguments.get("dataType");
         if (!(dataType.get() instanceof DataSource dataTypeDS)) {
-            throw new KException(ExceptionCode.KDE0012, "argument dataType should be DATABASE , JSON , CSV");
+            throw new KException(ExceptionCode.KDE0012, "argument dataType should be CSV or JSON");
         }
         if (!arguments.containsKey("fileName")){
             throw new KException(ExceptionCode.KDE0012,"Remove function need argument databaseName");
