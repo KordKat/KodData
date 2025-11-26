@@ -247,6 +247,35 @@ public class ColumnArray implements Serializable {
         }
     }
 
+    public ColumnArray distributeColumn(List<Integer> indexList) throws KException {
+        // 1. ตรวจสอบสถานะของ Columns ปัจจุบัน
+        if (columns.isEmpty()) {
+            return new ColumnArray(new ImmutableArray<>(new Column[0]), this.memoryGroup);
+        }
+
+        // 2. ตรวจสอบ Index List
+        if (indexList == null || indexList.isEmpty()) {
+            // ถ้าไม่มี Index ที่ต้องการเลย ให้คืนค่าตารางเปล่า (Empty DataFrame)
+            return new ColumnArray(new ImmutableArray<>(new Column[0]), this.memoryGroup);
+        }
+
+        // 3. เตรียม List สำหรับเก็บ Column ใหม่
+        List<Column> distributedColumnsList = new ArrayList<>(columns.size());
+
+        // 4. วนลูปผ่านทุก Column ใน Map
+        for (Column column : columns.values()) {
+            // เรียกใช้ logic การตัดแบ่งข้อมูลตาม Index List จาก class Column (ที่ implement ไปก่อนหน้านี้)
+            Column newColumn = column.distributeColumn(indexList);
+            distributedColumnsList.add(newColumn);
+        }
+
+        // 5. สร้าง ImmutableArray เพื่อส่งให้ Constructor
+        ImmutableArray<Column> distributedColumns = new ImmutableArray<>(distributedColumnsList.toArray(new Column[0]));
+
+        // 6. ส่งคืน ColumnArray ใหม่ที่ประกอบด้วยข้อมูลแถวตาม Index List ที่ระบุ
+        return new ColumnArray(distributedColumns, this.memoryGroup);
+    }
+
     public ColumnArray getPart(int part){
 
         return null;
