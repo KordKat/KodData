@@ -1,6 +1,7 @@
 package hello1.koddata.engine;
 
 import hello1.koddata.dataframe.ColumnArray;
+import hello1.koddata.engine.function.*;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.ast.*;
@@ -482,7 +483,16 @@ public class StatementExecutor {
                         throw new KException(ExceptionCode.KDE0012, "exponent should be number");
                     }
                     return new Value<>(new QueryOperationNode(new FillOperation(evaluatedArguments.get(1) , evaluatedArguments.get(2)), evaluatedArguments));
-
+                case "connect":
+                    return new Value<>(new QueryOperationNode((QueryOperation) new ConnectionFunction(), evaluatedArguments));
+                case "download":
+                    return new Value<>(new QueryOperationNode((QueryOperation) new DownloadFunction(), evaluatedArguments));
+                case "export":
+                    return new Value<>(new QueryOperationNode((QueryOperation) new ExportFunction(), evaluatedArguments));
+                case "fetch":
+                    return new Value<>(new QueryOperationNode((QueryOperation) new FetchFunction(), evaluatedArguments));
+                case "remove":
+                    return new Value<>(new QueryOperationNode((QueryOperation) new RemoveFunction(), evaluatedArguments));
                 default:
                     // โค้ดสำหรับกรณีที่ไม่พบชื่อฟังก์ชัน
                     // เช่น การโยน Exception หรือการแสดงข้อความผิดพลาด
@@ -490,7 +500,6 @@ public class StatementExecutor {
             }
         } else if(expression instanceof Pipeline pipe){ //return query execution
             // เริ่มต้นด้วยค่า null สำหรับ pipeline แรก
-            Value<?> currentValue = new NullValue("Initial pipeline value");
 
             QueryExecution queryExecution = new QueryExecution();
             QueryOperationNode queryOperationNode = queryExecution.getHead();
