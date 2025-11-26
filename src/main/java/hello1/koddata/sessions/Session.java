@@ -85,7 +85,7 @@ public class Session {
     }
 
     public void newProcess(QueryExecution execution){
-        
+
     }
 
     public void terminate(){

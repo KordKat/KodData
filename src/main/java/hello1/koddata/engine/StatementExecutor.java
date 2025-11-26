@@ -233,16 +233,20 @@ public class StatementExecutor {
 
         } else if (expression instanceof NullLiteral n){
             return new NullValue("null");
-        }else if(expression instanceof FunctionCall fc){
+        }else if(expression instanceof FunctionCall fc){ //string -> new Value<>("Task {id} started");
 
-        } else if(expression instanceof Pipeline pipe){
+        } else if(expression instanceof Pipeline pipe){ //task id
+            if(pipe instanceof BranchPipeline bp){
 
+            }else {
+
+            }
         }else if(expression instanceof BranchMember bm){
-
+            //...
         }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
-            //might have case of column, I'll do it tomorrow
+            
         }else if(expression instanceof UnaryExpression unary){
 
         }
