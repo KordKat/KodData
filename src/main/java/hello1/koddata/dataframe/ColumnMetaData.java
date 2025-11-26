@@ -1,6 +1,5 @@
 package hello1.koddata.dataframe;
 
-import hello1.koddata.utils.SerialVersionId;
 
 public class ColumnMetaData {
 
@@ -25,7 +24,6 @@ public class ColumnMetaData {
     private boolean isSharded = false;
     private ColumnDType dType;
 
-    private long serialVersionId = SerialVersionId.get;
     public ColumnMetaData(String name, boolean isVariable, ColumnDType dType){
         this.name = name;
         this.isVariable = isVariable;

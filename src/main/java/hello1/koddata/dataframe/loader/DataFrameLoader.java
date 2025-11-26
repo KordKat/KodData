@@ -1,7 +1,6 @@
 package hello1.koddata.dataframe.loader;
 
 import hello1.koddata.dataframe.Column;
-import hello1.koddata.dataframe.DataFrame;
 
 import java.io.IOException;
 import java.io.InputStream;

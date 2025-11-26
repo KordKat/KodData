@@ -19,8 +19,6 @@ public class SessionData {
 
     private Map<String, ColumnArray> sessionDataFrame = new ConcurrentHashMap<>();
 
-    private Map<Integer, String> preparedBlock = new ConcurrentHashMap<>();
-
     private MemoryGroup memoryGroup;
 
     public SessionData(String sessionName){
@@ -35,23 +33,12 @@ public class SessionData {
         this.variables.put(varName, value);
     }
 
-    public void newDataFrame(DataFrameLoader loader){
-        String name = loader.getFrame().getName();
-        Column[] columns = loader.getColumns().toArray(new Column[0]);
-        ColumnArray columnArray = new ColumnArray(new ImmutableArray<>(columns), memoryGroup);
-        sessionDataFrame.put(name, columnArray);
-
-    }
 
     public void deallocDataFrame(String dfName){
         ColumnArray columnArray = sessionDataFrame.get(dfName);
         if(columnArray == null) return;
         columnArray.deallocate();
         sessionDataFrame.remove(dfName);
-    }
-
-    public Map<Integer, String> getPreparedBlock() {
-        return preparedBlock;
     }
 
     public void assignVariable(DataName name, Object value) throws KException {

@@ -1,15 +1,12 @@
 package hello1.koddata.dataframe;
 
-import hello1.koddata.concurrent.cluster.ClusterIdCounter;
+import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.engine.NullValue;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.memory.Memory;
 import hello1.koddata.memory.MemoryGroup;
-import hello1.koddata.net.NodeStatus;
-import hello1.koddata.utils.KodResourceNaming;
-import hello1.koddata.utils.Serializable;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -20,8 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-public class Column implements Serializable, KodResourceNaming {
-    private static ClusterIdCounter columnIdCounter;
+public class Column{
+    private static IdCounter columnIdCounter;
     private long id;
     private String memoryGroupName;
     private ColumnMetaData metaData;
@@ -34,13 +31,9 @@ public class Column implements Serializable, KodResourceNaming {
     //for deserializing
     public Column(){}
 
-    public static void setupIdCounter(Set<NodeStatus> peers){
-        columnIdCounter = ClusterIdCounter.getCounter(Column.class, peers);
-    }
-
     public Column(String name, int sizePerElement, String memoryGroupName, ByteBuffer dataBuffer, boolean[] notNullFlags, int elementSize, int startIdx, int endIdx, ColumnMetaData.ColumnDType dType) throws KException {
         setupMetadata(name, sizePerElement, memoryGroupName, false, dType);
-        id = columnIdCounter.count();
+        id = columnIdCounter.next();
         if(MemoryGroup.get(memoryGroupName) == null){
             throw new KException(ExceptionCode.KDM0007, "Memory group '" + memoryGroupName + "' does not exist.");
         }
@@ -54,7 +47,7 @@ public class Column implements Serializable, KodResourceNaming {
 
     public Column(String name, List<VariableElement> values, String memoryGroupName, boolean[] notNullFlags, int startIdx, int endIdx, ColumnMetaData.ColumnDType dType) throws KException {
         setupMetadata(name, sizePerElement, memoryGroupName, true, dType);
-        id = columnIdCounter.count();
+        id = columnIdCounter.next();
 
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new VariableColumnAllocator(values, notNullFlags));
@@ -67,7 +60,7 @@ public class Column implements Serializable, KodResourceNaming {
     public Column(String name, String memoryGroupName, List<List<byte[]>> lists, List<boolean[]> perListNotNullFlags,
                   boolean[] columnNotNullFlags, int elementSize, int startIdx, int endIdx, ColumnMetaData.ColumnDType dType) throws KException {
         setupMetadata(name, elementSize, memoryGroupName, true, dType);
-        id = columnIdCounter.count();
+        id = columnIdCounter.next();
 
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new FixedListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags,elementSize));
@@ -81,7 +74,7 @@ public class Column implements Serializable, KodResourceNaming {
                   List<boolean[]> perListNotNullFlags,
                   boolean[] columnNotNullFlags, int startIdx, int endIdx, ColumnMetaData.ColumnDType dType) throws KException {
         setupMetadata(name, -1, memoryGroupName, true, dType);
-        id = columnIdCounter.count();
+        id = columnIdCounter.next();
         memory = MemoryGroup.get(memoryGroupName)
                 .allocate(new VariableListColumnAllocator(lists,perListNotNullFlags,columnNotNullFlags));
         columnKind = 3;
@@ -106,365 +99,6 @@ public class Column implements Serializable, KodResourceNaming {
         return sizePerElement;
     }
 
-    @Override
-    public String getResourceName() {
-        return String.format("%s::%d::%s", Column.class.getName(), id, getMetaData().getName());
-    }
-
-    @Override
-    public byte[] serialize() {
-        // 1. คำนวณขนาดของ Buffer
-        int metaDataSize = 0;
-        if (metaData != null) {
-
-            // **ส่วนที่ 1: ขนาด DType**
-            // 4 (int length) + DType name length
-            String dTypeName = (metaData.getDType() != null) ? metaData.getDType().name() : "";
-            int dTypeSize = 4 + dTypeName.length();
-
-            metaDataSize =
-                    4 + metaData.getName().length() + // name length + data
-                            1 + // isVariable (boolean)
-                            Integer.BYTES + // rows
-                            1 + // isSharded (boolean)
-                            dTypeSize; // **เพิ่ม DType size**
-        }
-
-        long memoryDataSize = 0;
-        if(memory != null){
-            memoryDataSize = memory.size();
-        }
-
-        int bufferSize = Long.BYTES + // id
-                4 + memoryGroupName.length() + // memoryGroupName length + data
-                metaDataSize +
-                Byte.BYTES + // columnKind
-                Integer.BYTES + // sizePerElement
-                Integer.BYTES + // startIdx
-                Integer.BYTES + // endIdx
-                Long.BYTES + // allocatedSize ของ Memory
-                (int) memoryDataSize; // ข้อมูลจริงของ Memory
-
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-
-        // 2. Serialize ข้อมูล Column หลัก
-        buffer.putLong(id);
-
-        // memoryGroupName
-        byte[] memoryGroupNameBytes = memoryGroupName.getBytes();
-        buffer.putInt(memoryGroupNameBytes.length);
-        buffer.put(memoryGroupNameBytes);
-
-        // 3. Serialize ColumnMetaData
-        if (metaData != null) {
-            // name
-            byte[] metaNameBytes = metaData.getName().getBytes();
-            buffer.putInt(metaNameBytes.length);
-            buffer.put(metaNameBytes);
-
-            // isVariable
-            buffer.put(metaData.isVariable() ? (byte) 1 : (byte) 0);
-
-            // rows
-            buffer.putInt(metaData.getRows());
-
-            // isSharded
-            buffer.put(metaData.isSharded() ? (byte) 1 : (byte) 0);
-
-            // **ส่วนที่ 2: Serialize dType**
-            String dTypeName = (metaData.getDType() != null) ? metaData.getDType().name() : "";
-            byte[] dTypeNameBytes = dTypeName.getBytes();
-            buffer.putInt(dTypeNameBytes.length);
-            buffer.put(dTypeNameBytes);
-        }
-
-        // 4. Serialize ข้อมูล Column ที่เหลือ
-        buffer.put(columnKind);
-        buffer.putInt(sizePerElement);
-        buffer.putInt(startIdx);
-        buffer.putInt(endIdx);
-
-        // 5. Serialize Memory Data
-        if (memory != null) {
-            buffer.putLong(memory.size());
-            byte[] rawData = memory.readBytes((int) memory.size());
-            buffer.put(rawData);
-        } else {
-            buffer.putLong(0L);
-        }
-
-        return buffer.array();
-    }
-
-    @Override
-    public void deserialize(byte[] b) {
-        ByteBuffer buffer = ByteBuffer.wrap(b);
-
-        // 1. Deserialize ข้อมูล Column หลัก
-        this.id = buffer.getLong();
-
-        // memoryGroupName
-        int nameLength = buffer.getInt();
-        byte[] nameBytes = new byte[nameLength];
-        buffer.get(nameBytes);
-        this.memoryGroupName = new String(nameBytes);
-
-        // 2. Deserialize ColumnMetaData
-
-        // name
-        int metaNameLength = buffer.getInt();
-        byte[] metaNameBytes = new byte[metaNameLength];
-        buffer.get(metaNameBytes);
-        String metaName = new String(metaNameBytes);
-
-        // isVariable
-        boolean isVariable = (buffer.get() == 1);
-
-        // rows
-        int rows = buffer.getInt();
-
-        // isSharded
-        boolean isSharded = (buffer.get() == 1);
-
-        // **ส่วนที่ 1: Deserialize dType**
-        int dTypeNameLength = buffer.getInt();
-        byte[] dTypeNameBytes = new byte[dTypeNameLength];
-        buffer.get(dTypeNameBytes);
-        String dTypeName = new String(dTypeNameBytes);
-
-        ColumnMetaData.ColumnDType dType = null;
-        if (!dTypeName.isEmpty()) {
-            try {
-                // แปลงชื่อ Enum กลับไปเป็น Object
-                dType = ColumnMetaData.ColumnDType.valueOf(dTypeName);
-            } catch (IllegalArgumentException e) {
-                // ควรจัดการข้อผิดพลาด (เช่น ถ้ามีการเปลี่ยนแปลง Enum ระหว่างเวอร์ชัน)
-            }
-        }
-
-        // **ส่วนที่ 2: สร้าง ColumnMetaData โดยใช้ Constructor ใหม่**
-        // สมมติว่า ColumnMetaData มี Constructor (String name, boolean isVariable, ColumnDType dType)
-        this.metaData = new ColumnMetaData(metaName, isVariable, dType);
-
-        // ตั้งค่า rows โดยใช้ Setter
-        metaData.setRows(rows);
-
-        // ตั้งค่า isSharded โดยใช้ Setter
-        metaData.setSharded(isSharded);
-
-        // 3. Deserialize ข้อมูล Column ที่เหลือ
-        this.columnKind = buffer.get();
-        this.sizePerElement = buffer.getInt();
-        this.startIdx = buffer.getInt();
-        this.endIdx = buffer.getInt();
-
-        // 4. Deserialize และกู้คืน Memory Data
-        long allocatedSize = buffer.getLong();
-
-        if (allocatedSize > 0) {
-            byte[] rawData = new byte[(int) allocatedSize];
-            buffer.get(rawData);
-
-            // **ใช้ WritableMemory/Unsafe เพื่อกู้คืน Memory object**
-            // (อ้างอิงจากสมมติฐานในคำตอบก่อนหน้าว่าระบบมีกลไกในการสร้าง Memory จาก rawData)
-            // this.memory = WritableMemory.createFromRawData(rawData); // สมมติฐาน
-        } else {
-            this.memory = null;
-        }
-    }
-
-    public Column distributeColumn(int startIdx, int endIdx) throws KException {
-        int newRowCount = endIdx - startIdx;
-
-        // 1. สร้าง Null Flags สำหรับ Slice ใหม่
-        boolean[] newNotNullFlags = new boolean[newRowCount];
-        for (int i = 0; i < newRowCount; i++) {
-            newNotNullFlags[i] = !isNull(this.startIdx + startIdx + i);
-        }
-
-        Column distributedColumn = null;
-        ColumnMetaData.ColumnDType dType = metaData.getDType();
-
-        // 2. ดึงข้อมูลและสร้าง Column ใหม่ตามประเภท (ColumnKind)
-        switch (columnKind) {
-            case 0: { // Fixed Scalar
-                long nullBitmapSize = (rows + 7) / 8;
-                long dataStartOffset = nullBitmapSize + ((long) (this.startIdx + startIdx) * sizePerElement);
-                int dataLength = newRowCount * sizePerElement;
-
-                byte[] slicedData = memory.readBytes(dataStartOffset, dataLength);
-                ByteBuffer dataBuffer = ByteBuffer.wrap(slicedData);
-
-                distributedColumn = new Column(metaData.getName(), sizePerElement, memoryGroupName, dataBuffer, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
-                break;
-            }
-            case 1: { // Variable Scalar (Strict Compact/Dense Logic)
-                List<VariableElement> values = new ArrayList<>();
-
-                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Skip ข้อมูลก่อนหน้า startIdx จริง)
-                long cursor = (rows + 7) / 8;
-                for (int i = 0; i < this.startIdx + startIdx; i++) {
-                    if (!isNull(i)) {
-                        byte[] sizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int size = ByteBuffer.wrap(sizeBytes).getInt();
-                        cursor += Integer.BYTES + size;
-                    }
-                }
-
-                // 2.2 อ่านข้อมูลจริงในช่วง Slice
-                for (int i = 0; i < newRowCount; i++) {
-                    if (newNotNullFlags[i]) { // ถ้า Row ไม่เป็น Null
-                        byte[] sizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int size = ByteBuffer.wrap(sizeBytes).getInt();
-                        cursor += Integer.BYTES;
-
-                        byte[] data = memory.readBytes(cursor, size);
-                        cursor += size;
-
-                        values.add(new VariableElement(data)); // เพิ่มเฉพาะ Non-Null
-                    }
-                    // ถ้าเป็น Null: ข้ามการเพิ่มใน values
-                }
-
-                distributedColumn = new Column(metaData.getName(), values, memoryGroupName, newNotNullFlags, 0, newRowCount, dType);
-                break;
-            }
-            case 2: { // Fixed List (Strict Compact/Dense Logic for Row and Element)
-                List<List<byte[]>> lists = new ArrayList<>();
-                List<boolean[]> perListNotNullFlags = new ArrayList<>();
-
-                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Compact Logic)
-                long cursor = (rows + 7) / 8;
-                for(int i=0; i < this.startIdx + startIdx; i++){
-                    if(!isNull(i)){
-                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
-                        cursor += Integer.BYTES;
-
-                        int bitmapBytes = (listSize + 7) / 8;
-                        cursor += bitmapBytes;
-
-                        cursor += (long) listSize * sizePerElement;
-                    }
-                }
-
-                // 2.2 อ่านข้อมูล Slice
-                for(int i=0; i < newRowCount; i++){
-                    if(newNotNullFlags[i]){ // ถ้า Row ไม่เป็น Null
-                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
-                        cursor += Integer.BYTES;
-
-                        int bitmapBytes = (listSize + 7) / 8;
-                        byte[] listBitmapRaw = memory.readBytes(cursor, bitmapBytes);
-                        cursor += bitmapBytes;
-
-                        boolean[] listFlags = new boolean[listSize];
-                        for(int bit=0; bit<listSize; bit++){
-                            listFlags[bit] = (listBitmapRaw[bit/8] & (1 << (bit%8))) != 0;
-                        }
-                        perListNotNullFlags.add(listFlags); // เพิ่ม listFlags เดิม
-
-                        // *** การเปลี่ยนแปลง: elementList เป็น Dense List ***
-                        List<byte[]> elementList = new ArrayList<>();
-                        for(int j=0; j<listSize; j++){
-                            if(listFlags[j]){ // ถ้า Element ไม่เป็น Null
-                                byte[] el = memory.readBytes(cursor, sizePerElement);
-                                elementList.add(el); // เพิ่มเฉพาะ Non-Null Element
-                            }
-                            cursor += sizePerElement;
-                            // ถ้าเป็น Null: ข้ามการเพิ่มใน elementList
-                        }
-                        lists.add(elementList); // เพิ่มเฉพาะ Non-Null Row
-                    }
-                    // ถ้าเป็น Null: ข้ามการเพิ่มใน lists และ perListNotNullFlags
-                }
-
-                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
-                break;
-            }
-            case 3: { // Variable List (Strict Compact/Dense Logic for Row and Element)
-                List<List<VariableElement>> lists = new ArrayList<>();
-                List<boolean[]> perListNotNullFlags = new ArrayList<>();
-
-                // 2.1 Scan เพื่อหาจุดเริ่มต้น (Compact Logic)
-                long cursor = (rows + 7) / 8;
-                for(int i=0; i < this.startIdx + startIdx; i++){
-                    if(!isNull(i)){
-                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
-                        cursor += Integer.BYTES;
-
-                        int bitmapBytes = (listSize + 7) / 8;
-                        byte[] listBitmap = memory.readBytes(cursor, bitmapBytes);
-                        cursor += bitmapBytes;
-
-                        // Skip elements inside list
-                        for(int j=0; j<listSize; j++){
-                            boolean isElNotNull = (listBitmap[j/8] & (1 << (j%8))) != 0;
-                            if(isElNotNull){
-                                byte[] elSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
-                                cursor += Integer.BYTES + elSize;
-                            }
-                        }
-                    }
-                }
-
-                // 2.2 อ่านข้อมูล Slice
-                for(int i = 0; i < newRowCount; i++){
-                    if(newNotNullFlags[i]){ // ถ้า Row ไม่เป็น Null
-                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
-                        cursor += Integer.BYTES;
-
-                        int bitmapBytes = (listSize + 7) / 8;
-                        byte[] listBitmapRaw = memory.readBytes(cursor, bitmapBytes);
-                        cursor += bitmapBytes;
-
-                        boolean[] listFlags = new boolean[listSize];
-                        for(int bit = 0; bit < listSize; bit++){
-                            listFlags[bit] = (listBitmapRaw[bit/8] & (1 << (bit%8))) != 0;
-                        }
-                        perListNotNullFlags.add(listFlags); // เพิ่ม listFlags เดิม
-
-                        // *** การเปลี่ยนแปลง: elementList เป็น Dense List ***
-                        List<VariableElement> elementList = new ArrayList<>();
-                        for(int j = 0; j < listSize; j++){
-                            if(listFlags[j]){ // ถ้า Element ไม่เป็น Null
-                                byte[] elSizeBytes = memory.readBytes(cursor, Integer.BYTES);
-                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
-                                cursor += Integer.BYTES;
-
-                                byte[] elData = memory.readBytes(cursor, elSize);
-                                cursor += elSize;
-                                elementList.add(new VariableElement(elData)); // เพิ่มเฉพาะ Non-Null Element
-                            }
-                            // ถ้าเป็น Null: ข้ามการเพิ่มใน elementList
-                        }
-                        lists.add(elementList); // เพิ่มเฉพาะ Non-Null Row
-                    }
-                    // ถ้าเป็น Null: ข้ามการเพิ่มใน lists และ perListNotNullFlags
-                }
-
-                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, 0, newRowCount, dType);
-                break;
-            }
-        }
-
-        // 3. Resource Identity และ Metadata View
-        if (distributedColumn != null) {
-            distributedColumn.id = this.id;
-
-            distributedColumn.startIdx = this.startIdx + startIdx;
-            distributedColumn.endIdx = this.startIdx + endIdx;
-
-            distributedColumn.metaData.setRows(newRowCount);
-            distributedColumn.metaData.setSharded(true);
-        }
-
-        return distributedColumn;
-    }
 
     public String getMemoryGroupName() {
         return memoryGroupName;
