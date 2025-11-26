@@ -8,14 +8,10 @@ import java.util.List;
 
 public abstract class DataFrameLoader {
 
-    protected DataFrame frame;
     protected Column[] columns;
 
-    public abstract void load(InputStream in, int startRow, int endRow) throws IOException;
+    public abstract void load(InputStream in) throws IOException;
 
-    public DataFrame getFrame() {
-        return frame;
-    }
 
     public List<Column> getColumns() {
         return List.of(columns);

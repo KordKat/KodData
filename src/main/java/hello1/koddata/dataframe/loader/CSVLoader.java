@@ -21,10 +21,10 @@ public class CSVLoader extends DataFrameLoader {
     }
 
     @Override
-    public void load(InputStream in, int startRow, int endRow) throws IOException {
+    public void load(InputStream in) throws IOException {
         try (BufferedInputStreamPromax bis = new BufferedInputStreamPromax(in, 8192)) {
 
-            List<String> lines = readAllLines(bis, startRow, endRow);
+            List<String> lines = readAllLines(bis);
             if (lines.isEmpty()) {
 
                 return;
@@ -609,7 +609,7 @@ public class CSVLoader extends DataFrameLoader {
 
 
 
-    private List<String> readAllLines(BufferedInputStreamPromax in, int startRow, int endRow)
+    private List<String> readAllLines(BufferedInputStreamPromax in)
             throws IOException {
         List<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
@@ -621,22 +621,14 @@ public class CSVLoader extends DataFrameLoader {
             if (b == '\n') {
                 String line = sb.toString();
                 sb.setLength(0);
-                // ถ้ายังไม่ถึง startRow ให้ข้าม
-                if (currentRow >= startRow && currentRow <= endRow) {
-                    lines.add(line);
-                }
-                // ถ้าเกิน endRow หยุดเลย
-                if (currentRow > endRow) {
-                    break;
-                }
+                lines.add(line);
                 currentRow++;
             }
             else if (b != '\r') {
                 sb.append((char) b);
             }
         }
-        // ถ้าไฟล์ไม่มี \n สุดท้าย
-        if (sb.length() > 0 && currentRow >= startRow && currentRow <= endRow) {
+        if (!sb.isEmpty()) {
             lines.add(sb.toString());
         }
         return lines;

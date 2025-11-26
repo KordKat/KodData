@@ -30,16 +30,16 @@ public class DatabaseLoader extends DataFrameLoader {
     }
 
     @Override
-    public void load(InputStream in, int startRow, int endRow) {
+    public void load(InputStream in) {
         try {
             conn.connect();
             Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> res =
                     conn.executeQuery(query);
 
             if (res.isLeft()) {
-                loadJdbc(res.getLeft(), startRow, endRow);
+                loadJdbc(res.getLeft());
             } else {
-                loadCql(res.getRight(), startRow, endRow);
+                loadCql(res.getRight());
             }
 
             conn.close();
@@ -50,7 +50,7 @@ public class DatabaseLoader extends DataFrameLoader {
     }
 
 
-    private void loadJdbc(ResultSet rs, int startRow, int endRow) throws Exception {
+    private void loadJdbc(ResultSet rs) throws Exception {
         ResultSetMetaData meta = rs.getMetaData();
         int colCount = meta.getColumnCount();
 
@@ -64,15 +64,6 @@ public class DatabaseLoader extends DataFrameLoader {
         int currentRow = 0;
 
         while (rs.next()) {
-
-            // ก่อน startRow  ข้าม
-            if (currentRow < startRow) {
-                currentRow++;
-                continue;
-            }
-
-            // ถ้าเกิน endRow หยุด
-            if (currentRow > endRow) break;
 
             // อยู่ในช่วงที่ต้องการ ให้เก็บแถว
             List<String> row = new ArrayList<>(colCount);
@@ -88,8 +79,7 @@ public class DatabaseLoader extends DataFrameLoader {
         buildFromTable(names, table);
     }
 
-    private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cql,
-                         int startRow, int endRow) throws Exception {
+    private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cql) throws Exception {
 
         ColumnDefinitions defs = cql.getColumnDefinitions();
         int colCount = defs.size();
@@ -103,17 +93,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         int currentRow = 0;
         for (Row r : cql) {
-
-            // มาก่อน startRow ให้ข้าม
-            if (currentRow < startRow) {
-                currentRow++;
-                continue;
-            }
-
-            // ถ้าเกิน endRow ให้หยุดทันที
-            if (currentRow > endRow) break;
-
-            // อยู่ในช่วง ให้เก็บ
             List<String> row = new ArrayList<>(colCount);
             for (int i = 0; i < colCount; i++) {
                 Object v = r.getObject(i);
