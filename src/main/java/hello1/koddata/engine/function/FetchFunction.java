@@ -33,7 +33,7 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
             dataSourceValue = new Value<>(dataSource);
         }
         else {
-            throw new KException(ExceptionCode.KDE0012,"argument Data Source should be DATABASE , JSON , CSV");
+            throw new KException(ExceptionCode.KDE0012,"argument Data Source should be DATABASE , CSV");
         }
         final Value<DataSource> finalDataSource = dataSourceValue;
         if (dataSourceValue.get().equals(DataSource.CSV)){

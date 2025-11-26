@@ -2,33 +2,15 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.Main;
 import hello1.koddata.concurrent.IdCounter;
-import hello1.koddata.concurrent.cluster.ClusterIdCounter;
-import hello1.koddata.concurrent.cluster.ConsistentCriteria;
-import hello1.koddata.concurrent.cluster.Replica;
-import hello1.koddata.engine.StatementExecutor;
-import hello1.koddata.exception.KException;
-import hello1.koddata.kodlang.Lexer;
-import hello1.koddata.kodlang.Parser;
-import hello1.koddata.kodlang.Token;
-import hello1.koddata.kodlang.ast.SemanticAnalyzer;
-import hello1.koddata.kodlang.ast.Statement;
-import hello1.koddata.net.NodeStatus;
+import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.sessions.users.User;
-import hello1.koddata.utils.collection.ImmutableArray;
-import hello1.koddata.utils.ref.EmptyCleaner;
-import hello1.koddata.utils.ref.ReplicatedResourceClusterReference;
-
-import java.nio.channels.SocketChannel;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class Session implements Replica {
+public class Session {
 
-    private static final ClusterIdCounter idCounter =
-            ClusterIdCounter.getCounter(Session.class,
-                    new HashSet<>(Main.bootstrap.getServer().getStatusMap().values()));
+    private static final IdCounter idCounter =
+            new IdCounter();
 
     private long sessionId;
     private User user;
@@ -51,9 +33,8 @@ public class Session implements Replica {
 
 
     private State state;
-    private ReplicatedResourceClusterReference<Session> ref;
     private Session(SessionSettings settings , User user){
-        sessionId = idCounter.count();
+        sessionId = idCounter.next();
         startedTime = System.currentTimeMillis();
         lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
@@ -61,16 +42,11 @@ public class Session implements Replica {
         this.user = user;
     }
 
-    private void setRef(ReplicatedResourceClusterReference<Session> ref) {
-        this.ref = ref;
-        ref.notifyUpdate();
-    }
 
     public static Session newSession(User user){
         SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
         Session session = new Session(sessionSettings , user);
-        session.setRef(new ReplicatedResourceClusterReference<>(session, new EmptyCleaner(), session.sessionId));
-        Main.bootstrap.getSessionManager().putSession(session.sessionId, session.ref);
+        Main.bootstrap.getSessionManager().putSession(session.sessionId, session);
         return session;
     }
 
@@ -92,7 +68,6 @@ public class Session implements Replica {
 
     public void state(State state){
         this.state = state;
-        ref.notifyUpdate();
     }
 
     public State state(){
@@ -109,6 +84,10 @@ public class Session implements Replica {
         }
     }
 
+    public void newProcess(QueryExecution execution){
+        
+    }
+
     public void terminate(){
         for(Process process : processes.values()){
             process.interrupt();
@@ -116,7 +95,6 @@ public class Session implements Replica {
 
         processes.clear();
         state = State.TERMINATED;
-        ref.notifyUpdate();
     }
 
     public SessionSettings getSettings() {
@@ -127,18 +105,4 @@ public class Session implements Replica {
         return sessionData;
     }
 
-    @Override
-    public ConsistentCriteria getConsistencyCriteria() {
-        ConsistentCriteria criteria = new ConsistentCriteria();
-        criteria.setLatestUpdate(ref.getLatestUpdate());
-        criteria.addCriteria("state", state);
-        return criteria;
-    }
-
-    @Override
-    public void update(ConsistentCriteria latest) {
-        if(latest.isNewerThan(this.getConsistencyCriteria())){
-            state = (State) latest.get("state");
-        }
-    }
 }
