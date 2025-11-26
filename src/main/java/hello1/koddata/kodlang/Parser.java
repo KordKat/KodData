@@ -184,16 +184,7 @@ public class Parser {
         while(current() != null){
             Token next = current();
 
-            if(next.type.equals(Token.TokenType.DOT)){
-                consume();
-                Token prop = current();
-                if(prop == null || !prop.type.equals(Token.TokenType.IDENTIFIER)){
-                    throw new KException(ExceptionCode.KDC0002, "Expected identifier after '.'");
-                }
-                expr = new PropertyAccessExpression(expr, new Identifier(new String(prop.lexeme)));
-                consume();
-            }
-            else if(next.type.equals(Token.TokenType.LBRACKET)){
+            if(next.type.equals(Token.TokenType.LBRACKET)){
                 consume();
                 Expression indexExpr = parseExpression();
                 expect(Token.TokenType.RBRACKET);

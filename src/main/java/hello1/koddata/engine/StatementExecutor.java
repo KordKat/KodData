@@ -246,7 +246,7 @@ public class StatementExecutor {
         }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
-            
+
         }else if(expression instanceof UnaryExpression unary){
 
         }
