@@ -1,11 +1,13 @@
 package hello1.koddata.engine;
 
 import hello1.koddata.dataframe.ColumnArray;
+import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.ast.*;
 import hello1.koddata.net.UserClient;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionData;
+import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -234,19 +236,287 @@ public class StatementExecutor {
         } else if (expression instanceof NullLiteral n){
             return new NullValue("null");
         }else if(expression instanceof FunctionCall fc){ //string -> new Value<>("Task {id} started");
+            // 1. Get function name and evaluate arguments
+            String functionName = fc.function.identifier;
+            List<Value<?>> evaluatedArguments = new ArrayList<>();
+            for (Expression argExpr : fc.arguments.toArray()) {
+                Value<?> argValue = evaluateExpression(argExpr, client);
+                // Check for null result during argument evaluation
+                if (argValue instanceof NullValue) {
+                    throw new KException(ExceptionCode.KDC0001, "argValue cant be null");
+                }
+                evaluatedArguments.add(argValue);
+            }
 
-        } else if(expression instanceof Pipeline pipe){ //task id
-            if(pipe instanceof BranchPipeline bp){
+            switch (functionName) {
+                // 🔢 คณิตศาสตร์
+                case "max":
+                    // โค้ดสำหรับฟังก์ชัน max
+                    break;
+                case "min":
+                    // โค้ดสำหรับฟังก์ชัน min
+                    break;
+                case "abs":
+                    return new Value<>(new QueryOperationNode(new AbsOperation() , evaluatedArguments));
+                case "sqrt":
+                    return new Value<>(new QueryOperationNode(new SqrtOperation() , evaluatedArguments));
+                case "pow":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new PowOperation(n.doubleValue()) , evaluatedArguments));
+                case "exp":
+                    return new Value<>(new QueryOperationNode(new ExpOperation() , evaluatedArguments));
+                case "log":
+                    return new Value<>(new QueryOperationNode(new LogOperation() , evaluatedArguments));
+                case "log10":
+                    return new Value<>(new QueryOperationNode(new Log10Operation() , evaluatedArguments));
+                case "sin":
+                    return new Value<>(new QueryOperationNode(new SinOperation() , evaluatedArguments));
+                case "cos":
+                    return new Value<>(new QueryOperationNode(new CosOperation() , evaluatedArguments));
+                case "tan":
+                    return new Value<>(new QueryOperationNode(new TanOperation() , evaluatedArguments));
+                case "asin":
+                    return new Value<>(new QueryOperationNode(new ASinOperation() , evaluatedArguments));
+                case "acos":
+                    return new Value<>(new QueryOperationNode(new ACosOperation() , evaluatedArguments));
+                case "atan":
+                    return new Value<>(new QueryOperationNode(new ATanOperation() , evaluatedArguments));
+                case "ceil":
+                    return new Value<>(new QueryOperationNode(new CeilOperation() , evaluatedArguments));
+                case "floor":
+                    return new Value<>(new QueryOperationNode(new FloorOperation() , evaluatedArguments));
+                case "round":
+                    return new Value<>(new QueryOperationNode(new RoundOperation() , evaluatedArguments));
+                case "clamp":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n2)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new ClampOperation(n1.doubleValue() , n2.doubleValue()) , evaluatedArguments));
+                case "sign":
+                    return new Value<>(new QueryOperationNode(new SignOperation() , evaluatedArguments));
+                case "mod":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new ModOperation(n.doubleValue()) , evaluatedArguments));
+                case "sinh":
+                    return new Value<>(new QueryOperationNode(new SinhOperation() , evaluatedArguments));
+                case "cosh":
+                    return new Value<>(new QueryOperationNode(new CoshOperation() , evaluatedArguments));
+                case "tanh":
+                    return new Value<>(new QueryOperationNode(new TanhOperation() , evaluatedArguments));
+                case "deg":
+                    return new Value<>(new QueryOperationNode(new DegOperation() , evaluatedArguments));
+                case "rad":
+                    return new Value<>(new QueryOperationNode(new RadOperation() , evaluatedArguments));
+                case "factorial":
+                    return new Value<>(new QueryOperationNode(new FactorialOperation() , evaluatedArguments));
+                case "root":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new RootOperation(n.doubleValue()) , evaluatedArguments));
 
-            }else {
+                // 📊 สถิติ
+                case "sum":
+                    // โค้ดสำหรับฟังก์ชัน sum
+                    break;
+                case "mean":
+                    // โค้ดสำหรับฟังก์ชัน mean
+                    break;
+                case "median":
+                    // โค้ดสำหรับฟังก์ชัน median
+                    break;
+                case "mode":
+                    // โค้ดสำหรับฟังก์ชัน mode
+                    break;
+                case "count":
+                    // โค้ดสำหรับฟังก์ชัน count
+                    break;
+                case "range":
+                    // โค้ดสำหรับฟังก์ชัน range
+                    break;
+                case "product":
+                    // โค้ดสำหรับฟังก์ชัน product
+                    break;
+
+                // 💡 ตรรกะ/เงื่อนไข
+                case "equals":
+                    if (evaluatedArguments.get(1).get() == null){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new EqualsOperation(evaluatedArguments.get(1)) , evaluatedArguments));
+                case "not":
+                    return new Value<>(new QueryOperationNode(new NotOperation() , evaluatedArguments));
+
+                // 📝 สตริง
+                case "length":
+                    return new Value<>(new QueryOperationNode(new LengthOperation() , evaluatedArguments));
+                case "upper":
+                    return new Value<>(new QueryOperationNode(new UpperOperation() , evaluatedArguments));
+                case "lower":
+                    return new Value<>(new QueryOperationNode(new LowerOperation() , evaluatedArguments));
+                case "trim":
+                    return new Value<>(new QueryOperationNode(new TrimOperation() , evaluatedArguments));
+                case "concat":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new ConcatOperation(s) , evaluatedArguments));
+                case "substring":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n2)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new SubstringOperation(n1.intValue() , n2.intValue()) , evaluatedArguments));
+                case "replace":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    if (!(evaluatedArguments.get(1).get() instanceof String s2)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new ReplaceOperation(s1 , s2) , evaluatedArguments));
+                case "indexof":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new IndexOfOperation(s1) , evaluatedArguments));
+                case "startswith":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new StartsWithOperation(s1) , evaluatedArguments));
+                case "endswith":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new EndsWithOperation(s1) , evaluatedArguments));
+                case "split":
+                    return new Value<>(new QueryOperationNode(new SplitOperation() , evaluatedArguments));
+                case "join":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new JoinOperation(s1) , evaluatedArguments));
+                case "reverse":
+                    return new Value<>(new QueryOperationNode(new ReverseOperation(), evaluatedArguments));
+                case "contains":
+                    if (!(evaluatedArguments.get(1).get() instanceof String s1)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                    }
+                    return new Value<>(new QueryOperationNode(new ContainsOperation(s1), evaluatedArguments));
+                case "padleft":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    if (!(evaluatedArguments.get(1).get() instanceof Character c)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be character");
+                    }
+                    return new Value<>(new QueryOperationNode(new PadLeftOperation(n.intValue() , c), evaluatedArguments));
+                case "padright":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    if (!(evaluatedArguments.get(1).get() instanceof Character c)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be character");
+                    }
+                    return new Value<>(new QueryOperationNode(new PadRightOperation(n.intValue() , c), evaluatedArguments));
+                case "repeat":
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new RepeatOperation(n.intValue()), evaluatedArguments));
+                case "tostring":
+                    return new Value<>(new QueryOperationNode(new ToStringOperation(), evaluatedArguments));
+
+                // 📚 การจัดการรายการ/คอลเลกชัน
+                case "sort":
+                    // โค้ดสำหรับฟังก์ชัน sort
+                    break;
+                case "distinct":
+                    // โค้ดสำหรับฟังก์ชัน distinct
+                    break;
+
+                // ⚙️ การจัดการข้อมูล/ประเภท
+                case "type":
+                    return new Value<>(new QueryOperationNode(new TypeOperation(), evaluatedArguments));
+                case "isnumber":
+                    return new Value<>(new QueryOperationNode(new IsNumberOperation(), evaluatedArguments));
+                case "isstring":
+                    return new Value<>(new QueryOperationNode(new IsStringOperation(), evaluatedArguments));
+                case "islist":
+                    return new Value<>(new QueryOperationNode(new IsListOperation(), evaluatedArguments));
+                case "isbool":
+                    return new Value<>(new QueryOperationNode(new IsBoolOperation(), evaluatedArguments));
+                case "print":
+                    return new Value<>(new QueryOperationNode(new PrintOperation(client), evaluatedArguments));
+                case "coalesce":
+                    if (evaluatedArguments.get(1).get() == null){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new CoalesceOperation(evaluatedArguments.get(1)), evaluatedArguments));
+
+                // 🗂️ การจัดการรายการแบบมีเงื่อนไข
+                case "take":
+                    // โค้ดสำหรับฟังก์ชัน take
+                    break;
+                case "skip":
+                    // โค้ดสำหรับฟังก์ชัน skip
+                    break;
+                case "takewhile":
+                    // โค้ดสำหรับฟังก์ชัน takewhile
+                    break;
+                case "skipwhile":
+                    // โค้ดสำหรับฟังก์ชัน skipwhile
+                    break;
+                case "fill":
+                    if (evaluatedArguments.get(1).get() == null){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new FillOperation(evaluatedArguments.get(1) , evaluatedArguments.get(2)), evaluatedArguments));
+
+                default:
+                    // โค้ดสำหรับกรณีที่ไม่พบชื่อฟังก์ชัน
+                    // เช่น การโยน Exception หรือการแสดงข้อความผิดพลาด
 
             }
-        }else if(expression instanceof BranchMember bm){
-            //...
+        } else if(expression instanceof Pipeline pipe){ //return query execution
+            // เริ่มต้นด้วยค่า null สำหรับ pipeline แรก
+            Value<?> currentValue = new NullValue("Initial pipeline value");
+
+            QueryExecution queryExecution = new QueryExecution();
+            QueryOperationNode queryOperationNode = queryExecution.getHead();
+
+            for (Expression expr : pipe.pipeline.toArray()) {
+                // ถ้าเป็น FunctionCall ให้ประมวลผลพิเศษ
+                if (expr instanceof FunctionCall fc) {
+                    Value<?> value = evaluateExpression(expr, client);
+
+                    if (!(value.get() instanceof QueryOperationNode queryOperationNode2)){
+                        throw new KException(ExceptionCode.KD00006, "only function allow in pipeline");
+                    }
+
+                    queryOperationNode.next(queryOperationNode2);
+                    queryOperationNode = queryOperationNode2;
+                } else {
+                    throw new KException(ExceptionCode.KD00006, "only function allow in pipeline");
+                }
+            }
+
+            return new Value<>(queryExecution);
+
         }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
-
+            //dataframe and list
         }else if(expression instanceof UnaryExpression unary){
 
         }
