@@ -25,16 +25,7 @@ public class ASTToString {
             return currentIndent + "-NULL STATEMENT\n";
         }
 
-        Expression expression = (statement instanceof Expression) ? (Expression) statement : null;
-
-        if(statement instanceof ApplyStatement s){
-            String st = linePrefix + "Apply Statement\n";
-            st += nextIndent + "|- Pipe \n";
-            st += astToStringWithIndent(s.pipeline, nextIndent + "  ");
-            st += nextIndent + "|- Expression \n";
-            st += astToStringWithIndent(s.expression, nextIndent + "  ");
-            return st;
-        }else if(statement instanceof AssignmentExpression s){
+        if(statement instanceof AssignmentExpression s){
             String st = linePrefix + "Assignment Expression\n";
             st += nextIndent + "|- Left \n";
             st += astToStringWithIndent(s.left, nextIndent + "  ");
@@ -72,32 +63,6 @@ public class ASTToString {
                 st += astToStringWithIndent(wc, nextIndent + "  ");
             }
             st += astToStringWithIndent(s.elseCase, nextIndent + "  ");
-            return st;
-        }
-        else if(statement instanceof DatabaseConnectExpression s){
-            String st = linePrefix + "Database Connect Expression\n";
-            st += nextIndent + "|- Database Type \n";
-            st += astToStringWithIndent(s.databaseT, nextIndent + "  ");
-            st += nextIndent + "|- Database Name \n";
-            st += astToStringWithIndent(s.databaseName, nextIndent + "  ");
-            st += nextIndent + "|- User \n";
-            st += astToStringWithIndent(s.user, nextIndent + "  ");
-            st += nextIndent + "|- Password \n";
-            st += astToStringWithIndent(s.pass, nextIndent + "  ");
-            st += nextIndent + "|- Port \n";
-            st += astToStringWithIndent(s.port, nextIndent + "  ");
-            return st;
-        }
-        else if(statement instanceof DeleteStatement s){
-            String st = linePrefix + "Delete Statement\n";
-            st += nextIndent + "|- Target \n";
-            st += astToStringWithIndent(s.del, nextIndent + "  ");
-            return st;
-        }
-        else if(statement instanceof DownloadStatement s){
-            String st = linePrefix + "Download Statement\n";
-            st += nextIndent + "|- Source \n";
-            st += astToStringWithIndent(s.src, nextIndent + "  ");
             return st;
         }
         else if(statement instanceof ElseCaseStatement s){
