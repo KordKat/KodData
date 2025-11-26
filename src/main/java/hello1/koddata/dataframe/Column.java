@@ -857,5 +857,204 @@ public class Column implements Serializable, KodResourceNaming {
         return !isNotNull;
     }
 
+    public Column distributeColumn(List<Integer> indexList) throws KException {
+        int newRowCount = indexList.size();
+
+        // 1. สร้าง Null Flags สำหรับรายการใหม่ตาม indexList
+        boolean[] newNotNullFlags = new boolean[newRowCount];
+
+        // อ่าน Bitmap ต้นฉบับครั้งเดียวเพื่อประสิทธิภาพ
+        long srcBitmapSize = (this.rows + 7) / 8;
+        byte[] srcBitmap = memory.readBytes((int) srcBitmapSize);
+
+        for (int i = 0; i < newRowCount; i++) {
+            int srcIdx = indexList.get(i);
+            // ตรวจสอบ Null โดยใช้ Bitmap ที่อ่านมา
+            boolean isNotNull = (srcBitmap[srcIdx / 8] & (1 << (srcIdx % 8))) != 0;
+            newNotNullFlags[i] = isNotNull;
+        }
+
+        // 2. สร้าง Map ตำแหน่งข้อมูล (Offsets) เพื่อรองรับการเข้าถึงแบบ Random Access
+        // เนื่องจาก Format เป็นแบบ Compact (Variable/List) เราต้อง Scan 1 รอบเพื่อหาจุดเริ่มต้นของแต่ละ Row
+        long[] rowDataOffsets = new long[this.rows];
+
+        if (columnKind != 0) { // ข้าม Fixed Scalar เพราะคำนวณ Offset ได้เลย
+            long cursor = srcBitmapSize; // เริ่มต้นหลัง Bitmap
+
+            for (int i = 0; i < this.rows; i++) {
+                boolean isNotNull = (srcBitmap[i / 8] & (1 << (i % 8))) != 0;
+                rowDataOffsets[i] = cursor; // บันทึกตำแหน่งเริ่มต้นของ Row i
+
+                if (isNotNull) {
+                    if (columnKind == 1) { // Variable Scalar
+                        byte[] sizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int size = ByteBuffer.wrap(sizeBytes).getInt();
+                        cursor += Integer.BYTES + size;
+                    } else if (columnKind == 2) { // Fixed List
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        int bitmapBytes = (listSize + 7) / 8;
+                        // ข้าม: Size + Bitmap + (Elements * ElementSize)
+                        cursor += Integer.BYTES + bitmapBytes + ((long) listSize * sizePerElement);
+                    } else if (columnKind == 3) { // Variable List
+                        byte[] listSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        cursor += Integer.BYTES; // ข้าม List Size
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmap = memory.readBytes(cursor, bitmapBytes);
+                        cursor += bitmapBytes; // ข้าม List Bitmap
+
+                        // Scan elements ภายใน List เพื่อข้าม Data
+                        for (int j = 0; j < listSize; j++) {
+                            boolean isElNotNull = (listBitmap[j / 8] & (1 << (j % 8))) != 0;
+                            if (isElNotNull) {
+                                byte[] elSizeBytes = memory.readBytes(cursor, Integer.BYTES);
+                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
+                                cursor += Integer.BYTES + elSize;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Column distributedColumn = null;
+        ColumnMetaData.ColumnDType dType = metaData.getDType();
+
+        // 3. ดึงข้อมูลตาม indexList และสร้าง Column ใหม่
+        switch (columnKind) {
+            case 0: { // Fixed Scalar
+                int totalSize = newRowCount * sizePerElement;
+                ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+
+                for (int i = 0; i < newRowCount; i++) {
+                    int srcIdx = indexList.get(i);
+                    // คำนวณ Offset โดยตรง (สมมติว่า Fixed Scalar เก็บแบบ Direct Indexing หรือมีช่องว่างสำหรับ Null)
+                    // ใช้ Logic เดียวกับ distributeColumn เดิม
+                    long offset = srcBitmapSize + ((long) (this.startIdx + srcIdx) * sizePerElement);
+                    byte[] data = memory.readBytes(offset, sizePerElement);
+                    buffer.put(data);
+                }
+                buffer.flip(); // เตรียม Buffer สำหรับการอ่าน
+
+                distributedColumn = new Column(metaData.getName(), sizePerElement, memoryGroupName, buffer, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
+                break;
+            }
+            case 1: { // Variable Scalar
+                List<VariableElement> values = new ArrayList<>();
+                for (int i = 0; i < newRowCount; i++) {
+                    if (newNotNullFlags[i]) { // ถ้า Row ไม่เป็น Null
+                        int srcIdx = indexList.get(i);
+                        long offset = rowDataOffsets[srcIdx];
+
+                        byte[] sizeBytes = memory.readBytes(offset, Integer.BYTES);
+                        int size = ByteBuffer.wrap(sizeBytes).getInt();
+                        byte[] data = memory.readBytes(offset + Integer.BYTES, size);
+
+                        values.add(new VariableElement(data));
+                    }
+                }
+                distributedColumn = new Column(metaData.getName(), values, memoryGroupName, newNotNullFlags, 0, newRowCount, dType);
+                break;
+            }
+            case 2: { // Fixed List
+                List<List<byte[]>> lists = new ArrayList<>();
+                List<boolean[]> perListNotNullFlags = new ArrayList<>();
+
+                for (int i = 0; i < newRowCount; i++) {
+                    if (newNotNullFlags[i]) {
+                        int srcIdx = indexList.get(i);
+                        long offset = rowDataOffsets[srcIdx];
+
+                        // Decode List Structure
+                        byte[] listSizeBytes = memory.readBytes(offset, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        offset += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmapRaw = memory.readBytes(offset, bitmapBytes);
+                        offset += bitmapBytes;
+
+                        boolean[] listFlags = new boolean[listSize];
+                        for (int bit = 0; bit < listSize; bit++) {
+                            listFlags[bit] = (listBitmapRaw[bit / 8] & (1 << (bit % 8))) != 0;
+                        }
+                        perListNotNullFlags.add(listFlags);
+
+                        // สร้าง Dense List ของ Elements (เฉพาะ Non-Null)
+                        List<byte[]> elementList = new ArrayList<>();
+                        for (int j = 0; j < listSize; j++) {
+                            if (listFlags[j]) {
+                                byte[] el = memory.readBytes(offset, sizePerElement);
+                                elementList.add(el);
+                            }
+                            offset += sizePerElement;
+                        }
+                        lists.add(elementList);
+                    }
+                }
+                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, sizePerElement, 0, newRowCount, dType);
+                break;
+            }
+            case 3: { // Variable List
+                List<List<VariableElement>> lists = new ArrayList<>();
+                List<boolean[]> perListNotNullFlags = new ArrayList<>();
+
+                for (int i = 0; i < newRowCount; i++) {
+                    if (newNotNullFlags[i]) {
+                        int srcIdx = indexList.get(i);
+                        long offset = rowDataOffsets[srcIdx];
+
+                        // Decode List Structure
+                        byte[] listSizeBytes = memory.readBytes(offset, Integer.BYTES);
+                        int listSize = ByteBuffer.wrap(listSizeBytes).getInt();
+                        offset += Integer.BYTES;
+
+                        int bitmapBytes = (listSize + 7) / 8;
+                        byte[] listBitmapRaw = memory.readBytes(offset, bitmapBytes);
+                        offset += bitmapBytes;
+
+                        boolean[] listFlags = new boolean[listSize];
+                        for (int bit = 0; bit < listSize; bit++) {
+                            listFlags[bit] = (listBitmapRaw[bit / 8] & (1 << (bit % 8))) != 0;
+                        }
+                        perListNotNullFlags.add(listFlags);
+
+                        // สร้าง Dense List ของ Variable Elements
+                        List<VariableElement> elementList = new ArrayList<>();
+                        for (int j = 0; j < listSize; j++) {
+                            if (listFlags[j]) {
+                                byte[] elSizeBytes = memory.readBytes(offset, Integer.BYTES);
+                                int elSize = ByteBuffer.wrap(elSizeBytes).getInt();
+                                offset += Integer.BYTES;
+
+                                byte[] elData = memory.readBytes(offset, elSize);
+                                offset += elSize;
+                                elementList.add(new VariableElement(elData));
+                            }
+                        }
+                        lists.add(elementList);
+                    }
+                }
+                distributedColumn = new Column(metaData.getName(), memoryGroupName, lists, perListNotNullFlags, newNotNullFlags, 0, newRowCount, dType);
+                break;
+            }
+        }
+
+        // 4. ตั้งค่า Metadata เพิ่มเติม
+        if (distributedColumn != null) {
+            distributedColumn.id = this.id;
+            // startIdx สำหรับ Column ใหม่ที่เกิดจากการ Filter/Pick มักจะเริ่มที่ 0 หรือ logic เฉพาะ
+            // ในที่นี้ Constructor ได้ตั้งเป็น 0 แล้ว แต่ต้อง update metadata อื่นๆ
+            distributedColumn.metaData.setRows(newRowCount);
+            distributedColumn.metaData.setSharded(true);
+        }
+
+        return distributedColumn;
+    }
+
+
+
 
 }
