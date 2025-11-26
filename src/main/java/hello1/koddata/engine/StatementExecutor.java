@@ -131,7 +131,6 @@ public class StatementExecutor {
                     .toList();
             return new Value<>(values);
         } else if (expression instanceof AssignmentExpression assign) {
-
             Expression toExpr = assign.left;
             Expression valueExpr = assign.right;
 
@@ -234,7 +233,13 @@ public class StatementExecutor {
 
         } else if (expression instanceof NullLiteral n){
             return new NullValue("null");
-        } else if(expression instanceof StringLiteral str){
+        }else if(expression instanceof FunctionCall fc){
+
+        } else if(expression instanceof Pipeline pipe){
+
+        }else if(expression instanceof BranchMember bm){
+
+        }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
             //might have case of column, I'll do it tomorrow
