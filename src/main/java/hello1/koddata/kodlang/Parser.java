@@ -321,22 +321,22 @@ public class Parser {
                 "atan2","sinh" ,"cosh" ,"tanh" ,"deg" ,"rad" ,"gcd" ,"lcm" , "factorial" ,"root" ,
 
 //                Statistical / Aggregation Functions
-                "sum", "avg", "mean", "median", "mode", "count", "std",
-                "percentile" ,"quantile","quartile" ,"stdev" ,"variance" ,"range" ,"product" ,
+                "sum", "avg", "mean", "median", "mode", "count", "std"
+                ,"stdev" ,"variance" ,"range" ,"product" ,
 
 //                Logic / Comparison Functions
                 "equals", "not", "and", "or", "xor", "if", "ifelse",
 
 //                String Functions
-                "len", "length", "upper", "lower", "trim", "concat", "substring", "replace", "indexof", "startswith", "endswith", "split", "join", "reverse",
+                 "length", "upper", "lower", "trim", "concat", "substring", "replace", "indexof", "startswith", "endswith", "split", "join", "reverse",
                 "contains" ,"padleft" ,"padright" ,"repeat" ,"tostring" ,"str" ,"format"  ,"match" ,"regex" ,
 
 //                List / Array Functions
                 "sort", "push", "pop", "append", "insert", "remove", "size", "map", "filter", "reduce",
-                "first" ,"last" ,"slice" ,"flatten" ,"unique" ,"distinct" ,"find" ,"findindex" ,"every" ,"some" ,"any" ,"merge",
+                "first" ,"last"  ,"distinct"  ,"every" ,"some" ,"any" ,"merge",
 
 //                Type / Utility Functions
-                "type", "isnumber", "isstring", "islist", "isbool", "print", "input" ,"coalesce" ,"cast" ,
+                "type", "isnumber", "isstring", "islist", "isbool", "print","coalesce" ,"cast" ,
 
 //                Pipeline/Chaining Functions
 //                -Array Pipeline Functions

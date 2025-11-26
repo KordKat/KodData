@@ -36,7 +36,7 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
             throw new KException(ExceptionCode.KDE0012,"argument Data Source should be DATABASE , JSON , CSV");
         }
         final Value<DataSource> finalDataSource = dataSourceValue;
-        if (dataSourceValue.get().equals(DataSource.JSON) || dataSourceValue.get().equals(DataSource.CSV)){
+        if (dataSourceValue.get().equals(DataSource.CSV)){
             if (source.get() instanceof String s){
                 final File file = new File(s);
                 if (!file.exists()){
@@ -57,7 +57,7 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                         dataFrameLoader = new CSVLoader(memoryGroupNameString);
                     }
                     try {
-                        dataFrameLoader.load(new FileInputStream(file));
+                        dataFrameLoader.load();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

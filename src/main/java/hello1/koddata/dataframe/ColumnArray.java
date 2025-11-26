@@ -249,5 +249,6 @@ public class ColumnArray implements Serializable {
 
     public ColumnArray getPart(int part){
 
+        return null;
     }
 }
