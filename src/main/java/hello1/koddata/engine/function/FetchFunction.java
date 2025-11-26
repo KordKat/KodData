@@ -51,10 +51,8 @@ public class FetchFunction extends KodFunction<CompletableFuture<DataFrameLoader
                 }
                 return new Value<>(CompletableFuture.supplyAsync(() -> {
                     DataFrameLoader dataFrameLoader = null;
-                    if (finalDataSource.get().equals(DataSource.JSON)){
-                        dataFrameLoader = new JsonLoader(memoryGroupNameString);
-                    }
-                    else {
+                    if (finalDataSource.get().equals(DataSource.CSV)){
+
 
                         dataFrameLoader = new CSVLoader(memoryGroupNameString);
                     }

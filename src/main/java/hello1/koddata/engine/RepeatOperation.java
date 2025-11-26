@@ -1,0 +1,20 @@
+package hello1.koddata.engine;
+
+public class RepeatOperation implements QueryOperation {
+
+    private final int times;
+
+    public RepeatOperation(int times){
+        this.times = times;
+    }
+
+    @Override
+    public Value<?> operate(Value<?> value){
+        if (value == null || value.get() == null) return value;
+
+        if (value.get() instanceof String s)
+            return new Value<>(s.repeat(times));
+
+        return value;
+    }
+}
