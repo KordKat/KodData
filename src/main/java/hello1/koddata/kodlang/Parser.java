@@ -19,20 +19,8 @@ public class Parser {
     }
 
     public Statement parseStatement() throws KException {
-        final Token first = current();
-//        consume();
-        Token t = current();
-        if(first.type.equals(Token.TokenType.DELETE)){
-            return parseDeleteStatement();
-        }else if(first.type.equals(Token.TokenType.DOWNLOAD)){
-            return parseDownloadStatement();
-        }else if(first.type.equals(Token.TokenType.LCURLY)){
-            return parseBlockStatement();
-        }else if(first.type.equals(Token.TokenType.APPLY)){
-            return parseApplyStatement();
-        }else {
-            return parseExpression();
-        }
+        return parseExpression();
+
     }
 
     public BlockStatement parseStatements() throws KException {
@@ -41,11 +29,6 @@ public class Parser {
             statements.add(parseStatement());
         }
         return new BlockStatement(new ImmutableArray<>(statements));
-    }
-    // DELETE $expr;
-    private DeleteStatement parseDeleteStatement() throws KException {
-        Expression expr = parseExpression();
-        return new DeleteStatement(expr);
     }
 
     /*
@@ -64,20 +47,6 @@ public class Parser {
         return new BlockStatement(new ImmutableArray<>(statements));
     }
 
-    // DOWNLOAD $expr;
-    private DownloadStatement parseDownloadStatement() throws KException {
-        Expression expr = parseExpression();
-        return new DownloadStatement(expr);
-    }
-
-    //APPLY $pipe TO $expr;
-    private ApplyStatement parseApplyStatement() throws KException {
-        Expression pipe = parseExpression();
-        expect(Token.TokenType.TO);
-//        consume();
-        Expression expr = parseExpression();
-        return new ApplyStatement(pipe, expr);
-    }
 
     private Expression parseExpression() throws KException {
         //TODO: parsing expression
