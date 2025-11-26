@@ -10,17 +10,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Parser {
-
     private final ImmutableArray<Token> tokens;
     private int position = 0;
 
     public Parser(ImmutableArray<Token> tokens){
         this.tokens = tokens;
-    }
-
-    public Statement parseStatement() throws KException {
-        return parseExpression();
-
     }
 
     public BlockStatement parseStatements() throws KException {
@@ -31,208 +25,291 @@ public class Parser {
         return new BlockStatement(new ImmutableArray<>(statements));
     }
 
-    /*
-    * {
-    *   $statements
-    * }
-    * */
+    public Statement parseStatement() throws KException {
+        Statement stmt = parseExpression();
+        expect(Token.TokenType.SEMICOLON);
+        return stmt;
+    }
+
     private BlockStatement parseBlockStatement() throws KException {
         List<Statement> statements = new ArrayList<>();
-        while(current() != null && !current().type.equals(Token.TokenType.RCURLY) && !current().type.equals(Token.TokenType.EOF)){
+        while(current() != null &&
+                !current().type.equals(Token.TokenType.RCURLY) &&
+                !current().type.equals(Token.TokenType.EOF)){
             statements.add(parseStatement());
         }
         if(current() != null){
-            consume();
+            consume(); // Consume RCURLY
         }
         return new BlockStatement(new ImmutableArray<>(statements));
     }
 
-
     private Expression parseExpression() throws KException {
-        //TODO: parsing expression
         return parseAssignmentExpression();
     }
 
     private Expression parseAssignmentExpression() throws KException {
         Expression lhs = parseOrExpression();
-
-        if(current().type.equals(Token.TokenType.ASSIGN)){
+        if(current() != null && current().type.equals(Token.TokenType.ASSIGN)){
             consume();
             Expression rhs = parseAssignmentExpression();
             return new AssignmentExpression(lhs, rhs);
         }
-
         return lhs;
     }
 
     private Expression parseOrExpression() throws KException {
         Expression lhs = parseAndExpression();
-
-        Token t = current();
-        if(t.type.equals(Token.TokenType.OP_OR)){
+        while(current() != null && current().type.equals(Token.TokenType.OP_OR)){
             consume();
-            Expression rhs = parseOrExpression();
-            return new BinaryExpression(BinaryExpression.Operator.OR, lhs, rhs);
+            Expression rhs = parseAndExpression();
+            lhs = new BinaryExpression(BinaryExpression.Operator.OR, lhs, rhs);
         }
-
         return lhs;
     }
 
     private Expression parseAndExpression() throws KException {
         Expression lhs = parseEqualityExpression();
-
-        Token t = current();
-        if(t.type.equals(Token.TokenType.OP_AND)){
+        while(current() != null && current().type.equals(Token.TokenType.OP_AND)){
             consume();
-            Expression rhs = parseAndExpression();
-            return new BinaryExpression(BinaryExpression.Operator.AND, lhs, rhs);
+            Expression rhs = parseEqualityExpression();
+            lhs = new BinaryExpression(BinaryExpression.Operator.AND, lhs, rhs);
         }
-
         return lhs;
     }
 
     private Expression parseEqualityExpression() throws KException {
         Expression lhs = parseComparisonExpression();
-
-        Token t = current();
-
-        if(t.type.equals(Token.TokenType.OP_EQ) || t.type.equals(Token.TokenType.OP_NEQ) || t.type.equals(Token.TokenType.OP_IN)){
-            consume();
-            Expression rhs = parseEqualityExpression();
+        while(current() != null){
+            Token t = current();
             BinaryExpression.Operator op = switch (t.type){
                 case OP_EQ -> BinaryExpression.Operator.EQUALS;
                 case OP_NEQ -> BinaryExpression.Operator.NEQUALS;
                 case OP_IN -> BinaryExpression.Operator.IN;
                 default -> null;
             };
-            return new BinaryExpression(op, lhs, rhs);
+            if(op == null) break;
+            consume();
+            Expression rhs = parseComparisonExpression();
+            lhs = new BinaryExpression(op, lhs, rhs);
         }
-
         return lhs;
     }
 
     private Expression parseComparisonExpression() throws KException {
         Expression lhs = parseAddSubExpression();
-
-        Token t = current();
-        BinaryExpression.Operator op = switch (t.type){
-            case OP_GT -> BinaryExpression.Operator.GREATER;
-            case OP_GE -> BinaryExpression.Operator.GREATEREQ;
-            case OP_LT -> BinaryExpression.Operator.LESSTHAN;
-            case OP_LE -> BinaryExpression.Operator.LESSTHANEQ;
-            default -> null;
-        };
-        if(op != null){
+        while(current() != null){
+            Token t = current();
+            BinaryExpression.Operator op = switch (t.type){
+                case OP_GT -> BinaryExpression.Operator.GREATER;
+                case OP_GE -> BinaryExpression.Operator.GREATEREQ;
+                case OP_LT -> BinaryExpression.Operator.LESSTHAN;
+                case OP_LE -> BinaryExpression.Operator.LESSTHANEQ;
+                default -> null;
+            };
+            if(op == null) break;
             consume();
-            Expression rhs = parseComparisonExpression();
-            return new BinaryExpression(op, lhs, rhs);
+            Expression rhs = parseAddSubExpression();
+            lhs = new BinaryExpression(op, lhs, rhs);
         }
-
         return lhs;
     }
 
     private Expression parseAddSubExpression() throws KException {
         Expression lhs = parseMulDivExpression();
-
-        Token t = current();
-        if(t.type.equals(Token.TokenType.OP_ADD) || t.type.equals(Token.TokenType.OP_SUB)){
-            consume();
-            Expression rhs = parseAddSubExpression();
-            if(t.type.equals(Token.TokenType.OP_ADD)){
-                return new BinaryExpression(BinaryExpression.Operator.ADD, lhs, rhs);
-            }else if(t.type.equals(Token.TokenType.OP_SUB)){
-                return new BinaryExpression(BinaryExpression.Operator.SUB, lhs, rhs);
+        while(current() != null){
+            Token t = current();
+            if(!t.type.equals(Token.TokenType.OP_ADD) &&
+                    !t.type.equals(Token.TokenType.OP_SUB)){
+                break;
             }
+            consume();
+            Expression rhs = parseMulDivExpression();
+            BinaryExpression.Operator op = t.type.equals(Token.TokenType.OP_ADD)
+                    ? BinaryExpression.Operator.ADD
+                    : BinaryExpression.Operator.SUB;
+            lhs = new BinaryExpression(op, lhs, rhs);
         }
         return lhs;
     }
 
     private Expression parseMulDivExpression() throws KException {
         Expression lhs = parsePowerExpression();
-
-        Token t = current();
-        if(t.type.equals(Token.TokenType.OP_MUL) || t.type.equals(Token.TokenType.OP_DIV)){
-            consume();
-            Expression rhs = parseMulDivExpression();
-            if(t.type.equals(Token.TokenType.OP_MUL)){
-                return new BinaryExpression(BinaryExpression.Operator.MUL, lhs, rhs);
-            }else if(t.type.equals(Token.TokenType.OP_DIV)){
-                return new BinaryExpression(BinaryExpression.Operator.DIV, lhs, rhs);
+        while(current() != null){
+            Token t = current();
+            if(!t.type.equals(Token.TokenType.OP_MUL) &&
+                    !t.type.equals(Token.TokenType.OP_DIV)){
+                break;
             }
+            consume();
+            Expression rhs = parsePowerExpression();
+            BinaryExpression.Operator op = t.type.equals(Token.TokenType.OP_MUL)
+                    ? BinaryExpression.Operator.MUL
+                    : BinaryExpression.Operator.DIV;
+            lhs = new BinaryExpression(op, lhs, rhs);
         }
         return lhs;
     }
 
     private Expression parsePowerExpression() throws KException {
-        Expression lhs = parseNIdentifierExpression();
-
-        Token t = current();
-        if(t.type.equals(Token.TokenType.OP_POW)){
+        Expression lhs = parseUnaryExpression();
+        if(current() != null && current().type.equals(Token.TokenType.OP_POW)){
             consume();
             Expression rhs = parsePowerExpression();
             return new BinaryExpression(BinaryExpression.Operator.POWER, lhs, rhs);
         }
-
         return lhs;
     }
 
-    private Expression parseNIdentifierExpression() throws KException {
-        Expression lhs = parsePrimaryExpression();
+    private Expression parseUnaryExpression() throws KException {
+        if(current() != null && current().type.equals(Token.TokenType.OP_SUB)){
+            consume();
+            return new UnaryExpression(BinaryExpression.Operator.SUB, parseUnaryExpression());
+        }
+        return parseCallExpression();
+    }
 
-        if(lhs instanceof NIdentifier identifier && isFunction(identifier.identifier)){
-            List<Expression> arguments = new ArrayList<>();
-            while(current() != null && !current().type.equals(Token.TokenType.EOF) && !current().type.equals(Token.TokenType.SEMICOLON)){
-                arguments.add(parseExpression());
+    private Expression parseCallExpression() throws KException {
+        Expression expr = parsePrimaryExpression();
+
+        if(expr instanceof NIdentifier nident){
+            String funcName = nident.identifier;
+
+            if(isFunction(funcName)){
+                expr = parseFunctionArguments(nident);
             }
-            return new FunctionCall(identifier, new ImmutableArray<>(arguments));
         }
 
-        return lhs;
+        // Now handle postfix operations (property access, subscripts)
+        while(current() != null){
+            Token next = current();
+
+            if(next.type.equals(Token.TokenType.DOT)){
+                consume();
+                Token prop = current();
+                if(prop == null || !prop.type.equals(Token.TokenType.IDENTIFIER)){
+                    throw new KException(ExceptionCode.KDC0002, "Expected identifier after '.'");
+                }
+                expr = new PropertyAccessExpression(expr, new Identifier(new String(prop.lexeme)));
+                consume();
+            }
+            else if(next.type.equals(Token.TokenType.LBRACKET)){
+                consume();
+                Expression indexExpr = parseExpression();
+                expect(Token.TokenType.RBRACKET);
+                expr = new Subscript(expr, indexExpr);
+            }
+            else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expression parseFunctionArguments(NIdentifier identifier) throws KException {
+        List<Expression> arguments = new ArrayList<>();
+
+        if(current() != null && canStartExpression(current().type)){
+            arguments.add(parseExpression());
+
+            while(current() != null && current().type.equals(Token.TokenType.COMMA)){
+                consume();
+
+                if(current() == null || !canStartExpression(current().type)){
+                    throw new KException(ExceptionCode.KDC0002,
+                            "Expected argument after comma in function call");
+                }
+
+                arguments.add(parseExpression());
+            }
+        }
+
+        return new FunctionCall(identifier, new ImmutableArray<>(arguments));
+    }
+
+    // Helper: Check if a token can start an expression
+    private boolean canStartExpression(Token.TokenType type){
+        return type.equals(Token.TokenType.NUMBER) ||
+                type.equals(Token.TokenType.STRING) ||
+                type.equals(Token.TokenType.IDENTIFIER) ||
+                type.equals(Token.TokenType.NIDENTIFIER) ||
+                type.equals(Token.TokenType.LPAREN) ||
+                type.equals(Token.TokenType.LBRACKET) ||
+                type.equals(Token.TokenType.PIPELINE) ||
+                type.equals(Token.TokenType.BRANCH) ||
+                type.equals(Token.TokenType.OP_SUB) ||
+                type.equals(Token.TokenType.NULL);
     }
 
     private Expression parsePrimaryExpression() throws KException {
         Token t = current();
+
+        if (t == null || t.type.equals(Token.TokenType.EOF)) {
+            throw new KException(ExceptionCode.KDC0002, "Unexpected end of input");
+        }
+
         Expression expr = null;
 
         switch (t.type) {
             case NUMBER -> {
                 String s = new String(t.lexeme);
-                consume(); // Consume the initial NUMBER token
-                boolean isFloat = false;
-                if (current() != null && current().type.equals(Token.TokenType.DOT)) { // Check current (now DOT)
-                    consume(); // Consume the DOT
-                    Token next = current();
-                    expect(Token.TokenType.NUMBER); // Expects and consumes the NUMBER after the dot
-                    s += "." + new String(next.lexeme);
-                    isFloat = true;
+                consume();
+                // Handle decimal numbers
+                if (current() != null && current().type.equals(Token.TokenType.DOT)) {
+                    Token peek = peek(1);
+                    if(peek != null && peek.type.equals(Token.TokenType.NUMBER)){
+                        consume(); // consume DOT
+                        Token next = current();
+                        consume(); // consume NUMBER
+                        s += "." + new String(next.lexeme);
+                        expr = new NumberLiteral(s.toCharArray(), true);
+                    } else {
+                        expr = new NumberLiteral(s.toCharArray(), false);
+                    }
+                } else {
+                    expr = new NumberLiteral(s.toCharArray(), false);
                 }
-                expr = new NumberLiteral(s.toCharArray(), isFloat);
             }
             case STRING -> {
                 consume();
                 expr = new StringLiteral(t.lexeme);
             }
-            case OP_SUB -> {
+            case NULL -> {
                 consume();
-                expr = new UnaryExpression(BinaryExpression.Operator.SUB, parseExpression());
+                expr = new NullLiteral();
             }
             case LPAREN -> {
                 consume();
                 Expression inner = parseExpression();
                 expect(Token.TokenType.RPAREN);
-//                consume();
                 expr = inner;
             }
-            case LBRACKET -> { // list or array literal
+            case LBRACKET -> {
                 consume();
                 List<Expression> list = new ArrayList<>();
-                while (!current().type.equals(Token.TokenType.RBRACKET)) {
+
+                // Parse array elements
+                while (current() != null &&
+                        !current().type.equals(Token.TokenType.RBRACKET) &&
+                        !current().type.equals(Token.TokenType.EOF)) {
+
                     list.add(parseExpression());
-                    if (current().type.equals(Token.TokenType.COMMA)) consume();
-                    else break;
+
+                    // Check for comma
+                    if(current() != null && current().type.equals(Token.TokenType.COMMA)){
+                        consume();
+                        // Allow trailing comma before ]
+                        if(current() != null && current().type.equals(Token.TokenType.RBRACKET)){
+                            break;
+                        }
+                    } else {
+                        // No comma means end of list
+                        break;
+                    }
                 }
+
                 expect(Token.TokenType.RBRACKET);
-//                consume();
                 expr = new ArrayLiteral(new ImmutableArray<>(list));
             }
             case IDENTIFIER -> {
@@ -244,57 +321,41 @@ public class Parser {
                 expr = new NIdentifier(new String(t.lexeme));
             }
             case PIPELINE -> {
+                consume();
                 expect(Token.TokenType.LCURLY);
-//                consume();
                 List<Expression> pipeline = new ArrayList<>();
-                while(!current().type.equals(Token.TokenType.EOF) && !current().type.equals(Token.TokenType.RCURLY)){
+
+                while(current() != null &&
+                        !current().type.equals(Token.TokenType.EOF) &&
+                        !current().type.equals(Token.TokenType.RCURLY)){
                     pipeline.add(parseExpression());
+                    expect(Token.TokenType.SEMICOLON);
                 }
+
                 expect(Token.TokenType.RCURLY);
-//                consume();
                 expr = new Pipeline(new ImmutableArray<>(pipeline));
             }
             case BRANCH -> {
+                consume();
                 expect(Token.TokenType.LCURLY);
-//                consume();
                 List<WhenCaseStatement> whens = new ArrayList<>();
                 ElseCaseStatement elseCase = null;
-                while(current().type.equals(Token.TokenType.WHEN)){
+
+                while(current() != null && current().type.equals(Token.TokenType.WHEN)){
                     consume();
                     whens.add(parseWhenCase());
                 }
-                if(current().type.equals(Token.TokenType.ELSE)){
+
+                if(current() != null && current().type.equals(Token.TokenType.ELSE)){
                     consume();
                     elseCase = new ElseCaseStatement(parseExpression());
                 }
+
                 expect(Token.TokenType.RCURLY);
-//                consume();
                 expr = new BranchPipeline(new ImmutableArray<>(whens), elseCase);
             }
-
-            default -> throw new KException(ExceptionCode.KDC0002, "Unexpected token in expression: " + t.type);
-
-        }
-
-        while (true) {
-            Token next = current();
-            if (next.type.equals(Token.TokenType.DOT)) {
-                consume();
-                Token prop = current();
-                if (!prop.type.equals(Token.TokenType.IDENTIFIER)) {
-                    throw new KException(ExceptionCode.KDC0002, "Expected identifier after '.' at " + prop.start);
-                }
-                expr = new PropertyAccessExpression(expr, new Identifier(new String(prop.lexeme)));
-                consume();
-            } else if (next.type.equals(Token.TokenType.LBRACKET)) {
-                consume();
-                Expression indexExpr = parseExpression();
-                expect(Token.TokenType.RBRACKET);
-//                consume();
-                expr = new Subscript(expr, indexExpr);
-            } else {
-                break;
-            }
+            default -> throw new KException(ExceptionCode.KDC0002,
+                    "Unexpected token in expression: " + t.type);
         }
 
         return expr;
@@ -302,69 +363,70 @@ public class Parser {
 
     private WhenCaseStatement parseWhenCase() throws KException {
         Expression condition = parseExpression();
-        if(!current().type.equals(Token.TokenType.DO)){
-            throw new KException(ExceptionCode.KDC0002, "Expected token 'DO' but got " + current().type + " instead.");
+
+        if(current() == null || !current().type.equals(Token.TokenType.DO)){
+            throw new KException(ExceptionCode.KDC0002, "Expected token 'DO' in when case");
         }
+        consume();
+
         Expression doPipe = parseExpression();
+
+        // Allow optional semicolon after when case
+        if(current() != null && current().type.equals(Token.TokenType.SEMICOLON)){
+            consume();
+        }
+
         return new WhenCaseStatement(condition, doPipe);
     }
 
-
     private void consume(){
+        Token peek = peek(0);
+        if(peek != null) {
+            System.out.println(peek.type);
+        }
         position++;
+    }
+
+    private Token peek(int offset){
+        int pos = position + offset;
+        if(pos >= tokens.length()) return null;
+        return tokens.get(pos);
     }
 
     private static boolean isFunction(String name){
         Set<String> functionName = Set.of(
-//                Mathematical Functions
-                "max", "min" , "abs", "sqrt", "pow", "exp", "log", "log10", "sin", "cos", "tan", "asin", "acos", "atan", "ceil", "floor", "round", "clamp", "random", "sign", "mod" ,
-                "atan2","sinh" ,"cosh" ,"tanh" ,"deg" ,"rad" ,"gcd" ,"lcm" , "factorial" ,"root" ,
-
-//                Statistical / Aggregation Functions
-                "sum", "avg", "mean", "median", "mode", "count", "std"
-                ,"stdev" ,"variance" ,"range" ,"product" ,
-
-//                Logic / Comparison Functions
+                "max", "min", "abs", "sqrt", "pow", "exp", "log", "log10",
+                "sin", "cos", "tan", "asin", "acos", "atan", "ceil", "floor",
+                "round", "clamp", "random", "sign", "mod", "atan2", "sinh",
+                "cosh", "tanh", "deg", "rad", "gcd", "lcm", "factorial", "root",
+                "sum", "avg", "mean", "median", "mode", "count", "std", "stdev",
+                "variance", "range", "product",
                 "equals", "not", "and", "or", "xor", "if", "ifelse",
-
-//                String Functions
-                 "length", "upper", "lower", "trim", "concat", "substring", "replace", "indexof", "startswith", "endswith", "split", "join", "reverse",
-                "contains" ,"padleft" ,"padright" ,"repeat" ,"tostring" ,"str" ,"format"  ,"match" ,"regex" ,
-
-//                List / Array Functions
-                "sort", "push", "pop", "append", "insert", "remove", "size", "map", "filter", "reduce",
-                "first" ,"last"  ,"distinct"  ,"every" ,"some" ,"any" ,"merge",
-
-//                Type / Utility Functions
-                "type", "isnumber", "isstring", "islist", "isbool", "print","coalesce" ,"cast" ,
-
-//                Pipeline/Chaining Functions
-//                -Array Pipeline Functions
-                "take", "skip" ,"takewhile" ,"skipwhile"
-
-                );
+                "length", "upper", "lower", "trim", "concat", "substring",
+                "replace", "indexof", "startswith", "endswith", "split", "join",
+                "reverse", "contains", "padleft", "padright", "repeat",
+                "tostring", "str", "format", "match", "regex",
+                "sort", "push", "pop", "append", "insert", "remove", "size",
+                "map", "filter", "reduce", "first", "last", "distinct", "every",
+                "some", "any", "merge",
+                "type", "isnumber", "isstring", "islist", "isbool", "print",
+                "coalesce", "cast",
+                "take", "skip", "takewhile", "skipwhile", "fill"
+        );
         return functionName.contains(name.toLowerCase());
     }
 
     private void expect(Token.TokenType type) throws KException {
-        Token curr = current(); // Check the current token
+        Token curr = current();
         if(curr == null || !curr.type.equals(type)){
-            // Throw exception if current token doesn't match
-            throw new KException(ExceptionCode.KDC0002, "Expected " + type + " but got " + (curr == null ? "EOF" : curr.type) + " at ...");
+            throw new KException(ExceptionCode.KDC0002,
+                    "Expected " + type + " but got " + (curr == null ? "EOF" : curr.type));
         }
-        consume(); // Consume only after a successful match
+        consume();
     }
 
     private Token current(){
+        if (position >= tokens.length()) return null;
         return tokens.get(position);
     }
-
-    private Token peek(int offset){
-        if(position + offset < tokens.length()) {
-            return tokens.get(position + offset);
-        }else {
-            return tokens.get(tokens.length() - 1);
-        }
-    }
-
 }

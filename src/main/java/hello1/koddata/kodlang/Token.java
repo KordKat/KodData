@@ -74,7 +74,7 @@ public class Token {
     }
 
     TokenType type;
-    char[] lexeme;
+    public char[] lexeme;
     int start, end;
 
     Token(TokenType type, char[] lexeme, int start, int end){

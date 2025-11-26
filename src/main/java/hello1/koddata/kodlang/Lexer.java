@@ -41,6 +41,8 @@ public class Lexer {
                 else if(code[i + 1] == '-')
                     tokens.add(new Token(Token.TokenType.ASSIGN, new char[]{c,'-'}, i, i+=2));
                 else tokens.add(new Token(Token.TokenType.OP_LT, new char[]{c}, i, i++));
+            }else if(c == ','){
+                tokens.add(new Token(Token.TokenType.COMMA, new char[]{','}, i, i++));
             }else if(c == '>'){
                 if(code[i + 1] == '=')
                     tokens.add(new Token(Token.TokenType.OP_GE, new char[]{c,'='}, i, i+=2));
