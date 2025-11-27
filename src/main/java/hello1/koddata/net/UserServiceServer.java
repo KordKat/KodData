@@ -3,6 +3,8 @@ package hello1.koddata.net;
 import hello1.koddata.Main;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
+import hello1.koddata.sessions.users.User;
+import hello1.koddata.sessions.users.UserData;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -139,6 +141,44 @@ public class UserServiceServer extends Server {
                         uploadFileStateMap.remove(client.getCurrentSession().id());
                     }
                 }
+            }else if(mode == 2){
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+                int usernameLen = buffer.getInt();
+                byte[] usernameBytes = new byte[usernameLen];
+                buffer.get(usernameBytes);
+                int passwordLen = buffer.getInt();
+                byte[] passwordBytes = new byte[passwordLen];
+                buffer.get(passwordBytes);
+                long sessionId = buffer.getLong();
+
+                String username = new String(usernameBytes, StandardCharsets.UTF_8);
+                String password = new String(passwordBytes, StandardCharsets.UTF_8);
+
+                UserData data = Main.bootstrap.getUserManager().getUserDataByName(username);
+                if(data == null){
+                    client.write(ByteBuffer.wrap(new byte[]{2}));
+                    return;
+                }
+                User user = Main.bootstrap.getUserManager().logIn(data.userId(), password);
+                if(user == null){
+                    client.write(ByteBuffer.wrap(new byte[]{2}));
+                    return;
+                }
+                Session session;
+                if(sessionId < 0){
+                    session = user.newSession();
+                }else {
+                    session = Main.bootstrap.getSessionManager().getSession(sessionId);
+                    if(session == null){
+                        client.write(ByteBuffer.wrap(new byte[]{2}));
+                        return;
+                    }
+                }
+
+                client.setUser(user);
+                client.setCurrentSession(session);
+
             }else {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);

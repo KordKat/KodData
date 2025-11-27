@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -213,4 +214,10 @@ public class UserManager {
     public void removeProperty(String key){
         props.remove(key);
     }
+
+    public UserData getUserDataByName(String name){
+        Optional<UserData> op =userDataMap.entrySet().stream().filter(x -> x.getValue().name().equals(name)).map(x -> x.getValue()).findAny();
+        return op.orElse(null);
+    }
+
 }

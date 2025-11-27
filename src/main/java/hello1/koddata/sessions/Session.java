@@ -89,6 +89,7 @@ public class Session {
     public long newProcess(QueryExecution execution, ColumnArray columnArray){
         Process process = new Process(new KTask(execution, columnArray));
         this.processes.put(process.id(), process);
+        process.execute();
         return process.id();
     }
 
