@@ -397,7 +397,7 @@ public class Parser {
                 "replace", "indexof", "startswith", "endswith", "split", "join",
                 "reverse", "contains", "padleft", "padright", "repeat",
                 "tostring", "str", "format", "match", "regex",
-                "sort", "push", "pop", "append", "insert", "remove", "size",
+                "sort",
                 "map", "filter", "reduce", "first", "last", "distinct", "every",
                 "some", "any", "merge",
                 "type", "isnumber", "isstring", "islist", "isbool", "print",

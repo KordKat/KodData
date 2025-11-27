@@ -472,12 +472,7 @@ public class StatementExecutor {
                 case "skip":
                     // โค้ดสำหรับฟังก์ชัน skip
                     break;
-                case "takewhile":
-                    // โค้ดสำหรับฟังก์ชัน takewhile
-                    break;
-                case "skipwhile":
-                    // โค้ดสำหรับฟังก์ชัน skipwhile
-                    break;
+
                 case "fill":
                     if (evaluatedArguments.get(1).get() == null){
                         throw new KException(ExceptionCode.KDE0012, "exponent should be number");
