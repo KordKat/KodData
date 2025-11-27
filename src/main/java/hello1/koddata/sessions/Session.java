@@ -110,5 +110,7 @@ public class Session {
         return sessionData;
     }
 
-
+    public User getUser() {
+        return user;
+    }
 }
