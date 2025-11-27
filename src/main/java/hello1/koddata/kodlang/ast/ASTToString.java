@@ -101,14 +101,6 @@ public class ASTToString {
             }
             return st;
         }
-        else if(statement instanceof PropertyAccessExpression s){
-            String st = linePrefix + "Property Access Expression\n";
-            st += nextIndent + "|- Object \n";
-            st += astToStringWithIndent(s.object, nextIndent + "  ");
-            st += nextIndent + "|- Property \n";
-            st += astToStringWithIndent(s.property, nextIndent + "  ");
-            return st;
-        }
         else if(statement instanceof StringLiteral s){
             return linePrefix + "String Literal\n" + nextIndent + "|- value = \"" + new String(s.literal) + "\"\n";
         }

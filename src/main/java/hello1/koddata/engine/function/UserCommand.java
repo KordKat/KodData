@@ -6,13 +6,14 @@ import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.users.User;
 import hello1.koddata.sessions.users.UserData;
+import hello1.koddata.sessions.users.UserManager;
 import hello1.koddata.sessions.users.UserPrivilege;
 
 import java.util.List;
 
-public class UserCommand extends KodFunction<User>{
+public class UserCommand extends KodFunction<Object>{
     @Override
-    public Value<User> execute() throws KException {
+    public Value<Object> execute() throws KException {
         if (!arguments.containsKey("command")) {
             throw new KException(ExceptionCode.KDE0012, "You need to write command to process user command");
         }
@@ -125,15 +126,16 @@ public class UserCommand extends KodFunction<User>{
             removeUser(userIdLong);
 
         } else if (command.get().equals("userlist")) {
-            userList();
+            return new Value<>(userList());
         }
 
         return new Value<>(null);
     }
 
 
-    public void createUser(String name , UserPrivilege userPrivilege, String password , boolean isAdmin){
-        UserData user =new UserData(UserData.clusterIdCounter.count() , name , userPrivilege  , password , isAdmin);
+    public void createUser(String name , UserPrivilege userPrivilege, String password , boolean isAdmin) throws KException {
+        UserData user =new UserData(UserData.idCounter.next(), name , userPrivilege  , password , isAdmin);
+        Main.bootstrap.getUserManager().createUser(user);
     }
 
     public void editUser(long userId ,String name , UserPrivilege userPrivilege, String password , Boolean isAdmin) throws KException {

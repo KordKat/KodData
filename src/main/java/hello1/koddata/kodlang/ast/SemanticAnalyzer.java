@@ -113,12 +113,6 @@ public class SemanticAnalyzer {
             }
 
         }
-
-        else if(statement instanceof PropertyAccessExpression propertyAccessExpression){
-            Expression object = propertyAccessExpression.object;
-            analyze(object);
-        }
-
         else if(statement instanceof UnaryExpression unaryExpression){
             Expression expression = unaryExpression.expression;
             analyze(expression);
