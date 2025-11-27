@@ -1,22 +1,18 @@
 package hello1.koddata.engine;
 
+import hello1.koddata.dataframe.Column;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.function.*;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.kodlang.ast.*;
 import hello1.koddata.net.UserClient;
-import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionData;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Consumer;
-
-import static com.sun.tools.javac.tree.JCTree.Tag.NOT;
 
 public class StatementExecutor {
 
@@ -513,11 +509,16 @@ public class StatementExecutor {
                 case "apply":
                     ApplyFunction applyFunction = new ApplyFunction();
                     applyFunction.addArgument("session", new Value<>(client.getCurrentSession()));
-                    applyFunction.addArgument("dataframe", evaluatedArguments.get(0));
+                    if(evaluatedArguments.get(0).get() instanceof QueryOperationNode node){
+                        QueryExecution execution = new QueryExecution();
+                        execution.getHead().next(node);
+                        applyFunction.addArgument("dataframe", new Value<>(execution));
+                    }else {
+                        applyFunction.addArgument("dataframe", evaluatedArguments.getFirst());
+                    }
                     applyFunction.addArgument("operation", evaluatedArguments.get(1));
                 default:
-                    // โค้ดสำหรับกรณีที่ไม่พบชื่อฟังก์ชัน
-                    // เช่น การโยน Exception หรือการแสดงข้อความผิดพลาด
+                    throw new KException(ExceptionCode.KD00006, "There is no this command");
 
             }
         } else if(expression instanceof Pipeline pipe){ //return query execution
@@ -566,16 +567,6 @@ public class StatementExecutor {
                 } else {
                     throw new KException(ExceptionCode.KDC0003, "List index must be a number");
                 }
-            } else if (base instanceof Map map) {
-                // การเข้าถึงองค์ประกอบของ Map/Dictionary โดยใช้ Key
-                // Key อาจเป็น String, Number หรือ Boolean ก็ได้
-                Object indexKey = indexVal.get();
-                if (map.containsKey(indexKey)) {
-                    return new Value<>(map.get(indexKey));
-                } else {
-                    // หากไม่พบ Key ใน Map อาจคืนค่า NullValue หรือโยน Exception ขึ้นอยู่กับภาษาที่ออกแบบ
-                    return new NullValue("Key not found in Map");
-                }
             } else if (base instanceof String str) {
                 // การเข้าถึงตัวอักษรของ String
                 if (indexVal.get() instanceof Number indexNum) {
@@ -588,8 +579,20 @@ public class StatementExecutor {
                 } else {
                     throw new KException(ExceptionCode.KDC0003, "String index must be a number");
                 }
+            }else if(base instanceof ColumnArray columnArray){
+                if(indexVal.get() instanceof String s){
+                    return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[]{columnArray.getColumns().get(s)}), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                }else if(indexVal.get() instanceof List list){
+                    if(list.isEmpty()){
+                        return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[0]), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                    }else if(list.getFirst() instanceof String){
+                        List<Column> col = columnArray.getColumns().keySet().stream().map(x -> columnArray.getColumns().get(x)).toList();
+                        return new Value<>(new ColumnArray(new ImmutableArray<>(col), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                    }
+                }else {
+                    throw new KException(ExceptionCode.KD00006, "Cannot subscript");
+                }
             }
-            // เพิ่มการจัดการสำหรับ DataFrame และโครงสร้างข้อมูลอื่น ๆ ที่นี่
 
             throw new KException(ExceptionCode.KDC0003, "Subscript operation not supported for type: " + base.getClass().getSimpleName());
         }else if(expression instanceof UnaryExpression unary){
@@ -602,17 +605,9 @@ public class StatementExecutor {
                     if (value instanceof Number n) {
                         return new Value<>(-n.doubleValue());
                     }
-                    // ต้องโยน Exception ถ้าไม่ใช่ Number
                 }
-                case NOT -> { // Logical NOT (เช่น !true)
-                    if (value instanceof Boolean b) {
-                        return new Value<>(!b);
-                    }
-                    // ต้องโยน Exception ถ้าไม่ใช่ Boolean
-                }
-                // อาจมี operators อื่นๆ เช่น Bitwise NOT (~), Increment/Decrement (++ / --)
                 default -> {
-                    // จัดการ operator ที่ไม่รู้จัก
+                    throw new KException(ExceptionCode.KDC0001, "unknown operator");
                 }
             }
             // หากไม่สามารถประมวลผลได้ (เช่น ชนิดข้อมูลไม่ถูกต้องสำหรับ operator นั้น)
