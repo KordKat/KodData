@@ -9,10 +9,6 @@ public class CountOperation implements ColumnOperation {
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 
-        /**
-         * 🟢 ตรวจว่า value.get() ต้องเป็น List ของ Value<?> เท่านั้น
-         * นี่คือ list ของ column ที่ส่งเข้ามา (ไม่ใช่ Column object)
-         */
         if (!(value.get() instanceof List<?> column)) {
             throw new KException(ExceptionCode.KD00005, "Only list is accept");
         }
