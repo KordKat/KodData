@@ -226,8 +226,21 @@ public class StatementExecutor {
             return new NullValue("Invalid assignment target");
         } else if (expression instanceof BooleanLiteral bool){
             return new Value<>(bool.literal);
-        } else if (expression instanceof Identifier i){
+        } else if (expression instanceof Identifier i) {
             SessionData sessionData = client.getCurrentSession().getSessionData();
+            String name = i.identifier;
+            
+            Value<?> variableValue = sessionData.get(name);
+            if (variableValue != null) {
+                return variableValue;
+            }
+
+            Map<String, ColumnArray> dataFrames = sessionData.getSessionDataFrame();
+            if (dataFrames.containsKey(name)) {
+                return new Value<>(dataFrames.get(name));
+            }
+
+            throw new KException(ExceptionCode.KDC0001, "Variable or DataFrame '" + name + "' not defined");
 
         } else if (expression instanceof NullLiteral n){
             return new NullValue("null");
@@ -613,7 +626,6 @@ public class StatementExecutor {
             // หากไม่สามารถประมวลผลได้ (เช่น ชนิดข้อมูลไม่ถูกต้องสำหรับ operator นั้น)
             throw new KException(ExceptionCode.KDC0003, "Unary operation '" + unary.op + "' not supported for type: " + value.getClass().getSimpleName());
         }
-
         return new NullValue("Invalid");
 
     }

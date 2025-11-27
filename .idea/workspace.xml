@@ -11,7 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,12 +101,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/engine/Bootstrap.java</url>
-          <line>126</line>
+          <line>72</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/engine/Bootstrap.java</url>
-          <line>130</line>
+          <line>74</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
