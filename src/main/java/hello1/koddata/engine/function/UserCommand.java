@@ -18,9 +18,9 @@ public class UserCommand extends KodFunction<Object>{
             throw new KException(ExceptionCode.KDE0012, "You need to write command to process user command");
         }
         Value<?> command = arguments.get("command");
-        if (!(command.get() instanceof String commandString)) {
-            throw new KException(ExceptionCode.KDE0012, "command should be string");
-        }
+//        if (!(command.get() instanceof String commandString)) {
+//            throw new KException(ExceptionCode.KDE0012, "command should be string");
+//        }
         if (command.get().equals("create")) {
             if (!arguments.containsKey("name")) {
                 throw new KException(ExceptionCode.KDE0012, "You need to write name to create user");
@@ -71,7 +71,7 @@ public class UserCommand extends KodFunction<Object>{
                 throw new KException(ExceptionCode.KDE0012, "You need to write isAdmin to create user");
             }
             Value<?> isAdmin = arguments.get("isAdmin");
-            if (!(password.get() instanceof Boolean isAdminB)) {
+            if (!(isAdmin.get() instanceof Boolean isAdminB)) {
                 throw new KException(ExceptionCode.KDE0012, "isAdmin should be Logical");
             }
             createUser(nameString, maximumResourceUP, passwordString, isAdminB);
@@ -111,7 +111,7 @@ public class UserCommand extends KodFunction<Object>{
                 throw new KException(ExceptionCode.KDE0012, "password should be String");
             }
             Value<?> isAdmin = arguments.get("isAdmin");
-            if (!(password.get() instanceof Boolean isAdminB)) {
+            if (!(isAdmin.get() instanceof Boolean isAdminB)) {
                 throw new KException(ExceptionCode.KDE0012, "isAdmin should be Logical");
             }
             editUser(userIdLong, nameString, maximumResourceUP, passwordString, isAdminB);

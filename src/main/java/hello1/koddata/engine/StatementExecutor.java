@@ -229,7 +229,7 @@ public class StatementExecutor {
         } else if (expression instanceof Identifier i) {
             SessionData sessionData = client.getCurrentSession().getSessionData();
             String name = i.identifier;
-            
+
             Value<?> variableValue = sessionData.get(name);
             if (variableValue != null) {
                 return variableValue;
@@ -501,6 +501,7 @@ public class StatementExecutor {
                     connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
                     connectionFunction.addArgument("user" , evaluatedArguments.get(4));
                     connectionFunction.addArgument("pass" , evaluatedArguments.get(5));
+                    connectionFunction.execute();
                 case "download":
                     DownloadFunction downloadFunction = new DownloadFunction();
                 case "export":
@@ -509,16 +510,19 @@ public class StatementExecutor {
                     exportFunction.addArgument("dataType" , evaluatedArguments.get(1));
                     exportFunction.addArgument("fileName" , evaluatedArguments.get(2));
                     exportFunction.addArgument("userId" , evaluatedArguments.get(3));
+                    exportFunction.execute();
                 case "fetch":
                     FetchFunction fetchFunction = new FetchFunction();
                     fetchFunction.addArgument( "datatype" , evaluatedArguments.get(0));
                     fetchFunction.addArgument( "datasource" , evaluatedArguments.get(1));
                     fetchFunction.addArgument( "memoryGroupName" , evaluatedArguments.get(2));
                     fetchFunction.addArgument( "query" , evaluatedArguments.get(3));
+                    fetchFunction.execute();
                 case "remove":
                     RemoveFunction removeFunction = new RemoveFunction();
                     removeFunction.addArgument( "dataName" , evaluatedArguments.get(0));
                     removeFunction.addArgument( "session" , new Value<>(client.getCurrentSession()));
+                    removeFunction.execute();
                 case "apply":
                     ApplyFunction applyFunction = new ApplyFunction();
                     applyFunction.addArgument("session", new Value<>(client.getCurrentSession()));
@@ -530,6 +534,43 @@ public class StatementExecutor {
                         applyFunction.addArgument("dataframe", evaluatedArguments.getFirst());
                     }
                     applyFunction.addArgument("operation", evaluatedArguments.get(1));
+                    applyFunction.execute();
+                case "user":
+                    UserCommand userCommand = new UserCommand();
+                    userCommand.addArgument( "command" , evaluatedArguments.get(0));
+
+                    userCommand.addArgument( "name" , evaluatedArguments.get(1));
+                    userCommand.addArgument( "maxSession" , evaluatedArguments.get(2));
+                    userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(3));
+                    userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(4));
+                    userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(5));
+                    userCommand.addArgument( "password" , evaluatedArguments.get(6));
+                    userCommand.addArgument( "isAdmin" , evaluatedArguments.get(7));
+
+                    userCommand.addArgument( "userId" , evaluatedArguments.get(1));
+                    userCommand.addArgument( "name" , evaluatedArguments.get(2));
+                    userCommand.addArgument( "maxSession" , evaluatedArguments.get(3));
+                    userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(4));
+                    userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(5));
+                    userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(6));
+
+                    userCommand.addArgument( "userId" , evaluatedArguments.get(1));
+                    userCommand.execute();
+                case "task":
+                    TaskCommand taskCommand = new TaskCommand();
+                    taskCommand.addArgument( "command" , evaluatedArguments.get(0));
+
+                    taskCommand.addArgument( "taskId" , evaluatedArguments.get(1));
+                    taskCommand.addArgument( "userId" , evaluatedArguments.get(2));
+
+                    taskCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
+                    taskCommand.execute();
+                case "session":
+                    SessionCommand sessionCommand = new SessionCommand();
+                    sessionCommand.addArgument( "command" , evaluatedArguments.get(0));
+
+                    sessionCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
+                    sessionCommand.execute();
                 default:
                     throw new KException(ExceptionCode.KD00006, "There is no this command");
 

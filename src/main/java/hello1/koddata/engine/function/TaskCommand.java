@@ -17,9 +17,9 @@ public class TaskCommand extends KodFunction<KTask>{
             throw new KException(ExceptionCode.KDE0012,"You need to write command to process user command");
         }
         Value<?> command = arguments.get("command");
-        if (!(command.get() instanceof String commandString)) {
-            throw new KException(ExceptionCode.KDE0012, "command should be string");
-        }
+//        if (!(command.get() instanceof String commandString)) {
+//            throw new KException(ExceptionCode.KDE0012, "command should be string");
+//        }
         if (command.get().equals("cancelTask")){
             if (!arguments.containsKey("taskId")){
                 throw new KException(ExceptionCode.KDE0012,"You need to write taskId to cancel task");
