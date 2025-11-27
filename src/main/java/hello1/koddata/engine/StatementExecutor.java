@@ -479,15 +479,35 @@ public class StatementExecutor {
                     }
                     return new Value<>(new QueryOperationNode(new FillOperation(evaluatedArguments.get(1) , evaluatedArguments.get(2)), evaluatedArguments));
                 case "connect":
-                    return new Value<>(new QueryOperationNode((QueryOperation) new ConnectionFunction(), evaluatedArguments));
+                    ConnectionFunction connectionFunction = new ConnectionFunction();
+                    connectionFunction.addArgument( "databaseType" , evaluatedArguments.get(0));
+                    connectionFunction.addArgument("databaseName" , evaluatedArguments.get(1));
+                    connectionFunction.addArgument("host" , evaluatedArguments.get(2));
+                    connectionFunction.addArgument("port" , evaluatedArguments.get(3));
+                    connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
                 case "download":
-                    return new Value<>(new QueryOperationNode((QueryOperation) new DownloadFunction(), evaluatedArguments));
+                    DownloadFunction downloadFunction = new DownloadFunction();
                 case "export":
-                    return new Value<>(new QueryOperationNode((QueryOperation) new ExportFunction(), evaluatedArguments));
+                    ExportFunction exportFunction = new ExportFunction();
+                    exportFunction.addArgument( "dataframe" , evaluatedArguments.get(0));
+                    exportFunction.addArgument("dataType" , evaluatedArguments.get(1));
+                    exportFunction.addArgument("fileName" , evaluatedArguments.get(2));
+                    exportFunction.addArgument("userId" , evaluatedArguments.get(3));
                 case "fetch":
-                    return new Value<>(new QueryOperationNode((QueryOperation) new FetchFunction(), evaluatedArguments));
+                    FetchFunction fetchFunction = new FetchFunction();
+                    fetchFunction.addArgument( "datatype" , evaluatedArguments.get(0));
+                    fetchFunction.addArgument( "datasource" , evaluatedArguments.get(1));
+                    fetchFunction.addArgument( "memoryGroupName" , evaluatedArguments.get(2));
+                    fetchFunction.addArgument( "query" , evaluatedArguments.get(3));
                 case "remove":
-                    return new Value<>(new QueryOperationNode((QueryOperation) new RemoveFunction(), evaluatedArguments));
+                    RemoveFunction removeFunction = new RemoveFunction();
+                    removeFunction.addArgument( "dataName" , evaluatedArguments.get(0));
+                    removeFunction.addArgument( "session" , new Value<>(client.getCurrentSession()));
+                case "apply":
+                    ApplyFunction applyFunction = new ApplyFunction();
+                    applyFunction.addArgument("session", new Value<>(client.getCurrentSession()));
+                    applyFunction.addArgument("dataframe", evaluatedArguments.get(0));
+                    applyFunction.addArgument("operation", evaluatedArguments.get(1));
                 default:
                     // โค้ดสำหรับกรณีที่ไม่พบชื่อฟังก์ชัน
                     // เช่น การโยน Exception หรือการแสดงข้อความผิดพลาด
