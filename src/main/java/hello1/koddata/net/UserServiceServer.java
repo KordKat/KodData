@@ -85,7 +85,7 @@ public class UserServiceServer extends Server {
                         } else if(key.isWritable()){
                             handleWrite(key);
                         }
-                    } catch (IOException | KException e) {
+                    } catch (IOException e) {
                         handleDisconnect(key);
                     }
                 }
@@ -95,7 +95,7 @@ public class UserServiceServer extends Server {
         }
     }
 
-    private void handleRead(SelectionKey key) throws IOException, KException {
+    private void handleRead(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         UserClient client = (UserClient) key.attachment();
         ByteBuffer buffer = ByteBuffer.allocate(2048);
@@ -137,6 +137,8 @@ public class UserServiceServer extends Server {
                 if (state.payloadLength <= state.bytesReceived) {
                     try {
                         state.perform();
+                    } catch (KException e) {
+                        client.write(ByteBuffer.wrap(e.getMessage().getBytes(StandardCharsets.UTF_8)));
                     } finally {
                         uploadFileStateMap.remove(client.getCurrentSession().id());
                     }
@@ -165,9 +167,14 @@ public class UserServiceServer extends Server {
                     client.write(ByteBuffer.wrap(new byte[]{2}));
                     return;
                 }
-                Session session;
+                Session session = null;
                 if(sessionId < 0){
-                    session = user.newSession();
+                    try {
+                        session = user.newSession();
+                    } catch (KException e) {
+                        client.write(ByteBuffer.wrap(e.getMessage().getBytes(StandardCharsets.UTF_8)));
+                        return;
+                    }
                 }else {
                     session = Main.bootstrap.getSessionManager().getSession(sessionId);
                     if(session == null){
@@ -185,7 +192,12 @@ public class UserServiceServer extends Server {
                 String code = new String(bytes).trim();
 
                 if (client != null && !code.isEmpty() && client.getCurrentSession() != null) {
-                    client.executeCode(code);
+                    try {
+                        client.executeCode(code);
+                    } catch (KException e) {
+                        client.write(ByteBuffer.wrap(e.getMessage().getBytes(StandardCharsets.UTF_8)));
+                        return;
+                    }
                 }
             }
         }
