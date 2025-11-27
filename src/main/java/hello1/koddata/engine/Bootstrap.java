@@ -1,8 +1,11 @@
 package hello1.koddata.engine;
 
+import hello1.koddata.exception.KException;
 import hello1.koddata.net.*;
 import hello1.koddata.sessions.SessionManager;
+import hello1.koddata.sessions.users.UserData;
 import hello1.koddata.sessions.users.UserManager;
+import hello1.koddata.sessions.users.UserPrivilege;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,7 +23,7 @@ public class Bootstrap {
 
     private static final Properties config = new Properties();
 
-    public void start(String[] args) throws IOException {
+    public void start(String[] args) throws IOException, KException {
         configure(args);
         startServer();
     }
@@ -31,13 +34,20 @@ public class Bootstrap {
         userManager.saveUserData();
     }
 
-    private void configure(String[] args)throws IOException{
+    private void configure(String[] args) throws IOException, KException {
         assert args.length >= 1;
 
         String cfgFile = args[0];
         config.load(new FileInputStream(cfgFile));
         rootPath = Path.of(URI.create(config.getProperty("root", "koddata/")));
         userManager = new UserManager(this);
+        userManager.loadAllUserData();
+
+        if(userManager.userList().isEmpty()){
+            userManager.createUser(new UserData(0, "root", new UserPrivilege(-1, -1, -1, -1), "", true));
+            userManager.saveUserData();
+        }
+
         sessionManager = new SessionManager();
 
         int userBufferSize = Integer.parseInt(config.getProperty("server.user.bufferSize"));
