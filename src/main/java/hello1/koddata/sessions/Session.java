@@ -2,6 +2,7 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.Main;
 import hello1.koddata.concurrent.IdCounter;
+import hello1.koddata.concurrent.KTask;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.sessions.users.User;
@@ -86,7 +87,9 @@ public class Session {
     }
 
     public long newProcess(QueryExecution execution, ColumnArray columnArray){
-        return -1;
+        Process process = new Process(new KTask(execution, columnArray));
+        this.processes.put(process.id(), process);
+        return process.id();
     }
 
     public void terminate(){

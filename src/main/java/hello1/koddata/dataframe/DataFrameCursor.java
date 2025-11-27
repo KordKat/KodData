@@ -3,6 +3,9 @@ package hello1.koddata.dataframe;
 public class DataFrameCursor {
     private long cursor;
 
+    public DataFrameCursor() {
+    }
+
     public long getCursor() {
         return cursor;
     }

@@ -299,6 +299,9 @@ public class Column{
             return new NullValue(new Object());
         }
         Value<?> value = null;
+        if(dataFrameCursor.getCursor() == 0){
+            dataFrameCursor.setCursor(nullbitmapsize);
+        }
         switch (columnKind){
             case 0 -> {
                 if(getMetaData().getDType().equals(ColumnMetaData.ColumnDType.SCALAR_INT)){

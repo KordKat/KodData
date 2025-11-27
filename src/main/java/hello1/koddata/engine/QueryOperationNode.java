@@ -1,5 +1,8 @@
 package hello1.koddata.engine;
 
+import hello1.koddata.exception.ExceptionCode;
+import hello1.koddata.exception.KException;
+
 import java.util.List;
 import java.util.Set;
 
@@ -21,5 +24,18 @@ public class QueryOperationNode {
     public QueryOperation getOperation() {
         return operation;
     }
+
+    public QueryOperationNode getNextNode() {
+        return nextNode;
+    }
+
+    public String getColumn() throws KException {
+        Value<?> val = arguments.get(0);
+        if(!(val.get() instanceof String name)){
+            throw new KException(ExceptionCode.KD00005, "should be string");
+        }
+        return name;
+    }
+
 }
 
