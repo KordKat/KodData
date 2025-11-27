@@ -15,10 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -81,8 +78,6 @@ public class UserManager {
         return users.values().stream().toList();
     }
 
-
-
     public void logoutUser(long userId){
         if(users.containsKey(userId)){
             User user = users.get(userId);
@@ -93,97 +88,191 @@ public class UserManager {
     }
 
     public void loadAllUserData() throws IOException, KException {
-        if(!Files.exists(userFilePath)) Files.createDirectories(userFilePath);
-        List<Path> userPaths = null;
-        try(Stream<Path> stream = Files.list(userFilePath)){
+        if (!Files.exists(userFilePath)) Files.createDirectories(userFilePath);
+
+        List<Path> userPaths;
+        try (Stream<Path> stream = Files.list(userFilePath)) {
             userPaths = stream.filter(Files::isDirectory).toList();
         } catch (RuntimeException e) {
             throw new KException(ExceptionCode.KD00010, e.getMessage());
         }
-        for(Path path : userPaths){
-            Path cfg = path.resolve("usr.cfg");
-            if(!Files.exists(cfg)) continue;
-            byte[] b = Files.readAllBytes(cfg);
 
-            byte[][] fields = ByteUtils.splitBytes(b, (byte)0);
-            assert fields.length == 8;
+        for (Path path : userPaths) {
+            Path cfg = path.resolve("usr.cfg");
+            if (!Files.exists(cfg)) continue;
+
+            byte[] data = Files.readAllBytes(cfg);
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+
+            int expectedFields = 8;
+            byte[][] fields = new byte[expectedFields][];
+
+            for (int i = 0; i < expectedFields; i++) {
+                if (buffer.remaining() < Integer.BYTES) {
+                    throw new KException(ExceptionCode.KD00010, "Unexpected EOF while reading length of field " + i);
+                }
+                int length = buffer.getInt();
+
+                if (length < 0 || length > buffer.remaining()) {
+                    throw new KException(ExceptionCode.KD00010, "Invalid length for field " + i + ": " + length);
+                }
+
+                byte[] fieldData = new byte[length];
+                buffer.get(fieldData);
+                fields[i] = fieldData;
+            }
+
+            // Parse fields
             byte[] userIdField = fields[0];
-            assert userIdField.length == 8;
-            ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-            buffer.put(userIdField);
-            buffer.flip();
-            long userId = buffer.getLong();
+            if (userIdField.length != Long.BYTES) {
+                throw new KException(ExceptionCode.KD00010, "UserId field length invalid: " + userIdField.length);
+            }
+            long userId = ByteBuffer.wrap(userIdField).getLong();
+
             String name = new String(fields[1], StandardCharsets.UTF_8);
             String password = new String(fields[2], StandardCharsets.UTF_8);
-            assert fields[3].length == 1;
-            boolean isAdmin = fields[3][0] != 0;
-            // userPrivileges
+
+            byte[] isAdminField = fields[3];
+            if (isAdminField.length != 1) {
+                throw new KException(ExceptionCode.KD00010, "isAdmin field length invalid: " + isAdminField.length);
+            }
+            boolean isAdmin = isAdminField[0] != 0;
+
             int maxSession = ByteUtils.bytesToInt(fields[4]);
             int maxProcessPerSession = ByteUtils.bytesToInt(fields[5]);
             int maxMemoryPerProcess = ByteUtils.bytesToInt(fields[6]);
             int maxStorageUsage = ByteUtils.bytesToInt(fields[7]);
+
             UserPrivilege privilege = new UserPrivilege(maxSession, maxProcessPerSession, maxMemoryPerProcess, maxStorageUsage);
             UserData userData = new UserData(userId, name, privilege, password, isAdmin);
             this.userDataMap.put(userId, userData);
         }
     }
 
-    public void saveUserData() throws IOException {
-        if (!Files.exists(userFilePath)) {
-            Files.createDirectories(userFilePath);
+
+    private static byte[][] splitBytesNoTrailingDelimiter(byte[] data, byte delimiter) {
+        List<byte[]> parts = new ArrayList<>();
+        int start = 0;
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] == delimiter) {
+                parts.add(Arrays.copyOfRange(data, start, i));
+                start = i + 1;
+            }
         }
+        // Add the last part after last delimiter (or whole array if no delimiter)
+        if (start <= data.length) {
+            parts.add(Arrays.copyOfRange(data, start, data.length));
+        }
+        return parts.toArray(new byte[0][]);
+    }
+
+
+    public void saveUserData() throws IOException {
+
+        if (!Files.exists(userFilePath)) {
+
+            Files.createDirectories(userFilePath);
+
+        }
+
 
         for (UserData userData : userDataMap.values()) {
+
             Path userDir = userFilePath.resolve(userData.name());
+
             if (!Files.exists(userDir)) {
+
                 Files.createDirectories(userDir);
+
             }
+
             Path cfg = userDir.resolve("usr.cfg");
 
-            ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-            buffer.putLong(userData.userId());
-            byte[] userIdBytes = buffer.array();
+
+            // Prepare all fields as byte arrays first
+
+            ByteBuffer userIdBuffer = ByteBuffer.allocate(Long.BYTES);
+
+            userIdBuffer.putLong(userData.userId());
+
+            byte[] userIdBytes = userIdBuffer.array();
+
 
             byte[] nameBytes = userData.name().getBytes(StandardCharsets.UTF_8);
+
             byte[] passwordBytes = userData.password().getBytes(StandardCharsets.UTF_8);
+
             byte[] isAdminBytes = new byte[] { (byte) (userData.isAdmin() ? 1 : 0) };
 
+
             UserPrivilege priv = userData.userPrivilege();
+
             byte[] maxSessionBytes = ByteUtils.intToBytes(priv.maxSession());
+
             byte[] maxProcessBytes = ByteUtils.intToBytes(priv.maxProcessPerSession());
+
             byte[] maxMemoryBytes = ByteUtils.intToBytes(priv.maxMemoryPerProcess());
+
             byte[] maxStorageBytes = ByteUtils.intToBytes(priv.maxStorageUsage());
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            baos.write(userIdBytes);
-            baos.write(0);
+            byte[][] fields = new byte[][] {
 
-            baos.write(nameBytes);
-            baos.write(0);
+                    userIdBytes,
 
-            baos.write(passwordBytes);
-            baos.write(0);
+                    nameBytes,
 
-            baos.write(isAdminBytes);
-            baos.write(0);
+                    passwordBytes,
 
-            baos.write(maxSessionBytes);
-            baos.write(0);
+                    isAdminBytes,
 
-            baos.write(maxProcessBytes);
-            baos.write(0);
+                    maxSessionBytes,
 
-            baos.write(maxMemoryBytes);
-            baos.write(0);
+                    maxProcessBytes,
 
-            baos.write(maxStorageBytes);
+                    maxMemoryBytes,
 
-            byte[] finalBytes = baos.toByteArray();
+                    maxStorageBytes
 
-            Files.write(cfg, finalBytes);
+            };
+
+
+            // Calculate total size needed for ByteBuffer:
+
+            // for each field: 4 bytes (int length) + length of data
+
+            int totalSize = 0;
+
+            for (byte[] field : fields) {
+
+                totalSize += Integer.BYTES + field.length;
+
+            }
+
+
+            ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+
+
+            for (byte[] field : fields) {
+
+                buffer.putInt(field.length);
+
+                buffer.put(field);
+
+            }
+
+
+            // Flip buffer to prepare for writing
+
+            buffer.flip();
+
+
+            Files.write(cfg, buffer.array());
+
         }
+
     }
+
 
     public void changeUserPassword(long userId, String newPass){
         if(userDataMap.containsKey(userId)){
@@ -220,4 +309,8 @@ public class UserManager {
         return op.orElse(null);
     }
 
+
+    public Map<Long, UserData> getUserDataMap() {
+        return userDataMap;
+    }
 }

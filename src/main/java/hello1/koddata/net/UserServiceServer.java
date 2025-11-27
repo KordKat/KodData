@@ -144,8 +144,6 @@ public class UserServiceServer extends Server {
                     }
                 }
             }else if(mode == 2){
-                byte[] bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
                 int usernameLen = buffer.getInt();
                 byte[] usernameBytes = new byte[usernameLen];
                 buffer.get(usernameBytes);
@@ -185,7 +183,7 @@ public class UserServiceServer extends Server {
 
                 client.setUser(user);
                 client.setCurrentSession(session);
-
+                client.write(ByteBuffer.wrap(new byte[]{3}));
             }else {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);

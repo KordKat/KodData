@@ -23,7 +23,7 @@ public class Bootstrap {
 
     private static final Properties config = new Properties();
 
-    public void start(String[] args) throws IOException, KException {
+    public void start(String[] args) throws IOException, KException, InterruptedException {
         configure(args);
         startServer();
     }
@@ -34,17 +34,17 @@ public class Bootstrap {
         userManager.saveUserData();
     }
 
-    private void configure(String[] args) throws IOException, KException {
+    private void configure(String[] args) throws IOException, KException, InterruptedException {
         assert args.length >= 1;
 
         String cfgFile = args[0];
         config.load(new FileInputStream(cfgFile));
-        rootPath = Path.of(URI.create(config.getProperty("root", "koddata/")));
+        rootPath = Path.of(config.getProperty("root", "koddata/"));
         userManager = new UserManager(this);
         userManager.loadAllUserData();
-
-        if(userManager.userList().isEmpty()){
-            userManager.createUser(new UserData(0, "root", new UserPrivilege(-1, -1, -1, -1), "", true));
+        Thread.sleep(1000);
+        if(userManager.getUserDataMap().isEmpty()){
+            userManager.createUser(new UserData(0, "root", new UserPrivilege(2, 2, 2, 2), "1234", true));
             userManager.saveUserData();
         }
 

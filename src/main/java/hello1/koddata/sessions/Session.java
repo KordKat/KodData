@@ -42,6 +42,7 @@ public class Session {
         this.state = State.IDLE;
         this.settings = settings;
         this.user = user;
+        this.sessionData = new SessionData(user.getUserData().name() + sessionId);
     }
 
 

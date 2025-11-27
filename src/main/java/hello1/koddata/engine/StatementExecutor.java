@@ -23,7 +23,7 @@ public class StatementExecutor {
             }
         } else if (statement instanceof Expression expression) {
             Value<?> result = evaluateExpression(expression, client);
-            client.write(ByteBuffer.wrap(("- " + result.get().getClass().getName()).getBytes(StandardCharsets.UTF_8)));
+            client.write(ByteBuffer.wrap(("- " + result.get().toString()).getBytes(StandardCharsets.UTF_8)));
         }
     }
 

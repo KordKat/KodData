@@ -17,18 +17,18 @@ public class Main {
 
     public static Bootstrap bootstrap;
 
-    public static void main(String[] args) throws IOException, KException {
-//        bootstrap = new Bootstrap();
-//        bootstrap.start(args);
-        String testCode = """
-                $pipe <- pipeline{
-                    sort date;
-                    fill null, 0;
-                };
-                """;
-        Token[] t = Lexer.analyze(testCode.toCharArray());
-        Parser parser = new Parser(new ImmutableArray<>(t));
-        Statement statement = parser.parseStatement();
-        System.out.println(ASTToString.astToString(statement));
+    public static void main(String[] args) throws IOException, KException, InterruptedException {
+        bootstrap = new Bootstrap();
+        bootstrap.start(args);
+//        String testCode = """
+//                $pipe <- pipeline{
+//                    sort date;
+//                    fill null, 0;
+//                };
+//                """;
+//        Token[] t = Lexer.analyze(testCode.toCharArray());
+//        Parser parser = new Parser(new ImmutableArray<>(t));
+//        Statement statement = parser.parseStatement();
+//        System.out.println(ASTToString.astToString(statement));
     }
 }
