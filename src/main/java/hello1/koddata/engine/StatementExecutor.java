@@ -13,11 +13,10 @@ import hello1.koddata.utils.collection.ImmutableArray;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
+
+import static com.sun.tools.javac.tree.JCTree.Tag.NOT;
 
 public class StatementExecutor {
 
@@ -548,9 +547,76 @@ public class StatementExecutor {
         }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
-            //dataframe and list
-        }else if(expression instanceof UnaryExpression unary){
+            // ประเมินฐาน (base) และดัชนี (index)
+            Value<?> baseVal = evaluateExpression(sub.base, client);
+            Value<?> indexVal = evaluateExpression(sub.index, client);
 
+            // ตรวจสอบชนิดของฐาน
+            Object base = baseVal.get();
+
+            if (base instanceof List list) {
+                // การเข้าถึงองค์ประกอบของ List
+                if (indexVal.get() instanceof Number indexNum) {
+                    int index = indexNum.intValue();
+                    if (index >= 0 && index < list.size()) {
+                        return new Value<>(list.get(index));
+                    } else {
+                        throw new KException(ExceptionCode.KDC0003, "List index out of bounds: " + index);
+                    }
+                } else {
+                    throw new KException(ExceptionCode.KDC0003, "List index must be a number");
+                }
+            } else if (base instanceof Map map) {
+                // การเข้าถึงองค์ประกอบของ Map/Dictionary โดยใช้ Key
+                // Key อาจเป็น String, Number หรือ Boolean ก็ได้
+                Object indexKey = indexVal.get();
+                if (map.containsKey(indexKey)) {
+                    return new Value<>(map.get(indexKey));
+                } else {
+                    // หากไม่พบ Key ใน Map อาจคืนค่า NullValue หรือโยน Exception ขึ้นอยู่กับภาษาที่ออกแบบ
+                    return new NullValue("Key not found in Map");
+                }
+            } else if (base instanceof String str) {
+                // การเข้าถึงตัวอักษรของ String
+                if (indexVal.get() instanceof Number indexNum) {
+                    int index = indexNum.intValue();
+                    if (index >= 0 && index < str.length()) {
+                        return new Value<>(String.valueOf(str.charAt(index)));
+                    } else {
+                        throw new KException(ExceptionCode.KDC0003, "String index out of bounds: " + index);
+                    }
+                } else {
+                    throw new KException(ExceptionCode.KDC0003, "String index must be a number");
+                }
+            }
+            // เพิ่มการจัดการสำหรับ DataFrame และโครงสร้างข้อมูลอื่น ๆ ที่นี่
+
+            throw new KException(ExceptionCode.KDC0003, "Subscript operation not supported for type: " + base.getClass().getSimpleName());
+        }else if(expression instanceof UnaryExpression unary){
+            // ประเมินนิพจน์ที่อยู่ด้านขวาของ Unary Operator
+            Value<?> exprVal = evaluateExpression(unary.expression, client);
+            Object value = exprVal.get();
+
+            switch (unary.op) {
+                case SUB -> { // Negative (เช่น -5)
+                    if (value instanceof Number n) {
+                        return new Value<>(-n.doubleValue());
+                    }
+                    // ต้องโยน Exception ถ้าไม่ใช่ Number
+                }
+                case NOT -> { // Logical NOT (เช่น !true)
+                    if (value instanceof Boolean b) {
+                        return new Value<>(!b);
+                    }
+                    // ต้องโยน Exception ถ้าไม่ใช่ Boolean
+                }
+                // อาจมี operators อื่นๆ เช่น Bitwise NOT (~), Increment/Decrement (++ / --)
+                default -> {
+                    // จัดการ operator ที่ไม่รู้จัก
+                }
+            }
+            // หากไม่สามารถประมวลผลได้ (เช่น ชนิดข้อมูลไม่ถูกต้องสำหรับ operator นั้น)
+            throw new KException(ExceptionCode.KDC0003, "Unary operation '" + unary.op + "' not supported for type: " + value.getClass().getSimpleName());
         }
 
         return new NullValue("Invalid");
