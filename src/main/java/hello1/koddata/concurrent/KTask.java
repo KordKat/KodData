@@ -1,14 +1,16 @@
 package hello1.koddata.concurrent;
 
+import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.QueryExecution;
 
 public class KTask extends Thread {
 
     private final QueryExecution execution;
     private boolean isCancelled = false;
-
-    public KTask(QueryExecution execution) {
+    private ColumnArray columnArray;
+    public KTask(QueryExecution execution, ColumnArray columnArray) {
         this.execution = execution;
+        this.columnArray = columnArray;
     }
 
     @Override
@@ -26,7 +28,6 @@ public class KTask extends Thread {
     }
 
     public boolean isCancelled() {
-
         return isCancelled;
     }
 }

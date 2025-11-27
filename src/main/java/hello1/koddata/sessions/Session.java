@@ -2,6 +2,7 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.Main;
 import hello1.koddata.concurrent.IdCounter;
+import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.sessions.users.User;
 import java.util.HashMap;
@@ -84,8 +85,8 @@ public class Session {
         }
     }
 
-    public void newProcess(QueryExecution execution){
-
+    public long newProcess(QueryExecution execution, ColumnArray columnArray){
+        return -1;
     }
 
     public void terminate(){
