@@ -485,6 +485,8 @@ public class StatementExecutor {
                     connectionFunction.addArgument("host" , evaluatedArguments.get(2));
                     connectionFunction.addArgument("port" , evaluatedArguments.get(3));
                     connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
+                    connectionFunction.addArgument("user" , evaluatedArguments.get(4));
+                    connectionFunction.addArgument("pass" , evaluatedArguments.get(5));
                 case "download":
                     DownloadFunction downloadFunction = new DownloadFunction();
                 case "export":
