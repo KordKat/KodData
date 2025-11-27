@@ -7,9 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
 public abstract class ChannelState {
-    private volatile long id;
-
-    private String shardId;
 
     public ByteBuffer headerBuffer = ByteBuffer.allocate(24); // header size
     public ByteBuffer payloadBuffer;
@@ -18,9 +15,6 @@ public abstract class ChannelState {
 
     public long payloadLength;
     public long bytesReceived;
-
-    public Path tempFile;
-    public OutputStream output;
 
     public ChannelState(int chunkSize) {
         payloadBuffer = ByteBuffer.allocate(chunkSize);
@@ -36,17 +30,5 @@ public abstract class ChannelState {
     }
 
     public abstract void perform() throws KException;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setShardId(String shardId) {
-        this.shardId = shardId;
-    }
-
-    public String getShardId() {
-        return shardId;
-    }
 }
 
