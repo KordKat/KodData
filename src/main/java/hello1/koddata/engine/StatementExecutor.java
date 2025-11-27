@@ -252,11 +252,11 @@ public class StatementExecutor {
             switch (functionName) {
                 // 🔢 คณิตศาสตร์
                 case "max":
-                    // โค้ดสำหรับฟังก์ชัน max
-                    break;
+                    return new Value<>(new QueryOperationNode(new MaxOperation() , evaluatedArguments));
+
                 case "min":
-                    // โค้ดสำหรับฟังก์ชัน min
-                    break;
+                    return new Value<>(new QueryOperationNode(new MinOperation() , evaluatedArguments));
+
                 case "abs":
                     return new Value<>(new QueryOperationNode(new AbsOperation() , evaluatedArguments));
                 case "sqrt":
@@ -325,26 +325,26 @@ public class StatementExecutor {
 
                 // 📊 สถิติ
                 case "sum":
-                    // โค้ดสำหรับฟังก์ชัน sum
-                    break;
+                    return new Value<>(new QueryOperationNode(new SumOperation(), evaluatedArguments));
+
                 case "mean":
-                    // โค้ดสำหรับฟังก์ชัน mean
-                    break;
+                    return new Value<>(new QueryOperationNode(new MeanOperation(), evaluatedArguments));
+
                 case "median":
-                    // โค้ดสำหรับฟังก์ชัน median
-                    break;
+                    return new Value<>(new QueryOperationNode(new MedianOperation(), evaluatedArguments));
+
                 case "mode":
-                    // โค้ดสำหรับฟังก์ชัน mode
-                    break;
+                    return new Value<>(new QueryOperationNode(new ModeOperation(), evaluatedArguments));
+
                 case "count":
-                    // โค้ดสำหรับฟังก์ชัน count
-                    break;
+                    return new Value<>(new QueryOperationNode(new CountOperation(), evaluatedArguments));
+
                 case "range":
-                    // โค้ดสำหรับฟังก์ชัน range
-                    break;
+                    return new Value<>(new QueryOperationNode(new RangeOperation(), evaluatedArguments));
+
                 case "product":
-                    // โค้ดสำหรับฟังก์ชัน product
-                    break;
+                    return new Value<>(new QueryOperationNode(new ProductOperation(), evaluatedArguments));
+
 
                 // 💡 ตรรกะ/เงื่อนไข
                 case "equals":
@@ -440,11 +440,10 @@ public class StatementExecutor {
 
                 // 📚 การจัดการรายการ/คอลเลกชัน
                 case "sort":
-                    // โค้ดสำหรับฟังก์ชัน sort
-                    break;
+                    return  new Value<>(new QueryOperationNode(new SortOperation(), evaluatedArguments));
                 case "distinct":
-                    // โค้ดสำหรับฟังก์ชัน distinct
-                    break;
+                    return new Value<>(new QueryOperationNode(new DistinctOperation(), evaluatedArguments));
+
 
                 // ⚙️ การจัดการข้อมูล/ประเภท
                 case "type":
@@ -467,11 +466,18 @@ public class StatementExecutor {
 
                 // 🗂️ การจัดการรายการแบบมีเงื่อนไข
                 case "take":
-                    // โค้ดสำหรับฟังก์ชัน take
-                    break;
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new TakeOperation(n.intValue()), evaluatedArguments));
+
                 case "skip":
-                    // โค้ดสำหรับฟังก์ชัน skip
-                    break;
+                    if (!(evaluatedArguments.get(1).get() instanceof Number n)) {
+                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                    }
+                    return new Value<>(new QueryOperationNode(new SkipOperation(n.intValue()), evaluatedArguments
+                    ));
+
 
                 case "fill":
                     if (evaluatedArguments.get(1).get() == null){

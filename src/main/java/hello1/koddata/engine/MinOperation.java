@@ -1,29 +1,37 @@
 package hello1.koddata.engine;
 
-import hello1.koddata.dataframe.Column;
-import hello1.koddata.dataframe.DataFrameCursor;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+
+import java.util.List;
 
 public class MinOperation implements ColumnOperation {
 
     @Override
     public Value<?> operate(Value<?> value) throws KException {
-        if (!(value.get() instanceof Column column)) {
-            throw new KException(ExceptionCode.KD00005, "Only column is accept");
-        }
 
-        long rows = column.getMetaData().getRows();
-        DataFrameCursor cursor = new DataFrameCursor();
+        if (!(value.get() instanceof List<?> column)) {
+            throw new KException(ExceptionCode.KD00005, "Only list is accept");
+        }
 
         double min = Double.POSITIVE_INFINITY;
         boolean hasValue = false;
 
-        for (long i = 0; i < rows; i++) {
-            Value<?> cell = column.readRow(Math.toIntExact(i), cursor);
-            if (cell instanceof NullValue) continue;
+        // column = List<Value<?>>
+        for (Object o : column) {
+
+            // ต้องเป็น Value<?> เท่านั้น
+            if (!(o instanceof Value<?> cell)) {
+                continue;
+            }
+
+            // null ไม่เอา
+            if (cell instanceof NullValue) {
+                continue;
+            }
 
             Object raw = cell.get();
+
             if (raw instanceof Number n) {
                 double d = n.doubleValue();
                 if (!hasValue || d < min) {

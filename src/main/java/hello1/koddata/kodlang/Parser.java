@@ -388,10 +388,10 @@ public class Parser {
         Set<String> functionName = Set.of(
                 "max", "min", "abs", "sqrt", "pow", "exp", "log", "log10",
                 "sin", "cos", "tan", "asin", "acos", "atan", "ceil", "floor",
-                "round", "clamp", "random", "sign", "mod", "atan2", "sinh",
+                "round", "clamp", "random", "sign", "mod", "sinh",
                 "cosh", "tanh", "deg", "rad", "gcd", "lcm", "factorial", "root",
-                "sum", "avg", "mean", "median", "mode", "count", "std", "stdev",
-                "variance", "range", "product",
+                "sum", "avg", "mean", "median", "mode", "count",
+                 "range", "product",
                 "equals", "not", "and", "or", "xor", "if", "ifelse",
                 "length", "upper", "lower", "trim", "concat", "substring",
                 "replace", "indexof", "startswith", "endswith", "split", "join",
@@ -402,7 +402,9 @@ public class Parser {
                 "some", "any", "merge",
                 "type", "isnumber", "isstring", "islist", "isbool", "print",
                 "coalesce", "cast",
-                "take", "skip", "takewhile", "skipwhile", "fill"
+                "take", "skip", "fill"
+                ,"connect","download", "export", "fetch", "remove", "session", "task"
+                ,"user", "copy", "drop"
         );
         return functionName.contains(name.toLowerCase());
     }

@@ -1,44 +1,44 @@
 package hello1.koddata.engine;
 
-import hello1.koddata.dataframe.Column;
-import hello1.koddata.dataframe.DataFrameCursor;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class DistinctOperation implements ColumnOperation {
 
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 
-        // ตรวจว่าเป็น Column
-        if (!(value.get() instanceof Column column)) {
-            throw new KException(ExceptionCode.KD00005, "Only column is accept");
+        if (!(value.get() instanceof List<?> column)) {
+            throw new KException(ExceptionCode.KD00005, "Only list is accept");
         }
 
-        int rows = Math.toIntExact(column.getMetaData().getRows());
-        DataFrameCursor cursor = new DataFrameCursor();
-
+        // ใช้ set เก็บค่าที่เคยเจอ
         Set<Object> seen = new HashSet<>();
+
+        // เก็บ index ที่ distinct
         List<Integer> indexList = new ArrayList<>();
 
-        // ไล่เช็คค่าทีละแถว
-        for (int i = 0; i < rows; i++) {
+        // ไล่ตามลำดับใน list
+        for (int i = 0; i < column.size(); i++) {
 
-            Value<?> cell = column.readRow(i, cursor);
-            Object item = (cell == null) ? null : cell.get();
+            Object o = column.get(i);
 
-            // ถ้าเจอครั้งแรก ให้เก็บ index ไว้
+            // element ต้องเป็น Value<?> ถ้าไม่ใช่ก็ข้าม
+            if (!(o instanceof Value<?> cell)) {
+                continue; // จะโยน error ก็ได้ แต่ขอน้องทำแบบ safe
+            }
+
+            Object item = cell.get(); // ค่าจริงใน Value<?>
+
+            // ถ้ายังไม่เคยเจอ ให้เก็บ index ครั้งแรก
             if (seen.add(item)) {
                 indexList.add(i);
             }
         }
 
-        // คืนค่าเป็น List ของ index
+        // คืน index list
         return new Value<>(indexList);
     }
 }

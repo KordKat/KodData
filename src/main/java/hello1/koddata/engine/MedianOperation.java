@@ -1,7 +1,5 @@
 package hello1.koddata.engine;
 
-import hello1.koddata.dataframe.Column;
-import hello1.koddata.dataframe.DataFrameCursor;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import java.util.ArrayList;
@@ -12,39 +10,51 @@ public class MedianOperation implements ColumnOperation {
 
     @Override
     public Value<?> operate(Value<?> value) throws KException {
-        if (!(value.get() instanceof Column column)) {
-            throw new KException(ExceptionCode.KD00005, "Only column is accept");
+
+        if (!(value.get() instanceof List<?> column)) {
+            throw new KException(ExceptionCode.KD00005, "Only list is accept");
         }
 
-        long rows = column.getMetaData().getRows();
-        DataFrameCursor cursor = new DataFrameCursor();
+        List<Double> numbers = new ArrayList<>();
 
-        List<Double> list = new ArrayList<>();
+        // ไล่อ่านค่าจาก list ของ Value<?>
+        for (Object o : column) {
 
-        for (long i = 0; i < rows; i++) {
-            Value<?> cell = column.readRow(Math.toIntExact(i), cursor);
-            if (cell instanceof NullValue) continue;
+            // ต้องเป็น Value<?> ถ้าไม่ใช่ ให้ข้าม
+            if (!(o instanceof Value<?> cell)) {
+                continue;
+            }
+
+            // null ไม่เอา
+            if (cell instanceof NullValue) {
+                continue;
+            }
 
             Object raw = cell.get();
+
             if (raw instanceof Number n) {
-                list.add(n.doubleValue());
+                numbers.add(n.doubleValue());
             }
         }
 
-        int n = list.size();
+        int n = numbers.size();
         if (n == 0) {
             return new Value<>(Double.NaN);
         }
 
-        Collections.sort(list);
+        // sort ค่า
+        Collections.sort(numbers);
 
         double median;
+
         if (n % 2 == 1) {
-            median = list.get(n / 2);
+            // ค่าตรงกลางพอดี
+            median = numbers.get(n / 2);
         } else {
-            double a = list.get((n / 2) - 1);
-            double b = list.get(n / 2);
-            median = (a + b) / 2.0;
+            // ค่าเฉลี่ยของสองตัวกลาง
+            double left = numbers.get((n / 2) - 1);
+            double right = numbers.get(n / 2);
+            median = (left + right) / 2.0;
         }
 
         return new Value<>(median);
