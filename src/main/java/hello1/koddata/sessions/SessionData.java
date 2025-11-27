@@ -57,6 +57,7 @@ public class SessionData {
 
         }else if(value instanceof ColumnArray columnArray){
             if(!sessionDataFrame.containsKey(name.getName())){
+                variables.remove(name.getName());
                 sessionDataFrame.put(name.getName(), columnArray);
             }else {
                 ColumnArray old = sessionDataFrame.get(name.getName());
@@ -64,10 +65,19 @@ public class SessionData {
                 else {
                     old.deallocate();
                     sessionDataFrame.put(name.getName(), columnArray);
+                    variables.remove(name.getName());
                 }
             }
         }else {
             variables.put(name.getName(), new Value<>(value));
+            if(sessionDataFrame.containsKey(name.getName())){
+                ColumnArray old = sessionDataFrame.get(name.getName());
+                if(old != null) {
+                    old.deallocate();
+                    sessionDataFrame.remove(name.getName());
+
+                }
+            }
         }
     }
 
