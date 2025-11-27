@@ -83,5 +83,7 @@ public class SessionData {
         return variables;
     }
 
-
+    public MemoryGroup getMemoryGroup() {
+        return memoryGroup;
+    }
 }

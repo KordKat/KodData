@@ -120,6 +120,7 @@ public class ColumnArray  {
         return records;
     }
 
-
-
+    public ConcurrentMap<String, Column> getColumns() {
+        return columns;
+    }
 }

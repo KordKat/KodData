@@ -6,8 +6,8 @@ import hello1.koddata.io.ChannelState;
 public class UserUploadFileState extends ChannelState {
 
     private long sessionId;
-
-    public UserUploadFileState(int chunkSize, long sessionId) {
+    private String fileName;
+    public UserUploadFileState(int chunkSize, long sessionId, String fileName) {
         super(chunkSize);
     }
 

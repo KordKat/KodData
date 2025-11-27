@@ -3,7 +3,7 @@ package hello1.koddata.engine;
 import hello1.koddata.sessions.Session;
 
 public class QueryExecution {
-    private final QueryOperationNode head = new QueryOperationNode(new EmptyOperation());
+    private final QueryOperationNode head = new QueryOperationNode(new EmptyOperation() , null);
 
     public QueryExecution() {}
 

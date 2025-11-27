@@ -11,21 +11,7 @@
   <component name="ChangeListManager">
     <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/DataFrame.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/DataFrameSchema.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/NetUtils.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/UserData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/UserData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/KodResourceNaming.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/UniqueReference.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/WeakReference.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +51,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="" />

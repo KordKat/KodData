@@ -111,12 +111,15 @@ public class UserServiceServer extends Server {
             if (mode == 1) {
                 UserUploadFileState state = uploadFileStateMap.get(client.getCurrentSession().id());
                 if (state == null) {
+                    int fileNameSize = buffer.getInt();
+                    byte[] fileNameBytes = new byte[fileNameSize];
+                    buffer.get(fileNameBytes);
                     int capacity = buffer.getInt();
-                    state = new UserUploadFileState(capacity, client.getCurrentSession().id());
+                    state = new UserUploadFileState(capacity, client.getCurrentSession().id(), new String(fileNameBytes, StandardCharsets.UTF_8));
                     uploadFileStateMap.put(client.getCurrentSession().id(), state);
 
-                    state.payloadLength = capacity - 4;
-                    state.payloadBuffer.limit((int) state.payloadLength); // prevent over-write
+                    state.payloadLength = capacity - 4 - 4 - fileNameBytes.length;
+                    state.payloadBuffer.limit((int) state.payloadLength);
                 }
 
                 int toRead = buffer.remaining();
@@ -129,8 +132,7 @@ public class UserServiceServer extends Server {
                 buffer.get(temp);
                 state.payloadBuffer.put(temp);
 
-                if (!state.payloadBuffer.hasRemaining()) {
-
+                if (state.payloadLength <= state.bytesReceived) {
                     try {
                         state.perform();
                     } finally {
