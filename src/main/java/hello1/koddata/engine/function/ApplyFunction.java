@@ -7,10 +7,12 @@ import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
 
-public class ApplyFunction extends KodFunction<Long> { //returns task id
+import java.util.concurrent.CompletableFuture;
+
+public class ApplyFunction extends KodFunction<CompletableFuture<ColumnArray>> { //returns task id
 
     @Override
-    public Value<Long> execute() throws KException {
+    public Value<CompletableFuture<ColumnArray>> execute() throws KException {
         if(arguments.get("session") == null){
             throw new KException(ExceptionCode.KDE0012, "session not found");
         }

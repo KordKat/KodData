@@ -13,6 +13,7 @@ import hello1.koddata.utils.collection.ImmutableArray;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class StatementExecutor {
 
@@ -135,9 +136,21 @@ public class StatementExecutor {
             Value<?> result = evaluateExpression(valueExpr, client);
 
             if (toExpr instanceof Identifier i) {
-                client.getCurrentSession()
-                        .getSessionData()
-                        .assignVariable(new DataName(i.identifier, null), result.get());
+                if(result.get() instanceof CompletableFuture<?> completableFuture){
+                    completableFuture.whenComplete((a,b) -> {
+                        try {
+                            client.getCurrentSession()
+                                    .getSessionData()
+                                    .assignVariable(new DataName(i.identifier, null), a);
+                        } catch (KException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }else {
+                    client.getCurrentSession()
+                            .getSessionData()
+                            .assignVariable(new DataName(i.identifier, null), result.get());
+                }
                 return result;
             } else if (toExpr instanceof Subscript sub) {
 
@@ -146,9 +159,23 @@ public class StatementExecutor {
 
 
                 if (baseExpr instanceof Identifier id && indexExpr instanceof NIdentifier nid) {
-                    client.getCurrentSession()
-                            .getSessionData()
-                            .assignVariable(new DataName(id.identifier, nid.identifier), result.get());
+
+                    if(result.get() instanceof CompletableFuture<?> completableFuture){
+                        completableFuture.whenComplete((a,b) -> {
+                            try {
+                                client.getCurrentSession()
+                                        .getSessionData()
+                                        .assignVariable(new DataName(id.identifier, nid.identifier), a);
+                            } catch (KException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }else {
+
+                        client.getCurrentSession()
+                                .getSessionData()
+                                .assignVariable(new DataName(id.identifier, nid.identifier), result.get());
+                    }
                     return result;
                 }
 
@@ -183,18 +210,43 @@ public class StatementExecutor {
                     Object actualValue = (rhsObj instanceof Value<?> v) ? v.get() : rhsObj;
 
                     if (leftCurr instanceof Identifier i2) {
-                        client.getCurrentSession()
+                        if(result.get() instanceof CompletableFuture<?> completableFuture){
+                            completableFuture.whenComplete((a,b) -> {
+                                try {
+                                    client.getCurrentSession()
+                                            .getSessionData()
+                                            .assignVariable(new DataName(i2.identifier, null), a);
+                                } catch (KException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        }else {
+                            client.getCurrentSession()
                                 .getSessionData()
                                 .assignVariable(new DataName(i2.identifier, null), actualValue);
+                        }
                     } else if (leftCurr instanceof Subscript sub) {
 
                         Expression baseExpr = sub.base;
                         Expression indexExpr = sub.index;
 
+
                         if (baseExpr instanceof Identifier id && indexExpr instanceof NIdentifier nid) {
-                            client.getCurrentSession()
+                            if(result.get() instanceof CompletableFuture<?> completableFuture){
+                                completableFuture.whenComplete((a,b) -> {
+                                    try {
+                                        client.getCurrentSession()
+                                                .getSessionData()
+                                                .assignVariable(new DataName(id.identifier, nid.identifier), a);
+                                    } catch (KException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
+                            }else {
+                                client.getCurrentSession()
                                     .getSessionData()
                                     .assignVariable(new DataName(id.identifier, nid.identifier), actualValue);
+                            }
                         } else {
                             Value<?> baseValue = evaluateExpression(baseExpr, client);
                             Value<?> subValue = evaluateExpression(indexExpr, client);
@@ -208,9 +260,21 @@ public class StatementExecutor {
                                 List<Object> updatedList = new ArrayList<>(baseList);
                                 updatedList.set(idx, actualValue);
 
-                                client.getCurrentSession()
+                                if(result.get() instanceof CompletableFuture<?> completableFuture){
+                                    completableFuture.whenComplete((a,b) -> {
+                                        try {
+                                            client.getCurrentSession()
+                                                    .getSessionData()
+                                                    .assignVariable(new DataName("_", null), a);
+                                        } catch (KException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    });
+                                }else {
+                                    client.getCurrentSession()
                                         .getSessionData()
                                         .assignVariable(new DataName("_", null), updatedList);
+                                }
                             } else {
                                 return new NullValue("Invalid subscript in destructuring");
                             }
@@ -501,9 +565,12 @@ public class StatementExecutor {
                     connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
                     connectionFunction.addArgument("user" , evaluatedArguments.get(4));
                     connectionFunction.addArgument("pass" , evaluatedArguments.get(5));
-                    connectionFunction.execute();
+                    return new Value<>(connectionFunction.execute());
                 case "download":
                     DownloadFunction downloadFunction = new DownloadFunction();
+                    downloadFunction.addArgument( "fileName" , evaluatedArguments.get(0));
+                    downloadFunction.addArgument( "UserClient" , new Value<>(client));
+                    downloadFunction.execute();
                 case "export":
                     ExportFunction exportFunction = new ExportFunction();
                     exportFunction.addArgument( "dataframe" , evaluatedArguments.get(0));
@@ -517,7 +584,7 @@ public class StatementExecutor {
                     fetchFunction.addArgument( "datasource" , evaluatedArguments.get(1));
                     fetchFunction.addArgument( "memoryGroupName" , evaluatedArguments.get(2));
                     fetchFunction.addArgument( "query" , evaluatedArguments.get(3));
-                    fetchFunction.execute();
+                    return new Value<>(fetchFunction.execute());
                 case "remove":
                     RemoveFunction removeFunction = new RemoveFunction();
                     removeFunction.addArgument( "dataName" , evaluatedArguments.get(0));
@@ -535,6 +602,7 @@ public class StatementExecutor {
                     }
                     applyFunction.addArgument("operation", evaluatedArguments.get(1));
                     applyFunction.execute();
+                    return new Value<>(applyFunction.execute());
                 case "user":
                     UserCommand userCommand = new UserCommand();
                     userCommand.addArgument( "command" , evaluatedArguments.get(0));
@@ -602,15 +670,12 @@ public class StatementExecutor {
         }else if(expression instanceof StringLiteral str){
             return new Value<>(new String(str.literal));
         } else if(expression instanceof Subscript sub){
-            // ประเมินฐาน (base) และดัชนี (index)
             Value<?> baseVal = evaluateExpression(sub.base, client);
             Value<?> indexVal = evaluateExpression(sub.index, client);
 
-            // ตรวจสอบชนิดของฐาน
             Object base = baseVal.get();
 
             if (base instanceof List list) {
-                // การเข้าถึงองค์ประกอบของ List
                 if (indexVal.get() instanceof Number indexNum) {
                     int index = indexNum.intValue();
                     if (index >= 0 && index < list.size()) {
@@ -622,7 +687,6 @@ public class StatementExecutor {
                     throw new KException(ExceptionCode.KDC0003, "List index must be a number");
                 }
             } else if (base instanceof String str) {
-                // การเข้าถึงตัวอักษรของ String
                 if (indexVal.get() instanceof Number indexNum) {
                     int index = indexNum.intValue();
                     if (index >= 0 && index < str.length()) {
@@ -650,7 +714,6 @@ public class StatementExecutor {
 
             throw new KException(ExceptionCode.KDC0003, "Subscript operation not supported for type: " + base.getClass().getSimpleName());
         }else if(expression instanceof UnaryExpression unary){
-            // ประเมินนิพจน์ที่อยู่ด้านขวาของ Unary Operator
             Value<?> exprVal = evaluateExpression(unary.expression, client);
             Object value = exprVal.get();
 
@@ -664,7 +727,6 @@ public class StatementExecutor {
                     throw new KException(ExceptionCode.KDC0001, "unknown operator");
                 }
             }
-            // หากไม่สามารถประมวลผลได้ (เช่น ชนิดข้อมูลไม่ถูกต้องสำหรับ operator นั้น)
             throw new KException(ExceptionCode.KDC0003, "Unary operation '" + unary.op + "' not supported for type: " + value.getClass().getSimpleName());
         }
         return new NullValue("Invalid");

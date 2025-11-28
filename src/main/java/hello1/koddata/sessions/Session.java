@@ -8,6 +8,7 @@ import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.sessions.users.User;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class Session {
 
@@ -87,11 +88,10 @@ public class Session {
         }
     }
 
-    public long newProcess(QueryExecution execution, ColumnArray columnArray){
-        Process process = new Process(new KTask(execution, columnArray));
+    public CompletableFuture<ColumnArray> newProcess(QueryExecution execution, ColumnArray columnArray){
+        Process process = new Process(new KTask(execution, columnArray, this));
         this.processes.put(process.id(), process);
-        process.execute();
-        return process.id();
+        return process.execute();
     }
 
     public void terminate(){

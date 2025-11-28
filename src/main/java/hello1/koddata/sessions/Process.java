@@ -2,12 +2,15 @@ package hello1.koddata.sessions;
 
 import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.concurrent.KTask;
+import hello1.koddata.dataframe.ColumnArray;
+
+import java.util.concurrent.CompletableFuture;
 
 public class Process {
     private static IdCounter idCounter = new IdCounter();
     private long processId;
     private KTask task;
-
+    private CompletableFuture<ColumnArray> completableFuture;
     public Process(KTask task){
         this.processId = idCounter.next();
         this.task = task;
@@ -17,11 +20,14 @@ public class Process {
         return processId;
     }
 
-    public void execute(){
-        task.start();
+    public CompletableFuture<ColumnArray> execute(){
+        completableFuture = CompletableFuture.supplyAsync(task);
+        return completableFuture;
     }
 
     public void interrupt(){
-        task.interrupt();
+        if(completableFuture != null) {
+            completableFuture.cancel(true);
+        }
     }
 }
