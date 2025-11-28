@@ -52,7 +52,6 @@ public class OffHeapByteList extends ByteList {
 
         long destOffset = (long) size;
 
-        // Copy from int[] → native memory
         byte[] bytes = new byte[count];
         ByteBuffer.wrap(bytes).put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
@@ -77,12 +76,10 @@ public class OffHeapByteList extends ByteList {
     public byte remove(int index) {
         checkIndex(index);
 
-        long elementSize = 1L; // each int = 2 bytes
+        long elementSize = 1L;
 
-        // Read removed value
         byte removed = safeMemory.readBytes(index * elementSize , 1)[0];
 
-        // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             byte nextValue = safeMemory.readBytes((i + 1L) * elementSize , 1)[0];
             safeMemory.setData(i * elementSize, nextValue);

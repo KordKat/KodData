@@ -6,9 +6,3 @@ public record UserPrivilege(int maxSession ,
                             int maxStorageUsage) {
 
 }
-
-
-//เก็บ user ลง file program เริ่มโหลดขึ้น memory
-//แบ่งข้อมูล user to arrybyte
-//end to Terminate
-//up in u

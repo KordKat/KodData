@@ -52,7 +52,6 @@ public class OffHeapFloatList extends FloatList {
 
         long destOffset = (long) size * 2;
 
-        // Copy from int[] → native memory
         byte[] bytes = new byte[count * 2];
         ByteBuffer.wrap(bytes).asFloatBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
@@ -77,12 +76,10 @@ public class OffHeapFloatList extends FloatList {
     public float remove(int index) {
         checkIndex(index);
 
-        long elementSize = 2L; // each int = 2 bytes
+        long elementSize = 2L;
 
-        // Read removed value
         float removed = safeMemory.readFloat(index * elementSize);
 
-        // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             float nextValue = safeMemory.readFloat((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);

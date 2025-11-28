@@ -10,7 +10,6 @@ public class XorOperation implements QueryOperation {
         if (!(value.get() instanceof Boolean b))
             return value;
 
-        // ค่า XOR true = toggle (กลับค่า)
         return new Value<>(!b);
     }
 }

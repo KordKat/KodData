@@ -39,7 +39,7 @@ public class Parser {
             statements.add(parseStatement());
         }
         if(current() != null){
-            consume(); // Consume RCURLY
+            consume();
         }
         return new BlockStatement(new ImmutableArray<>(statements));
     }
@@ -180,7 +180,6 @@ public class Parser {
             }
         }
 
-        // Now handle postfix operations (property access, subscripts)
         while(current() != null){
             Token next = current();
 
@@ -219,7 +218,6 @@ public class Parser {
         return new FunctionCall(identifier, new ImmutableArray<>(arguments));
     }
 
-    // Helper: Check if a token can start an expression
     private boolean canStartExpression(Token.TokenType type){
         return type.equals(Token.TokenType.NUMBER) ||
                 type.equals(Token.TokenType.STRING) ||
@@ -246,13 +244,12 @@ public class Parser {
             case NUMBER -> {
                 String s = new String(t.lexeme);
                 consume();
-                // Handle decimal numbers
                 if (current() != null && current().type.equals(Token.TokenType.DOT)) {
                     Token peek = peek(1);
                     if(peek != null && peek.type.equals(Token.TokenType.NUMBER)){
-                        consume(); // consume DOT
+                        consume();
                         Token next = current();
-                        consume(); // consume NUMBER
+                        consume();
                         s += "." + new String(next.lexeme);
                         expr = new NumberLiteral(s.toCharArray(), true);
                     } else {
@@ -280,22 +277,18 @@ public class Parser {
                 consume();
                 List<Expression> list = new ArrayList<>();
 
-                // Parse array elements
                 while (current() != null &&
                         !current().type.equals(Token.TokenType.RBRACKET) &&
                         !current().type.equals(Token.TokenType.EOF)) {
 
                     list.add(parseExpression());
 
-                    // Check for comma
                     if(current() != null && current().type.equals(Token.TokenType.COMMA)){
                         consume();
-                        // Allow trailing comma before ]
                         if(current() != null && current().type.equals(Token.TokenType.RBRACKET)){
                             break;
                         }
                     } else {
-                        // No comma means end of list
                         break;
                     }
                 }
@@ -362,7 +355,6 @@ public class Parser {
 
         Expression doPipe = parseExpression();
 
-        // Allow optional semicolon after when case
         if(current() != null && current().type.equals(Token.TokenType.SEMICOLON)){
             consume();
         }

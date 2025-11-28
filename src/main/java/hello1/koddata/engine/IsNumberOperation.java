@@ -2,8 +2,6 @@ package hello1.koddata.engine;
 
 public class IsNumberOperation implements QueryOperation{
 
-
-
     @Override
     public Value<?> operate(Value<?> value) {
         if(value.get() instanceof Number){

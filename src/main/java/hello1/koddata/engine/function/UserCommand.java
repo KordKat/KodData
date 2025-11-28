@@ -18,9 +18,7 @@ public class UserCommand extends KodFunction<Object>{
             throw new KException(ExceptionCode.KDE0012, "You need to write command to process user command");
         }
         Value<?> command = arguments.get("command");
-//        if (!(command.get() instanceof String commandString)) {
-//            throw new KException(ExceptionCode.KDE0012, "command should be string");
-//        }
+
         if (command.get().equals("create")) {
             if (!arguments.containsKey("name")) {
                 throw new KException(ExceptionCode.KDE0012, "You need to write name to create user");

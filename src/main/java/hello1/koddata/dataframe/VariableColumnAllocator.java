@@ -26,7 +26,6 @@ public class VariableColumnAllocator extends ColumnAllocator {
         for (int i = 0; i < rows; i++) {
             if (!notNullFlags[i]) continue;
             byte[] data = values.get(i).value();
-            // 4 byte for storing element size
             totalDataBytes += 4 + data.length;
         }
 
@@ -42,12 +41,10 @@ public class VariableColumnAllocator extends ColumnAllocator {
             if (!notNullFlags[i]) continue;
 
             byte[] data = values.get(i).value();
-            //storing size of element
             combined[writePos++] = (byte) ((data.length >> 24) & 0xFF);
             combined[writePos++] = (byte) ((data.length >> 16) & 0xFF);
             combined[writePos++] = (byte) ((data.length >> 8) & 0xFF);
             combined[writePos++] = (byte) (data.length & 0xFF);
-            //actual value
             System.arraycopy(data, 0, combined, writePos, data.length);
             writePos += data.length;
         }

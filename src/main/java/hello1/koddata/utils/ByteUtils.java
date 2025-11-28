@@ -30,7 +30,7 @@ public class ByteUtils {
 
     public static int bytesToInt(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.put(new byte[4 - bytes.length]); // pad on the left if needed
+        buffer.put(new byte[4 - bytes.length]);
         buffer.put(bytes);
         buffer.flip();
         return buffer.getInt();

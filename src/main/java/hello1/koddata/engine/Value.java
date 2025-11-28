@@ -1,13 +1,9 @@
 package hello1.koddata.engine;
 
-import java.util.Comparator;
 
 public class Value<T> {
 
     private T value;
-
-    private long latestUpdate;
-
     public Value(T value){
         this.value = value;
     }

@@ -51,8 +51,6 @@ public class OffHeapCharList extends CharList {
         ensureCapacity(requiredCapacity);
 
         long destOffset = (long) size * 2;
-
-        // Copy from int[] → native memory
         byte[] bytes = new byte[count * 2];
         ByteBuffer.wrap(bytes).asCharBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
@@ -77,12 +75,10 @@ public class OffHeapCharList extends CharList {
     public char remove(int index) {
         checkIndex(index);
 
-        long elementSize = 2L; // each int = 2 bytes
+        long elementSize = 2L;
 
-        // Read removed value
         char removed = (char) safeMemory.readShort(index * elementSize);
 
-        // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             char nextValue = (char) safeMemory.readShort((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);

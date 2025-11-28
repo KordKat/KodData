@@ -52,7 +52,6 @@ public class OffHeapDoubleList extends DoubleList {
 
         long destOffset = (long) size * 2;
 
-        // Copy from int[] → native memory
         byte[] bytes = new byte[count * 2];
         ByteBuffer.wrap(bytes).asDoubleBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
@@ -77,12 +76,11 @@ public class OffHeapDoubleList extends DoubleList {
     public double remove(int index) {
         checkIndex(index);
 
-        long elementSize = 2L; // each int = 2 bytes
+        long elementSize = 2L;
 
-        // Read removed value
+
         double removed = safeMemory.readDouble(index * elementSize);
 
-        // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             double nextValue = safeMemory.readDouble((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);

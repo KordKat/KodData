@@ -52,7 +52,6 @@ public class OffHeapLongList extends LongList {
 
         long destOffset = (long) size * 8;
 
-        // Copy from int[] → native memory
         byte[] bytes = new byte[count * 8];
         ByteBuffer.wrap(bytes).asLongBuffer().put(array, 0, count);
         safeMemory.setData(destOffset, bytes);
@@ -77,12 +76,10 @@ public class OffHeapLongList extends LongList {
     public long remove(int index) {
         checkIndex(index);
 
-        long elementSize = 8L; // each int = 8 bytes
+        long elementSize = 8L;
 
-        // Read removed value
         long removed = safeMemory.readLong(index * elementSize);
 
-        // Shift remaining elements left by one
         for (int i = index; i < size - 1; i++) {
             long nextValue = safeMemory.readLong((i + 1L) * elementSize);
             safeMemory.setData(i * elementSize, nextValue);

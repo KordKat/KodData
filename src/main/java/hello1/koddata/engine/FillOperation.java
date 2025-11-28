@@ -1,6 +1,5 @@
 package hello1.koddata.engine;
 
-import java.util.function.Predicate;
 
 public class FillOperation implements QueryOperation {
 
