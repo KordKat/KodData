@@ -5,6 +5,7 @@ import hello1.koddata.concurrent.IdCounter;
 import hello1.koddata.concurrent.KTask;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.QueryExecution;
+import hello1.koddata.engine.Value;
 import hello1.koddata.sessions.users.User;
 import java.util.HashMap;
 import java.util.List;
@@ -88,7 +89,7 @@ public class Session {
         }
     }
 
-    public CompletableFuture<ColumnArray> newProcess(QueryExecution execution, ColumnArray columnArray){
+    public CompletableFuture<Value<?>> newProcess(QueryExecution execution, ColumnArray columnArray){
         Process process = new Process(new KTask(execution, columnArray, this));
         this.processes.put(process.id(), process);
         return process.execute();

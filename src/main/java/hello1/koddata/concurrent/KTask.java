@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class KTask implements Supplier<ColumnArray> {
+public class KTask implements Supplier<Value<?>> {
 
     private final QueryExecution execution;
     private boolean isCancelled = false;
@@ -35,7 +35,7 @@ public class KTask implements Supplier<ColumnArray> {
     }
 
     @Override
-    public ColumnArray get() {
+    public Value<?> get() {
         // ... (ส่วน Logic การประมวลผล while loop ยังคงเหมือนเดิม) ...
 
         // Mockup ส่วนต้นเพื่อความสมบูรณ์ของ Context
@@ -256,7 +256,7 @@ public class KTask implements Supplier<ColumnArray> {
             }
         }
 
-        return new ColumnArray(new ImmutableArray<>(newColumns.values().stream().toList()), session.getSessionData().getMemoryGroup());
+        return new Value<>(new ColumnArray(new ImmutableArray<>(newColumns.values().stream().toList()), session.getSessionData().getMemoryGroup()));
     }
 
     // --- Type Inference Logic ---

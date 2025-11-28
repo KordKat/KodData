@@ -42,6 +42,9 @@ public class SessionData {
     }
 
     public void assignVariable(DataName name, Object value) throws KException {
+        if(value instanceof Value<?> val){
+            value = val.get();
+        }
         if(value instanceof Column c){
             if(name.getIndex() == null){
                 throw new KException(ExceptionCode.KDE00015, "Column name missing");
