@@ -1,0 +1,1681 @@
+@startuml
+class hello1.koddata.kodlang.ast.BlockStatement {
+~ ImmutableArray<Statement> statements
++ <<Create>> BlockStatement(ImmutableArray<Statement>)
+}
+
+
+class hello1.koddata.net.Server {
+- SocketFactory factory
+- int port
+- List<NodeConnectionData> connectionDataList
+- ServerSocketChannel serverChannel
+- Set<Node> neighbors
+- boolean isGateway
+- Thread serverThread
++ <<Create>> Server(SocketFactory,int,List<NodeConnectionData>)
++ void start()
++ void shutdown()
++ boolean isGateway()
++ void send(ByteBuffer,Node)
++ void tellNeighbors(ByteBuffer)
++ void broadcast(ByteBuffer)
++ void establishConnection(NodeConnectionData)
+}
+
+
+class hello1.koddata.dataframe.loader.DatabaseLoader {
+- DatabaseConnection connection
++ <<Create>> DatabaseLoader(DatabaseConnection)
++ void load(InputStream)
+}
+
+
+class hello1.koddata.kodlang.ast.JoinExpression {
+~ JoinType joinType
+~ DataFrameDeclaration df
+~ Expression leftOn
+~ Expression rightOn
++ <<Create>> JoinExpression(JoinType,DataFrameDeclaration,Expression,Expression)
+}
+
+
+enum hello1.koddata.kodlang.ast.JoinType {
++  INNER
++  OUTER
++  LEFT
++  RIGHT
++  NATURAL
+}
+
+enum hello1.koddata.exception.ExceptionCode {
++  KD00000
++  KDC0001
++  KDC0002
++  KDC0003
++  KDM0004
++  KD00005
++  KD00006
++  KDM0007
++  KDD0008
+- String message
+~ <<Create>> ExceptionCode(String)
++ String getMessage()
+}
+
+
+abstract class hello1.koddata.kodlang.ast.Statement {
+# StatementType type
++ <<Create>> Statement(StatementType)
+}
+
+
+enum hello1.koddata.kodlang.ast.StatementType {
++  BLOCK
++  APPLY
++  DELETE
++  DOWNLOAD
++  ASSIGNMENT
++  BINARY_EXPR
++  UNARY_EXPR
++  SELECT
++  NULL_LITERAL
++  BOOLEAN_LITERAL
++  NUMBER_LITERAL
++  STRING_LITERAL
++  ARRAY_LITERAL
++  IDENTIFIER
++  SUBSCRIPT
++  FETCH
++  CONNECT
++  BRANCH
++  BRANCH_MEMBER
++  PIPELINE_FUNC
++  PROJECTION
++  JOIN
++  DATAFRAME
++  ACCESS
++  FUNCTION
+}
+
+class hello1.koddata.engine.Value {
+- T value
++ <<Create>> Value(T)
++ T get()
++ T get(T)
++ void set(T)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.LongList {
+- long[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> LongList()
++ <<Create>> LongList(int)
++ void add(long)
++ void add(int,long)
++ void addAll(long[],int)
++ void addAll(long[])
++ long get(int)
++ void set(int,long)
++ long remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapFloatList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapFloatList()
++ <<Create>> OffHeapFloatList(int)
++ void add(float)
++ void add(int,float)
++ void addAll(float[],int)
++ void addAll(float[])
++ float get(int)
++ void set(int,float)
++ float remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
++ void free()
+}
+
+
+class hello1.koddata.kodlang.ast.NullLiteral {
++ <<Create>> NullLiteral()
+}
+
+class hello1.koddata.dataframe.FixedColumnAllocator {
+- ByteBuffer dataBuffer
+- boolean[] notNullFlags
++ <<Create>> FixedColumnAllocator(ByteBuffer,boolean[],int)
++ Memory allocate()
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapByteList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapByteList()
++ <<Create>> OffHeapByteList(int)
++ void add(int)
++ void add(int,byte)
++ void addAll(byte[],int)
++ void addAll(byte[])
++ byte get(int)
++ void set(int,byte)
++ byte remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.io.BufferedInputStreamPromax {
+- InputStream in
+- byte[] buffer
+- int pos
+- int count
++ <<Create>> BufferedInputStreamPromax(InputStream,int)
+- int fill()
++ int read()
++ String readUTF()
++ void close()
+}
+
+
+class hello1.koddata.kodlang.ast.ArrayLiteral {
+~ ImmutableArray<Expression> literals
++ <<Create>> ArrayLiteral(ImmutableArray<Expression>)
+}
+
+
+class hello1.koddata.utils.ref.WeakReference {
+- java.lang.ref.WeakReference<Reference.ControlBlock<T>> weak
+~ <<Create>> WeakReference(Reference.ControlBlock<T>)
++ SharedReference<T> lock()
++ boolean alive()
+}
+
+
+class hello1.koddata.memory.MemoryManager {
+}
+class hello1.koddata.engine.Bootstrap {
+- long serialVersionId
+- File nodeCfgFile
+- Server server
+- Path rootPath
+- UserManager userManager
+- SessionManager sessionManager
++ void start(String[])
++ void end()
+- List<NodeConnectionData> loadConnectionData()
+- void startServer()
++ Server getServer()
++ Path getRootPath()
++ File getNodeCfgFile()
+}
+
+
+class hello1.koddata.io.BufferedOutputStreamPromax {
+- OutputStream out
+- byte[] buffer
+- int count
+- int pos
++ <<Create>> BufferedOutputStreamPromax(OutputStream,int)
++ <<Create>> BufferedOutputStreamPromax(OutputStream)
++ void write(ByteBuffer)
++ void write(byte[],int,int)
++ void writeUTF(String)
++ void write(int)
++ void flush()
++ void close()
+- void flushBuffer()
+}
+
+
+class hello1.koddata.kodlang.Lexer {
+- {static} int ANALYZE_SUCCESS
+- {static} int UNKNOWN_TOKEN
++ {static} Token[] analyze(char[])
+- {static} Token newEofToken(int,int)
+}
+
+
+class hello1.koddata.utils.ref.SharedReference {
+~ <<Create>> SharedReference(ControlBlock<T>)
++ <<Create>> SharedReference(T,Sebastian)
++ T get()
++ boolean isValid()
++ SharedReference<T> retain()
++ void close()
++ int useCount()
+}
+
+class hello1.koddata.sessions.users.UserManager {
+~ Map<Long,User> user
+~ Map<Long,UserData> userDataMap
++ User editUser(long)
++ User createUser()
++ User findUser(long)
++ User updateUser(long)
++ List<User> userList()
++ void changeUserQueue(long)
++ void deleteUser(long)
++ void loadAllUserData(File)
++ void changeUserPassword(long)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.DoubleList {
+- double[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> DoubleList()
++ <<Create>> DoubleList(int)
++ void add(double)
++ void add(int,double)
++ void addAll(double[],int)
++ void addAll(double[])
++ double get(int)
++ void set(int,double)
++ double remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.kodlang.ast.PropertyAccessExpression {
+~ Expression object
+~ Identifier property
++ <<Create>> PropertyAccessExpression(Expression,Identifier)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapIntList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapIntList()
++ <<Create>> OffHeapIntList(int)
++ void add(int)
++ void add(int,int)
++ void addAll(int[],int)
++ void addAll(int[])
++ int get(int)
++ void set(int,int)
++ int remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
+}
+
+
+abstract class hello1.koddata.io.DataOutputStreamPromax {
++ void write(byte[])
++ void write(byte[],int,int)
+}
+
+class hello1.koddata.functional.KodDataFunction {
+- Map<String,Class<?>> arguments
+- Consumer<Map<String,Value<?>>> function
++ KodDataFunction addArgument(String,Class<?>)
++ KodDataFunction removeArguments(String)
++ KodDataFunction setFunction(Consumer<Map<String,Value<?>>>)
+}
+
+
+class hello1.koddata.kodlang.ast.ASTToString {
++ {static} String astToString(Statement)
+- {static} String indentString(String,String)
+- {static} String astToStringWithIndent(Statement,String)
+}
+
+class hello1.koddata.dataframe.FixedListColumnAllocator {
+- List<List<byte[]>> lists
+- List<boolean[]> perListNotNullFlags
+- boolean[] columnNotNullFlags
+- int elementSize
+- int rows
++ <<Create>> FixedListColumnAllocator(List<List<byte[]>>,List<boolean[]>,boolean[],int)
++ Memory allocate()
+- int countNonNull(boolean[])
+}
+
+
+class hello1.koddata.kodlang.ast.Pipeline {
+~ ImmutableArray<Expression> pipeline
++ <<Create>> Pipeline(ImmutableArray<Expression>)
+# <<Create>> Pipeline(StatementType)
+}
+
+
+class hello1.koddata.memory.SafeMemory {
+- SharedReference<?> ref
+- <<Create>> SafeMemory(long,long)
+- <<Create>> SafeMemory(SafeMemory)
++ SafeMemory share()
++ void close()
++ {static} SafeMemory allocate(long)
+}
+
+
+class hello1.koddata.memory.SafeMemory$MemoryTidy {
+~ long peer
++ <<Create>> MemoryTidy(long)
++ void tidy()
+}
+
+
+class hello1.koddata.memory.SafeMemory$FakeNull {
+}
+class hello1.koddata.net.SocketFactory {
+- int writeBufferSize
+- int readBufferSize
+- boolean tcpNoDelay
+- boolean reuseAddress
+- boolean keepAlive
+- <<Create>> SocketFactory(Builder)
++ SocketChannel createNode(String,int)
++ ServerSocketChannel createServer(int)
+}
+
+
+class hello1.koddata.net.SocketFactory$Builder {
+- int writeBufferSize
+- int readBufferSize
+- boolean tcpNoDelay
+- boolean reuseAddress
+- boolean keepAlive
++ Builder sendBufferSize(int)
++ Builder readBufferSize(int)
++ Builder tcpNoDelay(boolean)
++ Builder reuseAddress(boolean)
++ Builder keepAlive(boolean)
++ SocketFactory get()
+}
+
+
+class hello1.koddata.engine.EmptyOperation {
++ void operate()
+}
+
+class hello1.koddata.kodlang.ast.UnaryExpression {
+~ BinaryExpression.Operator op
+~ Expression expression
++ <<Create>> UnaryExpression(BinaryExpression.Operator,Expression)
+}
+
+
+class hello1.koddata.utils.SerialVersionId {
++ {static} long get
+}
+
+interface hello1.koddata.memory.Allocator {
++ {static} Allocator INT_ALLOCATOR
+~ Memory allocate()
+~ void deallocate(Memory)
+}
+
+
+class hello1.koddata.sessions.SessionData {
+- String sessionName
+- Map<String,Value<?>> variables
+- Map<String,Column> sessionDataFrame
+- MemoryGroup memoryGroup
++ <<Create>> SessionData(String)
++ Value<?> get(String)
++ void set(String,Value<?>)
++ void newDataFrame(DataFrameLoader)
++ void deallocDataFrame(String)
+}
+
+
+class hello1.koddata.dataframe.loader.CSVLoader {
++ void load(InputStream)
+}
+
+class hello1.koddata.database.RelationalDatabaseConnection {
+- String host
+- int port
+- String databaseName
+- String dbmsName
++ <<Create>> RelationalDatabaseConnection(String,int,String,String,String,String)
++ void connect()
++ void close()
++ ResultSet executeQuery()
+}
+
+
+interface hello1.koddata.io.DataOutputPromax {
+~ void write(ByteBuffer)
+~ void writeBoolean(boolean)
+~ void writeByte(int)
+~ void writeShort(int)
+~ void writeChar(int)
+~ void writeInt(int)
+~ void writeLong(long)
+~ void writeFloat(float)
+~ void writeDouble(double)
+~ void writeBytes(String)
+~ void writeChars(String)
+}
+
+class hello1.koddata.concurrent.KTask {
+- QueryExecution execution
++ <<Create>> KTask(QueryExecution)
++ void run()
++ QueryExecution getExecution()
++ void cancel()
++ boolean isCancelled()
++ void awaitCompletion()
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.FloatList {
+- float[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> FloatList()
++ <<Create>> FloatList(int)
++ void add(float)
++ void add(int,float)
++ void addAll(float[],int)
++ void addAll(float[])
++ float get(int)
++ void set(int,float)
++ float remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.exception.KException {
+- ExceptionCode errorCode
+- String msg
++ <<Create>> KException(ExceptionCode,String)
++ ExceptionCode getErrorCode()
++ String getMessage()
+}
+
+
+class hello1.koddata.kodlang.ast.SelectStatement {
+~ ImmutableArray<ProjectionExpression> projection
+~ DataFrameDeclaration fromSource
+~ ImmutableArray<JoinExpression> joinExpressions
+~ Expression whereClause
+~ Expression groupByClause
+~ Expression havingClause
++ <<Create>> SelectStatement(ImmutableArray<ProjectionExpression>,DataFrameDeclaration,ImmutableArray<JoinExpression>,Expression,Expression,Expression)
+}
+
+
+class hello1.koddata.kodlang.ast.ElseCaseStatement {
+~ Expression doPipe
++ <<Create>> ElseCaseStatement(Expression)
+}
+
+
+class hello1.koddata.kodlang.ast.ApplyStatement {
+~ Expression pipeline
+~ Expression expression
++ <<Create>> ApplyStatement(Expression,Expression)
+}
+
+
+class hello1.koddata.kodlang.Parser {
+- ImmutableArray<Token> tokens
+- int position
++ <<Create>> Parser(ImmutableArray<Token>)
++ Statement parseStatement()
++ BlockStatement parseStatements()
+- DeleteStatement parseDeleteStatement()
+- BlockStatement parseBlockStatement()
+- DownloadStatement parseDownloadStatement()
+- ApplyStatement parseApplyStatement()
+- Expression parseExpression()
+- Expression parseAssignmentExpression()
+- Expression parseOrExpression()
+- Expression parseAndExpression()
+- Expression parseEqualityExpression()
+- Expression parseComparisonExpression()
+- Expression parseAddSubExpression()
+- Expression parseMulDivExpression()
+- Expression parsePowerExpression()
+- Expression parseNIdentifierExpression()
+- Expression parsePrimaryExpression()
+- WhenCaseStatement parseWhenCase()
+- void consume()
+- {static} boolean isFunction(String)
+- void expect(Token.TokenType)
+- Token current()
+- Token peek(int)
+}
+
+
+class hello1.koddata.functional.ReduceFunction {
+- T startValue
+- Function<T,T> fn
++ <<Create>> ReduceFunction(T,Function<T,T>)
+}
+
+
+class hello1.koddata.dataframe.DataFrameSchema {
+~ int[] size
+~ String[] keys
++ <<Create>> DataFrameSchema(String[],int[])
++ <<Create>> DataFrameSchema(int)
++ <<Create>> DataFrameSchema()
++ void put(String,int)
++ boolean putIfAbsent(String,int)
++ int get(String)
++ boolean contains(String)
++ DataFrameSchema add(String,int)
++ DataFrameSchema select(String)
+}
+
+
+class hello1.koddata.kodlang.ast.FetchExpression {
+~ DataSource dataSource
+~ Expression fetchSource
+~ Expression queryString
++ <<Create>> FetchExpression(DataSource,Expression,Expression)
+}
+
+
+enum hello1.koddata.kodlang.ast.DataSource {
++  CSV
++  JSON
++  DATABASE
++  PSV
+}
+
+class hello1.koddata.kodlang.ast.Identifier {
++ String identifier
++ <<Create>> Identifier(String)
+}
+
+
+class hello1.koddata.dataframe.loader.JsonLoader {
++ void load(InputStream)
+}
+
+class hello1.koddata.sessions.Process {
+- {static} IdCounter idCounter
+- long processId
+- long workerId
+- KTask task
+- Consumer<Value<?>> onComplete
+- Consumer<Throwable> exceptionally
++ <<Create>> Process(KTask)
++ void onComplete(Consumer<Value<?>>)
++ void exceptionally(Consumer<Throwable>)
++ long id()
++ long workerId()
++ void execute()
+}
+
+
+class hello1.koddata.concurrent.ResourceLock {
+- AtomicLong lockingProcess
+- String clusterKey
+- AtomicBoolean isLock
+- Queue<Long> acquireQueue
++ <<Create>> ResourceLock(String)
++ void lock(long)
++ boolean tryLock(long)
++ void unlock(long)
++ boolean isLocked()
++ long getLockingProcess()
++ boolean isFair()
++ void setFair(boolean)
++ void reset()
++ void notifyAllProcess()
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapCharList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapCharList()
++ <<Create>> OffHeapCharList(int)
++ void add(int)
++ void add(int,char)
++ void addAll(char[],int)
++ void addAll(char[])
++ char get(int)
++ void set(int,char)
++ char remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.Main {
++ {static} void main(String[])
+}
+
+class hello1.koddata.engine.SplitQueryOperationNode {
+- List<QueryOperationNode> nextNode
+- List<Predicate<Value<?>>> nodeSelector
++ <<Create>> SplitQueryOperationNode()
++ void next(QueryOperationNode)
+}
+
+
+class hello1.koddata.utils.math.MathUtils {
++ {static} int nearestPowerOf2(int)
++ {static} int nextPowerOf2(int)
+}
+
+class hello1.koddata.dataframe.DataFrameRecord {
+- String[] columns
+- Value<?>[] values
+- Map<String,Value<?>> map
++ <<Create>> DataFrameRecord(String[],Value<?>[])
++ String[] getColumns()
++ Value<?>[] getValues()
++ Value<?> get(String)
+}
+
+
+class hello1.koddata.functional.KDFunctionTable {
++ {static} KodDataFunction FETCH_FUNCTION
+}
+
+class hello1.koddata.memory.MemoryUtil {
++ {static} Unsafe unsafe
+~ {static} Class<?> DIRECT_BYTE_BUFFER_CLASS
++ {static} long DIRECT_BYTE_BUFFER_ADDR_OFFSET
++ {static} long getByteBufferAddress(ByteBuffer)
+}
+
+
+class hello1.koddata.dataframe.VariableElement {
+- byte[] value
++ <<Create>> VariableElement(byte[])
++ {static} VariableElement newStringElement(String)
++ {static} VariableElement newElement(byte[],int)
++ {static} VariableElement newElement(byte[])
++ String toString()
++ byte[] value()
+}
+
+
+class hello1.koddata.kodlang.ast.DatabaseConnectExpression {
+~ StringLiteral databaseName
+~ NIdentifier databaseT
+~ NumberLiteral port
++ <<Create>> DatabaseConnectExpression(NIdentifier,StringLiteral,StringLiteral,StringLiteral,NumberLiteral,StringLiteral)
+}
+
+
+class hello1.koddata.kodlang.ast.DataFrameDeclaration {
+~ Expression dataframe
+~ Expression rename
++ <<Create>> DataFrameDeclaration(Expression,Expression)
+}
+
+
+interface hello1.koddata.dataframe.DataTransformer {
+~ String transform(DataFrameRecord[])
+}
+
+class hello1.koddata.engine.QueryExecution {
+- QueryOperationNode head
++ <<Create>> QueryExecution()
++ QueryOperationNode getHead()
++ void execute(Session)
+}
+
+
+class hello1.koddata.kodlang.ast.NIdentifier {
++ <<Create>> NIdentifier(String)
+}
+
+class hello1.koddata.kodlang.ast.BooleanLiteral {
+~ boolean literal
++ <<Create>> BooleanLiteral(boolean)
+}
+
+
+class hello1.koddata.sessions.users.UserPrivilege {
+- int maxSession
+- int maxProcessPerSession
+- boolean canAccessAdmin
+- int maxMemoryPerProcess
+- int maxStorageUsage
++ <<Create>> UserPrivilege(int,int,boolean,int,int)
++ int maxSession()
++ boolean canAccessAdmin()
++ int maxMemoryPerProcess()
++ int maxProcessPerSession()
++ int maxStorageUsage()
+}
+
+
+class hello1.koddata.net.util.NodeConnectionData {
++ String host
++ int port
++ <<Create>> NodeConnectionData(String,int)
+}
+
+
+class hello1.koddata.dataframe.Column {
+- String memoryGroupName
+- ColumnMetaData metaData
+- Memory memory
+- int sizePerElement
++ <<Create>> Column(String,int,String,ByteBuffer,boolean[],int)
++ void setupMetadata(String,int,String,boolean)
++ ColumnMetaData getMetaData()
++ int getSizePerElement()
+}
+
+
+class hello1.koddata.engine.SplitOperation {
++ void operate()
+}
+
+class hello1.koddata.kodlang.ast.Subscript {
+~ Expression base
+~ Expression index
++ <<Create>> Subscript(Expression,Expression)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapShortList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapShortList()
++ <<Create>> OffHeapShortList(int)
++ void add(short)
++ void add(int,short)
++ void addAll(short[],int)
++ void addAll(short[])
++ short get(int)
++ void set(int,short)
++ short remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
++ void free()
+}
+
+
+class hello1.koddata.utils.ref.UniqueReference {
+- boolean closed
++ <<Create>> UniqueReference(T,Sebastian)
++ T get()
++ boolean isValid()
++ void close()
+}
+
+
+abstract class hello1.koddata.kodlang.ast.Expression {
++ <<Create>> Expression(StatementType)
+}
+
+class hello1.koddata.dataframe.DataFrame {
+- DataFrameSchema schema
+- QueryExecution queryExecution
++ <<Create>> DataFrame(DataFrameSchema)
++ <<Create>> DataFrame()
++ void writeTo(DataTransformer,OutputStream)
+- void transformEveryRow(String)
++ byte[] show(int)
++ byte[] show()
++ DataFrame join(DataFrame)
++ DataFrame join(DataFrame,String,String)
++ DataFrame join(DataFrame,String)
++ DataFrame sort()
++ DataFrame sort(String)
++ DataFrame order(String)
++ DataFrame select(String)
++ DataFrame where(String,Predicate<? extends Value<?>>)
++ DataFrame filter(String,Predicate<? extends Value<?>>)
++ DataFrame groupBy(String)
++ DataFrame aggregate(String,String)
++ Value<?> reduce(String,ReduceFunction<Value<?>>)
++ DataFrame drop(String)
++ DataFrame rename(String,String)
++ DataFrame distinct()
++ DataFrame head(int)
++ DataFrame tail(int)
++ DataFrame sample(double)
++ DataFrame limit(int)
++ DataFrame dropNa(String)
++ DataFrame fillNa(String,Value<?>)
++ DataFrame union(DataFrame)
++ DataFrame intersect(DataFrame)
++ DataFrame except(DataFrame)
+}
+
+
+class hello1.koddata.engine.QueryOperationNode {
+- QueryOperation operation
+- QueryOperationNode nextNode
++ <<Create>> QueryOperationNode(QueryOperation)
++ void next(QueryOperationNode)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.IntList {
+- int[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> IntList()
++ <<Create>> IntList(int)
++ void add(int)
++ void add(int,int)
++ void addAll(int[],int)
++ void addAll(int[])
++ int get(int)
++ void set(int,int)
++ int remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+interface hello1.koddata.engine.QueryOperation {
+~ void operate()
+}
+
+class hello1.koddata.utils.collection.ImmutableArray {
+- T[] data
++ <<Create>> ImmutableArray(T[])
++ <<Create>> ImmutableArray(Collection<T>)
++ int length()
++ T get(int)
++ T[] toArray()
++ Iterator<T> iterator()
++ String toString()
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.ByteList {
+- byte[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> ByteList()
++ <<Create>> ByteList(int)
++ void add(byte)
++ void add(int,byte)
++ void addAll(byte[],int)
++ void addAll(byte[])
++ byte get(int)
++ void set(int,byte)
++ byte remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.kodlang.ast.BinaryExpression {
+~ Expression left
+~ Expression right
+~ Operator op
++ <<Create>> BinaryExpression(Operator,Expression,Expression)
+}
+
+
+enum hello1.koddata.kodlang.ast.Operator {
++  ADD
++  SUB
++  MUL
++  DIV
++  POWER
++  AND
++  OR
++  EQUALS
++  NEQUALS
++  IN
++  GREATER
++  GREATEREQ
++  LESSTHAN
++  LESSTHANEQ
+}
+
+class hello1.koddata.kodlang.ast.WhenCaseStatement {
+~ Expression condition
+~ Expression doPipe
++ <<Create>> WhenCaseStatement(Expression,Expression)
+}
+
+
+class hello1.koddata.memory.WritableMemory {
+# <<Create>> WritableMemory(long,long)
++ <<Create>> WritableMemory(WritableMemory)
++ {static} WritableMemory allocate(long)
++ void setData(long,byte[])
++ void setData(long,long)
++ void setData(long,int)
++ void setData(long,float)
++ void setData(long,double)
++ void setData(long,ByteBuffer)
++ void setData(byte[])
++ void setData(long)
++ void setData(int)
++ void setData(float)
++ void setData(double)
++ void setData(ByteBuffer)
+}
+
+abstract class hello1.koddata.utils.ref.Reference {
+# {static} Cleaner cleaner
+# ControlBlock<T> ctrl
+# <<Create>> Reference(ControlBlock<T>)
++ {abstract}T get()
++ {abstract}boolean isValid()
+# {static} void registerLeakWatcher(Object,String)
+}
+
+
+interface hello1.koddata.utils.ref.Reference$Sebastian {
+~ void tidy()
+}
+
+class hello1.koddata.utils.ref.Reference$ControlBlock {
+- AtomicInteger refCount
+- T referent
+- Sebastian cleaner
+- boolean closed
+~ <<Create>> ControlBlock(T,Sebastian)
+~ T get()
+~ boolean tryRetain()
+~ void release()
+- void destroy()
+~ boolean alive()
+~ int count()
+}
+
+
+class hello1.koddata.sessions.SessionManager {
++ void terminateSession(long)
++ void terminateAllSession()
++ Session.State sessionStatus(long)
++ Session inspectSession(long)
++ Session settingSession()
++ List<Session> sessionList()
++ List<Session> listActiveSessions()
+}
+
+class hello1.koddata.kodlang.Token {
+~ TokenType type
+~ char[] lexeme
+~ int start
+~ <<Create>> Token(TokenType,char[],int,int)
++ String toString()
+}
+
+
+enum hello1.koddata.kodlang.TokenType {
++  IDENTIFIER
++  NIDENTIFIER
++  NUMBER
++  DOT
++  STRING
++  OP_ADD
++  OP_SUB
++  OP_MUL
++  OP_POW
++  OP_DIV
++  OP_NEQ
++  OP_EQ
++  OP_GT
++  OP_GE
++  OP_LT
++  OP_LE
++  OP_IN
++  OP_BETWEEN
++  OP_AND
++  OP_OR
++  LPAREN
++  RPAREN
++  LCURLY
++  RCURLY
++  LBRACKET
++  RBRACKET
++  ASSIGN
++  DELETE
++  FETCH
++  TO
++  FROM
++  CONNECT
++  AS
++  DATABASE
++  CSV
++  PSV
++  JSON
++  WITH
++  USING
++  GET
++  EXPORT
++  DOWNLOAD
++  OVER
++  WHEN
++  ELSE
++  SEMICOLON
++  BRANCH
++  PIPELINE
++  SELECT
++  WHERE
++  ORDER
++  BY
++  LIMIT
++  GROUP
++  HAVING
++  INNER
++  OUTER
++  LEFT
++  RIGHT
++  NATURAL
++  JOIN
++  EOF
++  NULL
++  TRUE
++  FALSE
++  APPLY
++  COMMA
++  DO
+}
+
+class hello1.koddata.dataframe.ColumnMetaData {
+- String name
+- boolean isVariable
+- int rows
+- boolean isSharded
+- long serialVersionId
++ <<Create>> ColumnMetaData(String,boolean)
++ void setSharded(boolean)
++ boolean isSharded()
+~ void setRows(int)
++ int getRows()
++ String getName()
++ boolean isVariable()
+}
+
+
+class hello1.koddata.kodlang.ast.DeleteStatement {
+~ Expression del
++ <<Create>> DeleteStatement(Expression)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.ShortList {
+- short[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> ShortList()
++ <<Create>> ShortList(int)
++ void add(short)
++ void add(int,short)
++ void addAll(short[],int)
++ void addAll(short[])
++ short get(int)
++ void set(int,short)
++ short remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.kodlang.ast.StringLiteral {
+~ char[] literal
++ <<Create>> StringLiteral(char[])
+}
+
+
+class hello1.koddata.concurrent.IdCounter {
+- AtomicLong counter
++ long next()
+}
+
+
+abstract class hello1.koddata.dataframe.loader.DataFrameLoader {
+# DataFrame frame
+# Column[] columns
++ {abstract}void load(InputStream)
++ DataFrame getFrame()
++ Column[] getColumns()
+}
+
+
+class hello1.koddata.dataframe.VariableColumnAllocator {
+- List<VariableElement> values
+- boolean[] notNullFlags
++ <<Create>> VariableColumnAllocator(List<VariableElement>,boolean[])
++ Memory allocate()
+}
+
+
+class hello1.koddata.memory.SimpleAllocator {
+- long size
++ <<Create>> SimpleAllocator(long)
++ Memory allocate()
++ void deallocate(Memory)
+}
+
+
+class hello1.koddata.kodlang.ast.SemanticAnalyzer {
++ {static} ReturnType analyze(Statement)
+- {static} ReturnType evaluateExpression(Expression)
+}
+
+enum hello1.koddata.kodlang.ast.ReturnType {
++  NUMBER
++  STRING
++  PIPELINE
++  LOGICAL
++  CONNECTION
++  ARRAY
++  DATAFRAME
++  NULL
+}
+
+interface hello1.koddata.io.DataInputPromax {
+~ int read()
+~ int read(byte[],int,int)
+~ void readFully(byte[])
+~ void readFully(byte[],int,int)
+~ int skipBytes(int)
+~ boolean readBoolean()
+~ byte readByte()
+~ int readUnsignedByte()
+~ short readShort()
+~ int readUnsignedShort()
+~ char readChar()
+~ int readInt()
+~ long readLong()
+~ float readFloat()
+~ double readDouble()
+~ String readLine()
+}
+
+class hello1.koddata.kodlang.ast.NumberLiteral {
+~ char[] literal
+~ boolean isFloat
++ <<Create>> NumberLiteral(char[],boolean)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapDoubleList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapDoubleList()
++ <<Create>> OffHeapDoubleList(int)
++ void add(double)
++ void add(int,double)
++ void addAll(double[],int)
++ void addAll(double[])
++ double get(int)
++ void set(int,double)
++ double remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
++ void free()
+}
+
+
+class hello1.koddata.kodlang.ast.AssignmentExpression {
+~ Expression right
+~ Expression left
++ <<Create>> AssignmentExpression(Expression,Expression)
+}
+
+
+class hello1.koddata.concurrent.SynchronizationManager {
+- Map<String,ResourceLock> resourceLock
+- Map<String,ClusterAwait> clusterAwait
++ void acquireLock(String,long)
++ void cancelLock(String,long)
++ void await(String)
++ void countDown(String)
++ void createLockIfAbsent(String,boolean)
++ void createClusterAwaitIfAbsent(String,int,boolean)
++ int getCount(String)
++ boolean isLocked(String)
+}
+
+
+class hello1.koddata.sessions.users.Admin {
+~ UserManager userManager
+~ SessionManager sessionManager
++ UserManager getUserManager()
++ SessionManager getSessionManager()
+}
+
+
+class hello1.koddata.dataframe.VariableListColumnAllocator {
+- List<List<VariableElement>> lists
+- List<boolean[]> perListNotNullFlags
+- boolean[] columnNotNullFlags
+- int rows
++ <<Create>> VariableListColumnAllocator(List<List<VariableElement>>,List<boolean[]>,boolean[])
++ Memory allocate()
+- long getTotalBytes(int)
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.CharList {
+- char[] data
+- int size
+- {static} int DEFAULT_CAPACITY
++ <<Create>> CharList()
++ <<Create>> CharList(int)
++ void add(char)
++ void add(int,char)
++ void addAll(char[],int)
++ void addAll(char[])
++ char get(int)
++ void set(int,char)
++ char remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.sessions.users.User {
+~ List<Session> userSession
+~ long currentlySession
+~ UserData userData
++ {static} User logIn(long,long)
++ Session newSession()
++ List<Session> listMySessions()
++ long currentlySession()
++ void logOut()
++ void terminateTask(long)
++ byte[] userToByteArrays()
+}
+
+
+abstract class hello1.koddata.dataframe.ColumnAllocator {
+# long rows
+# int sizePerElement
+# boolean isVariable
+# <<Create>> ColumnAllocator(long,int)
++ boolean isVariable()
++ int getSizePerElement()
++ long getRows()
+# byte[] buildNullBitmap(boolean[])
+# long writeNullBitmap(ReadOnlyMemory,byte[])
++ void deallocate(Memory)
+}
+
+
+class hello1.koddata.kodlang.ast.BranchMember {
++ <<Create>> BranchMember()
+}
+
+class hello1.koddata.database.CqlDatabaseConnection {
+- CqlSession session
++ <<Create>> CqlDatabaseConnection(CqlSession)
++ void connect()
++ void close()
++ ResultSet executeQuery()
+}
+
+
+class hello1.koddata.utils.collection.primitive.lists.OffHeapLongList {
+- SafeMemory safeMemory
+- {static} int DEFAULT_CAPACITY
+- int size
++ <<Create>> OffHeapLongList()
++ <<Create>> OffHeapLongList(int)
++ void add(int)
++ void add(int,long)
++ void addAll(long[],int)
++ void addAll(long[])
++ long get(int)
++ void set(int,long)
++ long remove(int)
++ int size()
++ int capacity()
++ boolean isEmpty()
++ void removeAll()
+- void shrink()
+- void ensureCapacity()
+- void ensureCapacity(int)
+- void checkIndex(int)
+}
+
+
+class hello1.koddata.kodlang.ast.DownloadStatement {
+~ Expression src
++ <<Create>> DownloadStatement(Expression)
+}
+
+
+abstract class hello1.koddata.io.DataInputStreamPromax {
++ int read(byte[])
++ int read(byte[],int,int)
+}
+
+class hello1.koddata.sessions.Session {
+- {static} IdCounter idCounter
+- long sessionId
+- long startedTime
+- long lastActive
+- SessionSettings settings
+- List<Process> processes
+- SessionData sessionData
+- State state
+- <<Create>> Session(SessionSettings)
++ long newSession(String)
++ long id()
++ long startedTime()
++ long lastActive()
++ void state(State)
++ State state()
++ void listRunningProcesses()
++ void cancelProcess(long)
++ long run(byte[])
+}
+
+
+enum hello1.koddata.sessions.State {
++  RUNNING
++  IDLE
++  SUSPENDED
++  TERMINATED
+~ <<Create>> State(int)
+}
+
+
+class hello1.koddata.net.Node {
+- SocketChannel channel
+- ByteBuffer readBuffer
++ <<Create>> Node(SocketChannel,ByteBuffer)
++ SocketChannel getChannel()
++ ByteBuffer getReadBuffer()
++ void send(ByteBuffer)
++ ByteBuffer receive()
+}
+
+
+interface hello1.koddata.database.DatabaseConnection {
+~ void connect()
+~ void close()
+~ ResultSet executeQuery()
+}
+
+class hello1.koddata.sessions.SessionSettings {
+- int maxVisitorInSession
+- int maxSessionProcess
+- boolean interruptableSession
+- boolean canInterruptAnotherSession
+- long maximumAllocatedMemoryByte
+}
+
+class hello1.koddata.kodlang.ast.ProjectionExpression {
+~ Expression proj
+~ Expression rename
++ <<Create>> ProjectionExpression(Expression,Expression)
+}
+
+
+class hello1.koddata.memory.ReadOnlyMemory {
+- boolean isWrite
+- <<Create>> ReadOnlyMemory(long,long)
++ {static} ReadOnlyMemory allocate(long)
++ void initData(byte[])
++ void initData(long)
++ void initData(int)
++ void initData(ByteBuffer)
++ void set(Memory,long)
+- void checkIsWrite()
+}
+
+
+class hello1.koddata.sessions.users.UserData {
+- long userId
+- String name
+- UserPrivilege userPrivilege
++ <<Create>> UserData(long,String,UserPrivilege)
++ long userId()
++ UserPrivilege userPrivilege()
++ String name()
+}
+
+
+class hello1.koddata.kodlang.ast.FunctionCall {
+~ NIdentifier function
+~ ImmutableArray<Expression> arguments
++ <<Create>> FunctionCall(NIdentifier,ImmutableArray<Expression>)
+}
+
+
+class hello1.koddata.memory.MemoryGroup {
+~ {static} Map<String,MemoryGroup> memoryGroups
+- String name
+- Map<Memory,Allocator> referencePool
+- <<Create>> MemoryGroup(String)
++ {static} String newMemoryGroup(String)
++ Memory allocate(Allocator)
++ Memory allocate(long)
++ void deallocate(Memory)
++ void deallocateAll()
++ String getName()
++ boolean isPresent(Memory)
++ {static} MemoryGroup get(String)
+}
+
+
+class hello1.koddata.memory.MemoryGroup$MemoryGroupShutdownHookThread {
++ void run()
+}
+
+class hello1.koddata.kodlang.ast.BranchPipeline {
+~ ImmutableArray<WhenCaseStatement> whens
+~ ElseCaseStatement elseCase
++ <<Create>> BranchPipeline(ImmutableArray<WhenCaseStatement>,ElseCaseStatement)
+}
+
+
+abstract class hello1.koddata.memory.Memory {
+# long peer
+# long allocatedSize
+# <<Create>> Memory(long,long)
+# <<Create>> Memory(Memory)
+~ {static} long getPeer(long)
++ long getPeer()
+~ {static} long resizeMemory(long,long,long)
++ void resize(long)
++ void free()
++ void set(Memory,long)
++ Memory copy(long,boolean)
+# void checkBounds(long)
+# void checkBounds(long,long)
++ long size()
++ int readInt()
++ long readLong()
++ byte[] readBytes(int)
++ int readInt(long)
++ short readShort(long)
++ long readLong(long)
++ float readFloat(long)
++ double readDouble(long)
++ byte[] readBytes(long,int)
++ int hashCode()
+}
+
+
+class hello1.koddata.concurrent.ClusterAwait {
+- String clusterKey
+- int initialCount
+- int currentCount
+- boolean autoReset
+- long timeoutMillis
++ <<Create>> ClusterAwait(String,int)
++ <<Create>> ClusterAwait(String,int,boolean)
++ <<Create>> ClusterAwait(String,int,boolean,long)
++ void await()
++ boolean await(long,TimeUnit)
++ void countDown()
++ int getCount()
++ void syncWithCluster()
++ void notifyClusterCountDown()
++ void reset()
++ boolean isZero()
++ String getClusterKey()
++ boolean isAutoReset()
++ void setAutoReset(boolean)
+}
+
+
+
+
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.BlockStatement
+hello1.koddata.dataframe.loader.DataFrameLoader <|-- hello1.koddata.dataframe.loader.DatabaseLoader
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.JoinExpression
+hello1.koddata.utils.collection.primitive.lists.FloatList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapFloatList
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.NullLiteral
+hello1.koddata.dataframe.ColumnAllocator <|-- hello1.koddata.dataframe.FixedColumnAllocator
+hello1.koddata.utils.collection.primitive.lists.ByteList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapByteList
+hello1.koddata.io.DataInputStreamPromax <|-- hello1.koddata.io.BufferedInputStreamPromax
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.ArrayLiteral
+hello1.koddata.io.DataOutputStreamPromax <|-- hello1.koddata.io.BufferedOutputStreamPromax
+hello1.koddata.utils.ref.AutoCloseable <|.. hello1.koddata.utils.ref.SharedReference
+hello1.koddata.utils.ref.Reference <|-- hello1.koddata.utils.ref.SharedReference
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.PropertyAccessExpression
+hello1.koddata.utils.collection.primitive.lists.IntList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapIntList
+hello1.koddata.io.DataOutputPromax <|.. hello1.koddata.io.DataOutputStreamPromax
+java.io.OutputStream <|-- hello1.koddata.io.DataOutputStreamPromax
+hello1.koddata.dataframe.VariableColumnAllocator <|-- hello1.koddata.dataframe.FixedListColumnAllocator
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.Pipeline
+hello1.koddata.memory.WritableMemory <|-- hello1.koddata.memory.SafeMemory
+hello1.koddata.memory.SafeMemory +.. hello1.koddata.memory.SafeMemory$MemoryTidy
+hello1.koddata.memory.Sebastian <|.. hello1.koddata.memory.SafeMemory$MemoryTidy
+hello1.koddata.memory.SafeMemory +.. hello1.koddata.memory.SafeMemory$FakeNull
+hello1.koddata.net.SocketFactory +.. hello1.koddata.net.SocketFactory$Builder
+hello1.koddata.engine.QueryOperation <|.. hello1.koddata.engine.EmptyOperation
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.UnaryExpression
+hello1.koddata.dataframe.loader.DataFrameLoader <|-- hello1.koddata.dataframe.loader.CSVLoader
+hello1.koddata.database.DatabaseConnection <|.. hello1.koddata.database.RelationalDatabaseConnection
+java.io.DataOutput <|-- hello1.koddata.io.DataOutputPromax
+hello1.koddata.concurrent.Thread <|-- hello1.koddata.concurrent.KTask
+hello1.koddata.exception.Exception <|-- hello1.koddata.exception.KException
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.SelectStatement
+hello1.koddata.kodlang.ast.BranchMember <|-- hello1.koddata.kodlang.ast.ElseCaseStatement
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.ApplyStatement
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.FetchExpression
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.Identifier
+hello1.koddata.dataframe.loader.DataFrameLoader <|-- hello1.koddata.dataframe.loader.JsonLoader
+hello1.koddata.utils.collection.primitive.lists.CharList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapCharList
+hello1.koddata.engine.QueryOperationNode <|-- hello1.koddata.engine.SplitQueryOperationNode
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.DatabaseConnectExpression
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.DataFrameDeclaration
+hello1.koddata.kodlang.ast.Identifier <|-- hello1.koddata.kodlang.ast.NIdentifier
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.BooleanLiteral
+hello1.koddata.engine.QueryOperation <|.. hello1.koddata.engine.SplitOperation
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.Subscript
+hello1.koddata.utils.collection.primitive.lists.ShortList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapShortList
+hello1.koddata.utils.ref.AutoCloseable <|.. hello1.koddata.utils.ref.UniqueReference
+hello1.koddata.utils.ref.Reference <|-- hello1.koddata.utils.ref.UniqueReference
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.Expression
+hello1.koddata.utils.collection.Iterable <|.. hello1.koddata.utils.collection.ImmutableArray
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.BinaryExpression
+hello1.koddata.kodlang.ast.BranchMember <|-- hello1.koddata.kodlang.ast.WhenCaseStatement
+hello1.koddata.memory.Memory <|-- hello1.koddata.memory.WritableMemory
+hello1.koddata.utils.ref.Reference +.. hello1.koddata.utils.ref.Reference$Sebastian
+hello1.koddata.utils.ref.Reference +.. hello1.koddata.utils.ref.Reference$ControlBlock
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.DeleteStatement
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.StringLiteral
+hello1.koddata.dataframe.ColumnAllocator <|-- hello1.koddata.dataframe.VariableColumnAllocator
+hello1.koddata.memory.Allocator <|.. hello1.koddata.memory.SimpleAllocator
+java.io.DataInput <|-- hello1.koddata.io.DataInputPromax
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.NumberLiteral
+hello1.koddata.utils.collection.primitive.lists.DoubleList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapDoubleList
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.AssignmentExpression
+hello1.koddata.sessions.users.User <|-- hello1.koddata.sessions.users.Admin
+hello1.koddata.dataframe.VariableColumnAllocator <|-- hello1.koddata.dataframe.VariableListColumnAllocator
+hello1.koddata.memory.Allocator <|.. hello1.koddata.dataframe.ColumnAllocator
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.BranchMember
+hello1.koddata.database.DatabaseConnection <|.. hello1.koddata.database.CqlDatabaseConnection
+hello1.koddata.utils.collection.primitive.lists.LongList <|-- hello1.koddata.utils.collection.primitive.lists.OffHeapLongList
+hello1.koddata.kodlang.ast.Statement <|-- hello1.koddata.kodlang.ast.DownloadStatement
+hello1.koddata.io.DataInputPromax <|.. hello1.koddata.io.DataInputStreamPromax
+java.io.InputStream <|-- hello1.koddata.io.DataInputStreamPromax
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.ProjectionExpression
+hello1.koddata.memory.Memory <|-- hello1.koddata.memory.ReadOnlyMemory
+hello1.koddata.kodlang.ast.Expression <|-- hello1.koddata.kodlang.ast.FunctionCall
+hello1.koddata.memory.MemoryGroup +.. hello1.koddata.memory.MemoryGroup$MemoryGroupShutdownHookThread
+hello1.koddata.memory.Thread <|-- hello1.koddata.memory.MemoryGroup$MemoryGroupShutdownHookThread
+hello1.koddata.kodlang.ast.Pipeline <|-- hello1.koddata.kodlang.ast.BranchPipeline
+@enduml

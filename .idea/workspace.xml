@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="KodData:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/FixedColumnAllocator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/FixedColumnAllocator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/CSVLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/CSVLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="351AEBnbCAeiZaIImAcUffrDurZ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "development",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/phonl/OneDrive/Documents/OOPproject/KodData",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="" />
+      <created>1762267091536</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762267091536</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ClusterAwait.java</url>
+          <line>262</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ClusterAwait.java</url>
+          <line>270</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ClusterLockWaiter.java</url>
+          <line>13</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ResourceLock.java</url>
+          <line>30</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ResourceLock.java</url>
+          <line>201</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ResourceLock.java</url>
+          <line>205</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/cluster/ResourceLock.java</url>
+          <line>209</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/engine/DataName.java</url>
+          <line>22</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/hello1/koddata/engine/DataName.java</url>
+          <line>12</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
