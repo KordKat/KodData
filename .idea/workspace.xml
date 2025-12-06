@@ -10,20 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/FixedColumnAllocator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/FixedColumnAllocator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/CSVLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/CSVLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/loader/DataFrameLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +46,7 @@
     "git-widget-placeholder": "development",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/phonl/OneDrive/Documents/OOPproject/KodData",
+    "last_opened_file_path": "C:/Users/thewh/Documents/project/KodData",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",

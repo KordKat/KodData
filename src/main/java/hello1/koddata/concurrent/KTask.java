@@ -3,7 +3,6 @@ package hello1.koddata.concurrent;
 import hello1.koddata.dataframe.Column;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.ColumnMetaData;
-import hello1.koddata.dataframe.DataFrameCursor;
 import hello1.koddata.dataframe.VariableElement;
 import hello1.koddata.engine.*;
 import hello1.koddata.exception.ExceptionCode;

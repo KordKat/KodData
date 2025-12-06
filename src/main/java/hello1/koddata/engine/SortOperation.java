@@ -1,7 +1,5 @@
 package hello1.koddata.engine;
 
-import hello1.koddata.dataframe.Column;
-import hello1.koddata.dataframe.DataFrameCursor;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 

@@ -24,9 +24,9 @@ public class ColumnMetaData {
     private boolean isSharded = false;
     private ColumnDType dType;
 
-    public ColumnMetaData(String name, boolean isVariable, ColumnDType dType){
+    public ColumnMetaData(String name, ColumnDType dType){
         this.name = name;
-        this.isVariable = isVariable;
+        this.dType = dType;
     }
 
     public void setSharded(boolean sharded) {
