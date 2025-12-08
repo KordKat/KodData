@@ -7,7 +7,6 @@ import hello1.koddata.engine.DataName;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
-import hello1.koddata.memory.MemoryGroup;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.util.Map;
@@ -19,12 +18,9 @@ public class SessionData {
 
     private Map<String, ColumnArray> sessionDataFrame = new ConcurrentHashMap<>();
 
-    private MemoryGroup memoryGroup;
 
     public SessionData(String sessionName){
         this.sessionName = sessionName;
-        MemoryGroup.newMemoryGroup(sessionName);
-        memoryGroup = MemoryGroup.get(sessionName);
     }
 
     public Value<?> get(String varName){
@@ -54,11 +50,11 @@ public class SessionData {
             }
 
             if(!sessionDataFrame.containsKey(name.getName())){
-                sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c}), memoryGroup));
+                sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c})));
                 variables.remove(name.getName());
             }else {
                 ColumnArray columnArray = sessionDataFrame.get(name.getName());
-                if(columnArray == null) sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c}), memoryGroup));
+                if(columnArray == null) sessionDataFrame.put(name.getName(), new ColumnArray(new ImmutableArray<>(new Column[]{c})));
                 else columnArray.addColumn(c);
             }
 
@@ -100,7 +96,4 @@ public class SessionData {
         return variables;
     }
 
-    public MemoryGroup getMemoryGroup() {
-        return memoryGroup;
-    }
 }

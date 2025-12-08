@@ -47,6 +47,16 @@ public class UserServiceServer extends Server {
         serverThread.start();
     }
 
+    @Override
+    public void stop() throws IOException {
+
+        for (SocketChannel sc : clients.values()){
+            sc.close();
+        }
+
+        serverThread.interrupt();
+    }
+
     public void acceptConnection(SelectionKey key) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
         SocketChannel ch = serverSocketChannel.accept();

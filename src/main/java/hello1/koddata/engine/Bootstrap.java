@@ -32,6 +32,7 @@ public class Bootstrap {
         userServiceServer.stop();
         Thread.sleep(5000);
         userManager.saveUserData();
+        System.exit(0);
     }
 
     private void configure(String[] args) throws IOException, KException, InterruptedException {

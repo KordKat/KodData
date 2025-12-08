@@ -146,6 +146,7 @@ public class UserManager {
             UserPrivilege privilege = new UserPrivilege(maxSession, maxProcessPerSession, maxMemoryPerProcess, maxStorageUsage);
             UserData userData = new UserData(userId, name, privilege, password, isAdmin);
             this.userDataMap.put(userId, userData);
+            UserData.idCounter.next();
         }
     }
 

@@ -228,7 +228,9 @@ public class Parser {
                 type.equals(Token.TokenType.PIPELINE) ||
                 type.equals(Token.TokenType.BRANCH) ||
                 type.equals(Token.TokenType.OP_SUB) ||
-                type.equals(Token.TokenType.NULL);
+                type.equals(Token.TokenType.NULL) ||
+                type.equals(Token.TokenType.TRUE) ||
+                type.equals(Token.TokenType.FALSE);
     }
 
     private Expression parsePrimaryExpression() throws KException {
@@ -404,7 +406,7 @@ public class Parser {
                 "coalesce", "cast",
                 "take", "skip", "fill"
                 ,"connect","download", "export", "fetch", "remove", "session", "task"
-                ,"user", "copy", "drop", "apply"
+                ,"user", "copy", "drop", "apply", "stop"
         );
         return functionName.contains(name.toLowerCase());
     }

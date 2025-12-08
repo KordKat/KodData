@@ -10,7 +10,7 @@ import hello1.koddata.engine.DataSource;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
-import hello1.koddata.memory.MemoryGroup;
+
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.io.File;
@@ -65,7 +65,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
                 }
 
                 // สร้าง Loader
-                dataFrameLoader = new CSVLoader(memoryGroupNameString);
+                dataFrameLoader = new CSVLoader();
 
                 // โหลดข้อมูลทันที (รอจนเสร็จ)
                 try {
@@ -110,8 +110,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
         // สมมติว่า dataFrameLoader มีเมธอด getColumns() เพื่อดึง Column[] ออกมา
         // หาก method ชื่ออื่นให้เปลี่ยนตรงนี้ครับ เช่น dataFrameLoader.getResult()
         if (dataFrameLoader != null) {
-            MemoryGroup.newMemoryGroup("test");
-            return new Value<>(new ColumnArray(new ImmutableArray<>(dataFrameLoader.getColumns()), MemoryGroup.get("test")));
+            return new Value<>(new ColumnArray(new ImmutableArray<>(dataFrameLoader.getColumns())));
         } else {
             throw new KException(ExceptionCode.KDE0013, "Loader failed to initialize");
         }

@@ -25,6 +25,7 @@ public class UserCommand extends KodFunction<Object>{
             }
             Value<?> name = arguments.get("name");
             if (!(name.get() instanceof String nameString)) {
+                System.out.println(name.get().getClass().getName());
                 throw new KException(ExceptionCode.KDE0012, "name should be string");
             }
 
@@ -44,19 +45,19 @@ public class UserCommand extends KodFunction<Object>{
             Value<?> maxProcessPerSession = arguments.get("maxProcessPerSession");
             Value<?> maxMemoryPerProcess = arguments.get("maxMemoryPerProcess");
             Value<?> maxStorageUsage = arguments.get("maxStorageUsage");
-            if (!(maxSession.get() instanceof Integer maxSessionInt)) {
+            if (!(maxSession.get() instanceof Number maxSessionInt)) {
                 throw new KException(ExceptionCode.KDE0012, "maximumResource should be userPrivilege");
             }
-            if (!(maxProcessPerSession.get() instanceof Integer maxProcessPerSessionInt)) {
+            if (!(maxProcessPerSession.get() instanceof Number maxProcessPerSessionInt)) {
                 throw new KException(ExceptionCode.KDE0012, "maximumResource should be userPrivilege");
             }
-            if (!(maxMemoryPerProcess.get() instanceof Integer maxMemoryPerProcessInt)) {
+            if (!(maxMemoryPerProcess.get() instanceof Number maxMemoryPerProcessInt)) {
                 throw new KException(ExceptionCode.KDE0012, "maximumResource should be userPrivilege");
             }
-            if (!(maxStorageUsage.get() instanceof Integer maxStorageUsageInt)) {
+            if (!(maxStorageUsage.get() instanceof Number maxStorageUsageInt)) {
                 throw new KException(ExceptionCode.KDE0012, "maximumResource should be userPrivilege");
             }
-            UserPrivilege maximumResourceUP = new UserPrivilege(maxSessionInt, maxProcessPerSessionInt, maxMemoryPerProcessInt, maxStorageUsageInt);
+            UserPrivilege maximumResourceUP = new UserPrivilege(maxSessionInt.intValue(), maxProcessPerSessionInt.intValue(), maxMemoryPerProcessInt.intValue(), maxStorageUsageInt.intValue());
 
             if (!arguments.containsKey("password")) {
                 throw new KException(ExceptionCode.KDE0012, "You need to write password to create user");

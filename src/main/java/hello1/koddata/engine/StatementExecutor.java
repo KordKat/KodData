@@ -448,7 +448,7 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new TrimOperation() , evaluatedArguments));
                 case "concat":
                     if (!(evaluatedArguments.get(1).get() instanceof String s)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "argument should be string");
                     }
                     return new Value<>(new QueryOperationNode(new ConcatOperation(s) , evaluatedArguments));
                 case "substring":
@@ -572,15 +572,25 @@ public class StatementExecutor {
                     connectionFunction.addArgument("databaseName" , evaluatedArguments.get(1));
                     connectionFunction.addArgument("host" , evaluatedArguments.get(2));
                     connectionFunction.addArgument("port" , evaluatedArguments.get(3));
-                    connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
-                    connectionFunction.addArgument("user" , evaluatedArguments.get(4));
-                    connectionFunction.addArgument("pass" , evaluatedArguments.get(5));
+                    if(!(evaluatedArguments.get(0).get() instanceof String databaseTypeString)){
+                        throw new KException(ExceptionCode.KDE0012, "databaseType should be string");
+                    }
+
+                    if (databaseTypeString.equalsIgnoreCase("cassandra")){
+                        connectionFunction.addArgument("dataCentre" , evaluatedArguments.get(4));
+                    }
+                    else{
+                        connectionFunction.addArgument("user" , evaluatedArguments.get(4));
+                        connectionFunction.addArgument("pass" , evaluatedArguments.get(5));
+                    }
+
                     return new Value<>(connectionFunction.execute());
                 case "download":
                     DownloadFunction downloadFunction = new DownloadFunction();
                     downloadFunction.addArgument( "fileName" , evaluatedArguments.get(0));
                     downloadFunction.addArgument( "UserClient" , new Value<>(client));
                     downloadFunction.execute();
+                    break;
                 case "export":
                     ExportFunction exportFunction = new ExportFunction();
                     exportFunction.addArgument( "dataframe" , evaluatedArguments.get(0));
@@ -588,11 +598,11 @@ public class StatementExecutor {
                     exportFunction.addArgument("fileName" , evaluatedArguments.get(2));
                     exportFunction.addArgument("userId" , new Value<>(client.getUser().getUserData().userId()));
                     exportFunction.execute();
+                    break;
                 case "fetch":
                     FetchFunction fetchFunction = new FetchFunction();
                     fetchFunction.addArgument( "datatype" , new Value<>(DataSource.valueOf((String) evaluatedArguments.get(0).get())));
                     fetchFunction.addArgument( "datasource" , evaluatedArguments.get(1));
-                    fetchFunction.addArgument( "memoryGroupName" , new Value<>(client.getCurrentSession().getSessionData().getMemoryGroup().getName()));
                     if(evaluatedArguments.size() >= 3)
                         fetchFunction.addArgument( "query" , evaluatedArguments.get(2));
                     return new Value<>(fetchFunction.execute());
@@ -601,6 +611,7 @@ public class StatementExecutor {
                     removeFunction.addArgument( "dataName" , evaluatedArguments.get(0));
                     removeFunction.addArgument( "session" , new Value<>(client.getCurrentSession()));
                     removeFunction.execute();
+                    break;
                 case "apply":
                     ApplyFunction applyFunction = new ApplyFunction();
                     applyFunction.addArgument("session", new Value<>(client.getCurrentSession()));
@@ -617,39 +628,62 @@ public class StatementExecutor {
                 case "user":
                     UserCommand userCommand = new UserCommand();
                     userCommand.addArgument( "command" , evaluatedArguments.get(0));
-
-                    userCommand.addArgument( "name" , evaluatedArguments.get(1));
-                    userCommand.addArgument( "maxSession" , evaluatedArguments.get(2));
-                    userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(3));
-                    userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(4));
-                    userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(5));
-                    userCommand.addArgument( "password" , evaluatedArguments.get(6));
-                    userCommand.addArgument( "isAdmin" , evaluatedArguments.get(7));
-
-                    userCommand.addArgument( "userId" , evaluatedArguments.get(1));
-                    userCommand.addArgument( "name" , evaluatedArguments.get(2));
-                    userCommand.addArgument( "maxSession" , evaluatedArguments.get(3));
-                    userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(4));
-                    userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(5));
-                    userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(6));
-
-                    userCommand.addArgument( "userId" , evaluatedArguments.get(1));
+                    if(!(evaluatedArguments.get(0).get() instanceof String cmd)){
+                        throw new KException(ExceptionCode.KDE0012, "command should be string");
+                    }
+                    String val = "";
+                    if (cmd.equalsIgnoreCase("create")){
+                        userCommand.addArgument( "name" , evaluatedArguments.get(1));
+                        userCommand.addArgument( "maxSession" , evaluatedArguments.get(2));
+                        userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(3));
+                        userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(4));
+                        userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(5));
+                        userCommand.addArgument( "password" , evaluatedArguments.get(6));
+                        userCommand.addArgument( "isAdmin" , evaluatedArguments.get(7));
+                        val = "Created";
+                    } else if (cmd.equalsIgnoreCase("edit")) {
+                        userCommand.addArgument( "userId" , evaluatedArguments.get(1));
+                        userCommand.addArgument( "name" , evaluatedArguments.get(2));
+                        userCommand.addArgument( "maxSession" , evaluatedArguments.get(3));
+                        userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(4));
+                        userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(5));
+                        userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(6));
+                        val = "Changed";
+                    }
+                    else if (cmd.equalsIgnoreCase("remove")){
+                        userCommand.addArgument( "userId" , evaluatedArguments.get(1));
+                        val = "Removed";
+                    }
                     userCommand.execute();
+                    return new Value<>(val);
                 case "task":
                     TaskCommand taskCommand = new TaskCommand();
                     taskCommand.addArgument( "command" , evaluatedArguments.get(0));
+                    if(!(evaluatedArguments.get(0).get() instanceof String cmd)){
+                        throw new KException(ExceptionCode.KDE0012, "command should be string");
+                    }
 
-                    taskCommand.addArgument( "taskId" , evaluatedArguments.get(1));
-                    taskCommand.addArgument( "userId" , evaluatedArguments.get(2));
+                    if (cmd.equalsIgnoreCase("cancelTask")){
+                        taskCommand.addArgument( "taskId" , evaluatedArguments.get(1));
+                        taskCommand.addArgument( "userId" , evaluatedArguments.get(2));
+                    }
+                    else if(cmd.equalsIgnoreCase("taskList")){
+                        taskCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
+                    }
 
-                    taskCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
                     taskCommand.execute();
+                    return new Value<>(evaluatedArguments.get(1).get());
                 case "session":
                     SessionCommand sessionCommand = new SessionCommand();
                     sessionCommand.addArgument( "command" , evaluatedArguments.get(0));
 
                     sessionCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
                     sessionCommand.execute();
+                    return new Value<>(evaluatedArguments.get(1).get());
+                case "stop":
+                    StopServerFunction sf = new StopServerFunction();
+                    sf.addArgument("userId", new Value<>(client.getUser().getUserData().userId()));
+                    return sf.execute();
                 default:
                     throw new KException(ExceptionCode.KD00006, "There is no this command");
 
@@ -711,13 +745,13 @@ public class StatementExecutor {
                 }
             }else if(base instanceof ColumnArray columnArray){
                 if(indexVal.get() instanceof String s){
-                    return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[]{columnArray.getColumns().get(s)}), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                    return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[]{columnArray.getColumns().get(s)})));
                 }else if(indexVal.get() instanceof List list){
                     if(list.isEmpty()){
-                        return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[0]), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                        return new Value<>(new ColumnArray(new ImmutableArray<>(new Column[0])));
                     }else if(list.getFirst() instanceof String){
                         List<Column> col = columnArray.getColumns().keySet().stream().map(x -> columnArray.getColumns().get(x)).toList();
-                        return new Value<>(new ColumnArray(new ImmutableArray<>(col), client.getCurrentSession().getSessionData().getMemoryGroup()));
+                        return new Value<>(new ColumnArray(new ImmutableArray<>(col)));
                     }
                 }else {
                     throw new KException(ExceptionCode.KD00006, "Cannot subscript");
