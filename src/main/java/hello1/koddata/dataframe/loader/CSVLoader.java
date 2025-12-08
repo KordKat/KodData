@@ -2,23 +2,16 @@ package hello1.koddata.dataframe.loader;
 
 import hello1.koddata.dataframe.Column;
 import hello1.koddata.dataframe.ColumnMetaData;
-import hello1.koddata.dataframe.VariableElement;
+import hello1.koddata.engine.Value;
 import hello1.koddata.exception.KException;
 import hello1.koddata.io.BufferedInputStreamPromax;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVLoader extends DataFrameLoader {
-
-    private final String memoryGroupName;
-
-    public CSVLoader(String memoryGroupName) {
-        this.memoryGroupName = memoryGroupName;
-    }
 
     @Override
     public void load(InputStream in) throws IOException {
@@ -28,14 +21,16 @@ public class CSVLoader extends DataFrameLoader {
             if (lines.isEmpty()) {
                 return;
             }
-
-            String[] columnNames = splitCsvLine(lines.getFirst());
+            String[] columnNames = splitCsvLine(lines.get(0));
             int columnCount = columnNames.length;
+            int rowCount = lines.size() - 1;
+            if (rowCount <= 0) {
+                this.columns = new Column[0];
+                return;
+            }
 
-            int rowCount = lines.size();
             String[][] cells = new String[rowCount][columnCount];
-
-            for (int r = 0; r < rowCount-1; r++) {
+            for (int r = 0; r < rowCount; r++) {
                 String[] parts = splitCsvLine(lines.get(r + 1));
                 for (int c = 0; c < columnCount; c++) {
                     String value = c < parts.length ? trimQuotes(parts[c]) : null;
@@ -45,7 +40,6 @@ public class CSVLoader extends DataFrameLoader {
             }
 
             ColumnKind[] kinds = inferColumnKinds(cells, columnCount, rowCount);
-
             Column[] result = new Column[columnCount];
 
             for (int c = 0; c < columnCount; c++) {
@@ -54,21 +48,18 @@ public class CSVLoader extends DataFrameLoader {
 
                 try {
                     Column column = switch (kind) {
-                        case SCALAR_INT -> buildScalarIntColumn(name, cells, c, rowCount);
-                        case SCALAR_DOUBLE -> buildScalarDoubleColumn(name, cells, c, rowCount);
-                        case SCALAR_STRING -> buildScalarStringColumn(name, cells, c, rowCount);
-                        case LIST_INT -> buildListFixedNumericColumn(name, cells, c, rowCount, true);
-                        case LIST_DOUBLE -> buildListFixedNumericColumn(name, cells, c, rowCount, false);
-                        case LIST_STRING -> buildListStringColumn(name, cells, c, rowCount);
-
-
-                        case SCALAR_LOGICAL -> buildScalarLogicalColumn(name, cells, c, rowCount);
-                        case SCALAR_DATE -> buildScalarDateColumn(name, cells, c, rowCount);
-                        case SCALAR_TIMESTAMP -> buildScalarTimestampColumn(name, cells, c, rowCount);
-                        case LIST_LOGICAL -> buildListLogicalColumn(name, cells, c, rowCount);
-                        case LIST_DATE -> buildListDateColumn(name, cells, c, rowCount);
-                        case LIST_TIMESTAMP -> buildListTimestampColumn(name, cells, c, rowCount);
-
+                        case SCALAR_INT      -> buildScalarIntColumn(name, cells, c, rowCount);
+                        case SCALAR_DOUBLE   -> buildScalarDoubleColumn(name, cells, c, rowCount);
+                        case SCALAR_STRING   -> buildScalarStringColumn(name, cells, c, rowCount);
+                        case LIST_INT        -> buildListIntColumn(name, cells, c, rowCount);
+                        case LIST_DOUBLE     -> buildListDoubleColumn(name, cells, c, rowCount);
+                        case LIST_STRING     -> buildListStringColumn(name, cells, c, rowCount);
+                        case SCALAR_LOGICAL  -> buildScalarLogicalColumn(name, cells, c, rowCount);
+                        case SCALAR_DATE     -> buildScalarDateColumn(name, cells, c, rowCount);
+                        case SCALAR_TIMESTAMP-> buildScalarTimestampColumn(name, cells, c, rowCount);
+                        case LIST_LOGICAL    -> buildListLogicalColumn(name, cells, c, rowCount);
+                        case LIST_DATE       -> buildListDateColumn(name, cells, c, rowCount);
+                        case LIST_TIMESTAMP  -> buildListTimestampColumn(name, cells, c, rowCount);
                     };
                     result[c] = column;
 
@@ -93,345 +84,7 @@ public class CSVLoader extends DataFrameLoader {
         SCALAR_TIMESTAMP,
         LIST_LOGICAL,
         LIST_DATE,
-        LIST_TIMESTAMP;
-    }
-
-
-    private Column buildScalarIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
-        int elementSize = Integer.BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                buffer.putInt(Integer.parseInt(v));
-            }
-
-        }
-        buffer.flip();
-
-        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_INT);
-    }
-
-    private Column buildScalarDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
-        int elementSize = Double.BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                buffer.putDouble(Double.parseDouble(v));
-            }
-        }
-        buffer.flip();
-
-        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_DOUBLE);
-    }
-
-    private Column buildScalarStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
-        List<VariableElement> list = new ArrayList<>(rowCount);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                list.add(VariableElement.newStringElement(v));
-            } else {
-                list.add(VariableElement.newElement(new byte[0]));
-            }
-        }
-
-        return new Column(name, list, memoryGroupName, flags, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_STRING);
-    }
-    private Column buildScalarLogicalColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = 1;
-        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                String t = v.trim().toLowerCase();
-                boolean val = t.equals("true") || t.equals("1");
-                buffer.put((byte) (val ? 1 : 0));
-            }
-        }
-
-        buffer.flip();
-        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_LOGICAL);
-    }
-
-    private Column buildScalarDateColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = Long.BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                long epoch = java.time.LocalDate.parse(v.trim()).toEpochDay();
-                buffer.putLong(epoch);
-            }
-        }
-
-        buffer.flip();
-        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_DATE);
-    }
-
-    private Column buildScalarTimestampColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = Long.BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(rowCount * elementSize);
-        boolean[] flags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String v = cells[r][colIdx];
-            if (v != null) {
-                flags[r] = true;
-                long epoch = java.time.Instant.parse(v.trim()).toEpochMilli();
-                buffer.putLong(epoch);
-            }
-        }
-
-        buffer.flip();
-        return new Column(name, elementSize, memoryGroupName, buffer, flags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP);
-    }
-
-
-    private Column buildListFixedNumericColumn(String name, String[][] cells, int colIdx, int rowCount, boolean isInt)
-            throws KException {
-
-        int elementSize = isInt ? Integer.BYTES : Double.BYTES;
-        List<List<byte[]>> lists = new ArrayList<>(rowCount);
-        List<boolean[]> perFlags = new ArrayList<>(rowCount);
-        boolean[] colFlags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String cell = cells[r][colIdx];
-            if (cell == null || cell.trim().isEmpty()) {
-                colFlags[r] = false;
-                lists.add(List.of());
-                perFlags.add(new boolean[0]);
-                continue;
-            }
-
-            colFlags[r] = true;
-
-            String[] parts = cell.split("\\|");
-            List<byte[]> rowList = new ArrayList<>(parts.length);
-            boolean[] flags = new boolean[parts.length];
-
-            for (int j = 0; j < parts.length; j++) {
-                String item = parts[j].trim();
-                if (item.isEmpty()) {
-                    flags[j] = false;
-                    rowList.add(new byte[elementSize]);
-                    continue;
-                }
-
-                flags[j] = true;
-                ByteBuffer bb = ByteBuffer.allocate(elementSize);
-                if (isInt) bb.putInt(Integer.parseInt(item));
-                else bb.putDouble(Double.parseDouble(item));
-                rowList.add(bb.array());
-            }
-
-            lists.add(rowList);
-            perFlags.add(flags);
-        }
-
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_DOUBLE);
-    }
-
-    private Column buildListStringColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        List<List<VariableElement>> lists = new ArrayList<>(rowCount);
-        List<boolean[]> perFlags = new ArrayList<>(rowCount);
-        boolean[] colFlags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String cell = cells[r][colIdx];
-            if (cell == null || cell.trim().isEmpty()) {
-                colFlags[r] = false;
-                lists.add(List.of());
-                perFlags.add(new boolean[0]);
-                continue;
-            }
-
-            colFlags[r] = true;
-
-            String[] parts = cell.split("\\|");
-            List<VariableElement> rowList = new ArrayList<>(parts.length);
-            boolean[] flags = new boolean[parts.length];
-
-            for (int j = 0; j < parts.length; j++) {
-                String item = parts[j].trim();
-                if (item.isEmpty()) {
-                    flags[j] = false;
-                    rowList.add(VariableElement.newElement(new byte[0]));
-                    continue;
-                }
-                flags[j] = true;
-                rowList.add(VariableElement.newStringElement(item));
-            }
-
-            lists.add(rowList);
-            perFlags.add(flags);
-        }
-
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, 0, rowCount, ColumnMetaData.ColumnDType.LIST_STRING);
-    }
-
-
-    private Column buildListLogicalColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = 1;
-        List<List<byte[]>> lists = new ArrayList<>(rowCount);
-        List<boolean[]> perFlags = new ArrayList<>(rowCount);
-        boolean[] colFlags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String cell = cells[r][colIdx];
-
-            if (cell == null || cell.trim().isEmpty()) {
-                colFlags[r] = false;
-                lists.add(List.of());
-                perFlags.add(new boolean[0]);
-                continue;
-            }
-
-            colFlags[r] = true;
-
-            String[] parts = cell.split("\\|");
-            List<byte[]> rowList = new ArrayList<>(parts.length);
-            boolean[] flags = new boolean[parts.length];
-
-            for (int j = 0; j < parts.length; j++) {
-                String item = parts[j].trim().toLowerCase();
-
-                if (item.isEmpty()) {
-                    flags[j] = false;
-                    rowList.add(new byte[elementSize]);
-                    continue;
-                }
-
-                flags[j] = true;
-                byte b = (byte)((item.equals("true") || item.equals("1")) ? 1 : 0);
-                rowList.add(new byte[]{b});
-            }
-            lists.add(rowList);
-            perFlags.add(flags);
-        }
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_LOGICAL);
-    }
-
-
-    private Column buildListDateColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = Long.BYTES;
-        List<List<byte[]>> lists = new ArrayList<>(rowCount);
-        List<boolean[]> perFlags = new ArrayList<>(rowCount);
-        boolean[] colFlags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String cell = cells[r][colIdx];
-
-            if (cell == null || cell.trim().isEmpty()) {
-                colFlags[r] = false;
-                lists.add(List.of());
-                perFlags.add(new boolean[0]);
-                continue;
-            }
-
-            colFlags[r] = true;
-
-            String[] parts = cell.split("\\|");
-            List<byte[]> rowList = new ArrayList<>(parts.length);
-            boolean[] flags = new boolean[parts.length];
-
-            for (int j = 0; j < parts.length; j++) {
-                String item = parts[j].trim();
-
-                if (item.isEmpty()) {
-                    flags[j] = false;
-                    rowList.add(new byte[elementSize]);
-                    continue;
-                }
-
-                flags[j] = true;
-                long epoch = java.time.LocalDate.parse(item).toEpochDay();
-                ByteBuffer bb = ByteBuffer.allocate(elementSize);
-                bb.putLong(epoch);
-                rowList.add(bb.array());
-            }
-
-            lists.add(rowList);
-            perFlags.add(flags);
-        }
-
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_DATE);
-    }
-
-    private Column buildListTimestampColumn(String name, String[][] cells, int colIdx, int rowCount)
-            throws KException {
-
-        int elementSize = Long.BYTES;
-        List<List<byte[]>> lists = new ArrayList<>(rowCount);
-        List<boolean[]> perFlags = new ArrayList<>(rowCount);
-        boolean[] colFlags = new boolean[rowCount];
-
-        for (int r = 0; r < rowCount; r++) {
-            String cell = cells[r][colIdx];
-
-            if (cell == null || cell.trim().isEmpty()) {
-                colFlags[r] = false;
-                lists.add(List.of());
-                perFlags.add(new boolean[0]);
-                continue;
-            }
-
-            colFlags[r] = true;
-
-            String[] parts = cell.split("\\|");
-            List<byte[]> rowList = new ArrayList<>(parts.length);
-            boolean[] flags = new boolean[parts.length];
-
-            for (int j = 0; j < parts.length; j++) {
-                String item = parts[j].trim();
-
-                if (item.isEmpty()) {
-                    flags[j] = false;
-                    rowList.add(new byte[elementSize]);
-                    continue;
-                }
-
-                flags[j] = true;
-                long epoch = java.time.Instant.parse(item).toEpochMilli();
-                ByteBuffer bb = ByteBuffer.allocate(elementSize);
-                bb.putLong(epoch);
-                rowList.add(bb.array());
-            }
-
-            lists.add(rowList);
-            perFlags.add(flags);
-        }
-
-        return new Column(name, memoryGroupName, lists, perFlags, colFlags, elementSize, 0, rowCount, ColumnMetaData.ColumnDType.LIST_TIMESTAMP);
+        LIST_TIMESTAMP
     }
 
     private ColumnKind[] inferColumnKinds(String[][] cells, int columnCount, int rowCount) {
@@ -476,8 +129,9 @@ public class CSVLoader extends DataFrameLoader {
             if (!canInt && !canDouble) break;
         }
 
-        if (canInt) return ColumnKind.SCALAR_INT;
+        if (canInt)    return ColumnKind.SCALAR_INT;
         if (canDouble) return ColumnKind.SCALAR_DOUBLE;
+
         boolean canLogical = true;
         for (int r = 0; r < rowCount; r++) {
             String v = cells[r][colIdx];
@@ -547,10 +201,8 @@ public class CSVLoader extends DataFrameLoader {
             if (!canInt && !canDouble) break;
         }
 
-        if (canInt) return ColumnKind.LIST_INT;
+        if (canInt)    return ColumnKind.LIST_INT;
         if (canDouble) return ColumnKind.LIST_DOUBLE;
-
-
 
         boolean canLogicalList = true;
         outerLogical:
@@ -567,7 +219,6 @@ public class CSVLoader extends DataFrameLoader {
             }
         }
         if (canLogicalList) return ColumnKind.LIST_LOGICAL;
-
 
         boolean canDateList = true;
         outerDate:
@@ -606,24 +257,239 @@ public class CSVLoader extends DataFrameLoader {
         return ColumnKind.LIST_STRING;
     }
 
+    private Column buildScalarIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            data.add(new Value<>(v == null ? null : Integer.parseInt(v.trim())));
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_INT);
+    }
 
+    private Column buildScalarDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            data.add(new Value<>(v == null ? null : Double.parseDouble(v.trim())));
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_DOUBLE);
+    }
+
+    private Column buildScalarStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            data.add(new Value<>(v));
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_STRING);
+    }
+
+    private Column buildScalarLogicalColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) {
+                data.add(new Value<>(null));
+            } else {
+                String t = v.trim().toLowerCase();
+                boolean val = t.equals("true") || t.equals("1");
+                data.add(new Value<>(val));
+            }
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_LOGICAL);
+    }
+
+    private Column buildScalarDateColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) {
+                data.add(new Value<>(null));
+            } else {
+                data.add(new Value<>(java.time.LocalDate.parse(v.trim())));
+            }
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_DATE);
+    }
+
+    private Column buildScalarTimestampColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+        for (int r = 0; r < rowCount; r++) {
+            String v = cells[r][colIdx];
+            if (v == null) {
+                data.add(new Value<>(null));
+            } else {
+                data.add(new Value<>(java.time.Instant.parse(v.trim())));
+            }
+        }
+        return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP);
+    }
+
+    private Column buildListIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<Integer> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim();
+                if (item.isEmpty()) {
+                    list.add(null);
+                } else {
+                    list.add(Integer.parseInt(item));
+                }
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_INT);
+    }
+
+    private Column buildListDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<Double> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim();
+                if (item.isEmpty()) {
+                    list.add(null);
+                } else {
+                    list.add(Double.parseDouble(item));
+                }
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_DOUBLE);
+    }
+
+    private Column buildListStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<String> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim();
+                list.add(item.isEmpty() ? null : item);
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_STRING);
+    }
+
+    private Column buildListLogicalColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<Boolean> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim().toLowerCase();
+                if (item.isEmpty()) {
+                    list.add(null);
+                } else {
+                    boolean val = item.equals("true") || item.equals("1");
+                    list.add(val);
+                }
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_LOGICAL);
+    }
+
+    private Column buildListDateColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<java.time.LocalDate> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim();
+                if (item.isEmpty()) {
+                    list.add(null);
+                } else {
+                    list.add(java.time.LocalDate.parse(item));
+                }
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_DATE);
+    }
+
+    private Column buildListTimestampColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
+        List<Value<?>> data = new ArrayList<>(rowCount);
+
+        for (int r = 0; r < rowCount; r++) {
+            String cell = cells[r][colIdx];
+            if (cell == null || cell.trim().isEmpty()) {
+                data.add(new Value<>(null));
+                continue;
+            }
+
+            String[] parts = cell.split("\\|");
+            List<java.time.Instant> list = new ArrayList<>(parts.length);
+            for (String p : parts) {
+                String item = p.trim();
+                if (item.isEmpty()) {
+                    list.add(null);
+                } else {
+                    list.add(java.time.Instant.parse(item));
+                }
+            }
+            data.add(new Value<>(list));
+        }
+
+        return new Column(name, data, ColumnMetaData.ColumnDType.LIST_TIMESTAMP);
+    }
 
     private List<String> readAllLines(BufferedInputStreamPromax in)
             throws IOException {
         List<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int b;
-        int currentRow = 0;
 
         while ((b = in.read()) != -1) {
-
             if (b == '\n') {
                 String line = sb.toString();
                 sb.setLength(0);
                 lines.add(line);
-                currentRow++;
-            }
-            else if (b != '\r') {
+            } else if (b != '\r') {
                 sb.append((char) b);
             }
         }
