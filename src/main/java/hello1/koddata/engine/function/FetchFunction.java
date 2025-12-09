@@ -44,14 +44,6 @@ public class FetchFunction extends KodFunction<ColumnArray> {
             throw new KException(ExceptionCode.KDE0012, "argument Data Source should be DATABASE , CSV");
         }
 
-        // ตรวจสอบ memoryGroupName (ใช้ร่วมกันทั้ง CSV และ Database)
-        if (!arguments.containsKey("memoryGroupName")) {
-            throw new KException(ExceptionCode.KDE0012, "You need to write memoryGroupName to use fetch function");
-        }
-        Value<?> memoryGroupName = arguments.get("memoryGroupName");
-        if (!(memoryGroupName.get() instanceof String memoryGroupNameString)) {
-            throw new KException(ExceptionCode.KDE0012, "memoryGroupName should be string");
-        }
 
         final Value<DataSource> finalDataSource = dataSourceValue;
         DataFrameLoader dataFrameLoader = null;
@@ -89,7 +81,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
                 if (query.get() instanceof String queryString) {
 
                     // สร้าง Loader
-                    dataFrameLoader = new DatabaseLoader(databaseConnection, queryString, memoryGroupNameString);
+                    dataFrameLoader = new DatabaseLoader(databaseConnection, queryString);
 
                     // โหลดข้อมูลทันที (รอจนเสร็จ)
                     try {

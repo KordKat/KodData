@@ -21,7 +21,7 @@ public class DatabaseLoader extends DataFrameLoader {
     private final DatabaseConnection conn;
     private final String query;
 
-    public DatabaseLoader(DatabaseConnection conn, String query, String memoryGroupName) {
+    public DatabaseLoader(DatabaseConnection conn, String query) {
         this.conn = conn;
         this.query = query;
     }
