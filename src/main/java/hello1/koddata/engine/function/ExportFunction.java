@@ -13,10 +13,12 @@ import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.SessionData;
 import hello1.koddata.sessions.users.User;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
@@ -62,6 +64,13 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
             String data = csvDataTransformer.transform(dataNameDFR);
             byte[] dataByteArray = data.getBytes(StandardCharsets.UTF_8);
             ByteBuffer dataByteBuffer = ByteBuffer.wrap(dataByteArray);
+            if (!Files.exists(filePathPa.resolve(fileNameString))){
+                try {
+                    Files.createFile(filePathPa.resolve(fileNameString));
+                } catch (IOException e) {
+                    throw new KException(ExceptionCode.KDE0013, "File not found");
+                }
+            }
             try {
                 try(AsynchronousFileChannel afc = AsynchronousFileChannel.open(
                         filePathPa.resolve(fileNameString),
