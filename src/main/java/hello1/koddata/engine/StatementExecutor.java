@@ -374,17 +374,17 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new RoundOperation() , evaluatedArguments));
                 case "clamp":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "first value should be number");
                     }
                     if (!(evaluatedArguments.get(1).get() instanceof Number n2)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "second value should be number");
                     }
                     return new Value<>(new QueryOperationNode(new ClampOperation(n1.doubleValue() , n2.doubleValue()) , evaluatedArguments));
                 case "sign":
                     return new Value<>(new QueryOperationNode(new SignOperation() , evaluatedArguments));
                 case "mod":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "operator should be number");
                     }
                     return new Value<>(new QueryOperationNode(new ModOperation(n.doubleValue()) , evaluatedArguments));
                 case "sinh":
@@ -401,7 +401,7 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new FactorialOperation() , evaluatedArguments));
                 case "root":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "operator should be number");
                     }
                     return new Value<>(new QueryOperationNode(new RootOperation(n.doubleValue()) , evaluatedArguments));
 
@@ -430,9 +430,6 @@ public class StatementExecutor {
 
                 // 💡 ตรรกะ/เงื่อนไข
                 case "equals":
-                    if (evaluatedArguments.get(1).get() == null){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
-                    }
                     return new Value<>(new QueryOperationNode(new EqualsOperation(evaluatedArguments.get(1)) , evaluatedArguments));
                 case "not":
                     return new Value<>(new QueryOperationNode(new NotOperation() , evaluatedArguments));
@@ -453,68 +450,52 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new ConcatOperation(s) , evaluatedArguments));
                 case "substring":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "first value should be number");
                     }
                     if (!(evaluatedArguments.get(1).get() instanceof Number n2)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "second value should be number");
                     }
                     return new Value<>(new QueryOperationNode(new SubstringOperation(n1.intValue() , n2.intValue()) , evaluatedArguments));
                 case "replace":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "first value should be string");
                     }
                     if (!(evaluatedArguments.get(1).get() instanceof String s2)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "second value should be string");
                     }
                     return new Value<>(new QueryOperationNode(new ReplaceOperation(s1 , s2) , evaluatedArguments));
                 case "indexof":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new IndexOfOperation(s1) , evaluatedArguments));
                 case "startswith":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new StartsWithOperation(s1) , evaluatedArguments));
                 case "endswith":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new EndsWithOperation(s1) , evaluatedArguments));
                 case "split":
                     return new Value<>(new QueryOperationNode(new SplitOperation() , evaluatedArguments));
                 case "join":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new JoinOperation(s1) , evaluatedArguments));
                 case "reverse":
                     return new Value<>(new QueryOperationNode(new ReverseOperation(), evaluatedArguments));
                 case "contains":
                     if (!(evaluatedArguments.get(1).get() instanceof String s1)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be string");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new ContainsOperation(s1), evaluatedArguments));
-                case "padleft":
-                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
-                    }
-                    if (!(evaluatedArguments.get(1).get() instanceof Character c)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be character");
-                    }
-                    return new Value<>(new QueryOperationNode(new PadLeftOperation(n.intValue() , c), evaluatedArguments));
-                case "padright":
-                    if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
-                    }
-                    if (!(evaluatedArguments.get(1).get() instanceof Character c)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be character");
-                    }
-                    return new Value<>(new QueryOperationNode(new PadRightOperation(n.intValue() , c), evaluatedArguments));
                 case "repeat":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new RepeatOperation(n.intValue()), evaluatedArguments));
                 case "tostring":
@@ -542,20 +523,20 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new PrintOperation(client), evaluatedArguments));
                 case "coalesce":
                     if (evaluatedArguments.get(1).get() == null){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new CoalesceOperation(evaluatedArguments.get(1)), evaluatedArguments));
 
                 // 🗂️ การจัดการรายการแบบมีเงื่อนไข
                 case "take":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new TakeOperation(n.intValue()), evaluatedArguments));
 
                 case "skip":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)) {
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new SkipOperation(n.intValue()), evaluatedArguments
                     ));
@@ -563,7 +544,7 @@ public class StatementExecutor {
 
                 case "fill":
                     if (evaluatedArguments.get(1).get() == null){
-                        throw new KException(ExceptionCode.KDE0012, "exponent should be number");
+                        throw new KException(ExceptionCode.KDE0012, "error");
                     }
                     return new Value<>(new QueryOperationNode(new FillOperation(evaluatedArguments.get(1) , evaluatedArguments.get(2)), evaluatedArguments));
                 case "connect":
@@ -618,11 +599,11 @@ public class StatementExecutor {
                     if(evaluatedArguments.get(0).get() instanceof QueryOperationNode node){
                         QueryExecution execution = new QueryExecution();
                         execution.getHead().next(node);
-                        applyFunction.addArgument("dataframe", new Value<>(execution));
+                        applyFunction.addArgument("operation", new Value<>(execution));
                     }else {
-                        applyFunction.addArgument("dataframe", evaluatedArguments.getFirst());
+                        applyFunction.addArgument("operation", evaluatedArguments.getFirst());
                     }
-                    applyFunction.addArgument("operation", evaluatedArguments.get(1));
+                    applyFunction.addArgument("dataframe", evaluatedArguments.get(1));
                     applyFunction.execute();
                     return new Value<>(applyFunction.execute());
                 case "user":
@@ -641,14 +622,6 @@ public class StatementExecutor {
                         userCommand.addArgument( "password" , evaluatedArguments.get(6));
                         userCommand.addArgument( "isAdmin" , evaluatedArguments.get(7));
                         val = "Created";
-                    } else if (cmd.equalsIgnoreCase("edit")) {
-                        userCommand.addArgument( "userId" , evaluatedArguments.get(1));
-                        userCommand.addArgument( "name" , evaluatedArguments.get(2));
-                        userCommand.addArgument( "maxSession" , evaluatedArguments.get(3));
-                        userCommand.addArgument( "maxProcessPerSession" , evaluatedArguments.get(4));
-                        userCommand.addArgument( "maxMemoryPerProcess" , evaluatedArguments.get(5));
-                        userCommand.addArgument( "maxStorageUsage" , evaluatedArguments.get(6));
-                        val = "Changed";
                     }
                     else if (cmd.equalsIgnoreCase("remove")){
                         userCommand.addArgument( "userId" , evaluatedArguments.get(1));
@@ -676,8 +649,13 @@ public class StatementExecutor {
                 case "session":
                     SessionCommand sessionCommand = new SessionCommand();
                     sessionCommand.addArgument( "command" , evaluatedArguments.get(0));
+                    if(!(evaluatedArguments.get(0).get() instanceof String cmd)){
+                        throw new KException(ExceptionCode.KDE0012, "command should be string");
+                    }
+                    if (cmd.equalsIgnoreCase("terminateSession")){
+                        sessionCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
+                    }
 
-                    sessionCommand.addArgument( "sessionId" , evaluatedArguments.get(1));
                     sessionCommand.execute();
                     return new Value<>(evaluatedArguments.get(1).get());
                 case "stop":
@@ -689,13 +667,10 @@ public class StatementExecutor {
 
             }
         } else if(expression instanceof Pipeline pipe){ //return query execution
-            // เริ่มต้นด้วยค่า null สำหรับ pipeline แรก
-
             QueryExecution queryExecution = new QueryExecution();
             QueryOperationNode queryOperationNode = queryExecution.getHead();
 
             for (Expression expr : pipe.pipeline) {
-                // ถ้าเป็น FunctionCall ให้ประมวลผลพิเศษ
                 if (expr instanceof FunctionCall fc) {
                     Value<?> value = evaluateExpression(expr, client);
 

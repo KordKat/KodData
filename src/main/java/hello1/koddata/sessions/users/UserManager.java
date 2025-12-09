@@ -13,8 +13,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -72,6 +75,10 @@ public class UserManager {
 
     public User findUser(long userId){
         return users.get(userId);
+    }
+
+    public UserData findUserData(long userId){
+        return userDataMap.get(userId);
     }
 
     public List<User> userList(){
@@ -139,7 +146,7 @@ public class UserManager {
             boolean isAdmin = isAdminField[0] != 0;
 
             int maxSession = ByteUtils.bytesToInt(fields[4]);
-            int maxProcessPerSession = ByteUtils.bytesToInt(fields[5]);
+            int maxProcessPerSession = ByteUtils.bytesToInt (fields[5]);
             int maxMemoryPerProcess = ByteUtils.bytesToInt(fields[6]);
             int maxStorageUsage = ByteUtils.bytesToInt(fields[7]);
 
@@ -147,6 +154,7 @@ public class UserManager {
             UserData userData = new UserData(userId, name, privilege, password, isAdmin);
             this.userDataMap.put(userId, userData);
             UserData.idCounter.next();
+            System.out.println("Loaded user: " + userId);
         }
     }
 
@@ -281,13 +289,29 @@ public class UserManager {
         }
     }
 
-    public void removeUser(long id){
-        if(users.containsKey(id)) {
-            User u = users.get(id);
-            u.logOut();
-            for(Session session : u.listSessions()){
-                session.terminate();
+    public void removeUser(long id) throws IOException {
+        if(userDataMap.containsKey(id)) {
+            if(users.containsKey(id)) {
+                User u = users.get(id);
+                u.logOut();
+                for (Session session : u.listSessions()) {
+                    session.terminate();
+                }
             }
+            Path userPath = Main.bootstrap.getRootPath().resolve("home").resolve(userDataMap.get(id).name());
+            Files.walkFileTree(userPath, new SimpleFileVisitor<Path>(){
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
             userDataMap.remove(id);
             users.remove(id);
         }

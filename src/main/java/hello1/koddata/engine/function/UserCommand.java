@@ -9,6 +9,7 @@ import hello1.koddata.sessions.users.UserData;
 import hello1.koddata.sessions.users.UserManager;
 import hello1.koddata.sessions.users.UserPrivilege;
 
+import java.io.IOException;
 import java.util.List;
 
 public class UserCommand extends KodFunction<Object>{
@@ -79,7 +80,7 @@ public class UserCommand extends KodFunction<Object>{
                 throw new KException(ExceptionCode.KDE0012, "You need to write userId to edit user");
             }
             Value<?> userId = arguments.get("userId");
-            if (!(userId.get() instanceof Long userIdLong)) {
+            if (!(userId.get() instanceof Number userIdLong)) {
                 throw new KException(ExceptionCode.KDE0012, "userId should be Long");
             }
             Value<?> name = arguments.get("name");
@@ -113,16 +114,16 @@ public class UserCommand extends KodFunction<Object>{
             if (!(isAdmin.get() instanceof Boolean isAdminB)) {
                 throw new KException(ExceptionCode.KDE0012, "isAdmin should be Logical");
             }
-            editUser(userIdLong, nameString, maximumResourceUP, passwordString, isAdminB);
+            editUser(userIdLong.longValue(), nameString, maximumResourceUP, passwordString, isAdminB);
         } else if (command.get().equals("remove")) {
             if (!arguments.containsKey("userId")) {
                 throw new KException(ExceptionCode.KDE0012, "You need to write userId to remove user");
             }
             Value<?> userId = arguments.get("userId");
-            if (!(userId.get() instanceof Long userIdLong)) {
+            if (!(userId.get() instanceof Number userIdLong)) {
                 throw new KException(ExceptionCode.KDE0012, "userId should be Long");
             }
-            removeUser(userIdLong);
+            removeUser(userIdLong.longValue());
 
         } else if (command.get().equals("userlist")) {
             return new Value<>(userList());
@@ -152,11 +153,15 @@ public class UserCommand extends KodFunction<Object>{
     }
 
     public void removeUser(long userId) throws KException {
-        UserData user = Main.bootstrap.getUserManager().findUser(userId).getUserData();
+        UserData user = Main.bootstrap.getUserManager().findUserData(userId);
         if (user == null){
             throw new KException(ExceptionCode.KDE0012, "User does not exist");
         }
-        Main.bootstrap.getUserManager().removeUser(userId);
+        try {
+            Main.bootstrap.getUserManager().removeUser(userId);
+        } catch (IOException e) {
+            throw new KException(ExceptionCode.KD00010, e.getMessage());
+        }
     }
 
     public List<User> userList(){

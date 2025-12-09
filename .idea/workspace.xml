@@ -10,31 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/StopServerFunction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/Bootstrap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/Bootstrap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/UserCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/UserCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/UserManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/users/UserManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/ByteList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/CharList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/DoubleList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/FloatList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/IntList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/LongList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapByteList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapCharList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapDoubleList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapFloatList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapIntList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapLongList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/OffHeapShortList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/primitive/lists/ShortList.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
