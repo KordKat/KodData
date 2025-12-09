@@ -30,7 +30,7 @@ public class UserUploadFileState extends ChannelState {
        payloadBuffer.flip();
         Path rootfs = Main.bootstrap.getRootPath();
         Session userSession = Main.bootstrap.getSessionManager().getSession(sessionId);
-        Path path = rootfs.resolve(userSession.getUser().getUserData().name()).resolve(fileName);
+        Path path = rootfs.resolve(userSession.getUser().getUser().getUserData().name()).resolve(fileName);
 
         try (AsynchronousFileChannel asyncFileChannel = AsynchronousFileChannel.open(
                 path,

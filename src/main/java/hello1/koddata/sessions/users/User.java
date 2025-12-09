@@ -3,6 +3,7 @@ package hello1.koddata.sessions.users;
 import hello1.koddata.Main;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
+import hello1.koddata.net.UserClient;
 import hello1.koddata.sessions.Session;
 
 
@@ -21,9 +22,9 @@ public class User {
         this.userData = userData;
     }
 
-    public Session newSession() throws KException {
+    public Session newSession(UserClient userClient) throws KException {
         if(userData.userPrivilege().maxSession() <= userSession.size()) throw new KException(ExceptionCode.KDR0009, "Cannot create more session for this user");
-        Session session = Session.newSession(this);
+        Session session = Session.newSession(userClient);
         userSession.add(session);
         return session;
     }

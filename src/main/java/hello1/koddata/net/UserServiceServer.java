@@ -175,10 +175,12 @@ public class UserServiceServer extends Server {
                     client.write(ByteBuffer.wrap(new byte[]{2}));
                     return;
                 }
+                client.setUser(user);
                 Session session = null;
                 if(sessionId < 0){
                     try {
-                        session = user.newSession();
+                        session = user.newSession(client);
+
                     } catch (KException e) {
                         client.write(ByteBuffer.wrap(e.getMessage().getBytes(StandardCharsets.UTF_8)));
                         return;

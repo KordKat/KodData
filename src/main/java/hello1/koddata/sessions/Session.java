@@ -6,6 +6,7 @@ import hello1.koddata.concurrent.KTask;
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.engine.QueryExecution;
 import hello1.koddata.engine.Value;
+import hello1.koddata.net.UserClient;
 import hello1.koddata.sessions.users.User;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,12 @@ public class Session {
             new IdCounter();
 
     private long sessionId;
-    private User user;
     private final long startedTime;
     private long lastActive;
     private SessionSettings settings;
     private HashMap<Long, Process> processes;
     private SessionData sessionData;
+    private UserClient userClient;
 
     public enum State {
         RUNNING(0),
@@ -37,20 +38,21 @@ public class Session {
 
 
     private State state;
-    private Session(SessionSettings settings , User user){
+    private Session(SessionSettings settings , UserClient userClient){
         sessionId = idCounter.next();
         startedTime = System.currentTimeMillis();
         lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
         this.settings = settings;
-        this.user = user;
-        this.sessionData = new SessionData(user.getUserData().name() + sessionId);
+        this.userClient = userClient;
+        this.sessionData = new SessionData(userClient.getUser().getUserData().name());
+        this.processes = new HashMap<>();
     }
 
 
-    public static Session newSession(User user){
-        SessionSettings sessionSettings = new SessionSettings(user.getUserData().userPrivilege().maxProcessPerSession(), user.getUserData().userPrivilege().maxMemoryPerProcess());
-        Session session = new Session(sessionSettings , user);
+    public static Session newSession(UserClient userClient){
+        SessionSettings sessionSettings = new SessionSettings(userClient.getUser().getUserData().userPrivilege().maxProcessPerSession(), userClient.getUser().getUserData().userPrivilege().maxMemoryPerProcess());
+        Session session = new Session(sessionSettings , userClient);
         Main.bootstrap.getSessionManager().putSession(session.sessionId, session);
         return session;
     }
@@ -112,7 +114,7 @@ public class Session {
         return sessionData;
     }
 
-    public User getUser() {
-        return user;
+    public UserClient getUser() {
+        return userClient;
     }
 }

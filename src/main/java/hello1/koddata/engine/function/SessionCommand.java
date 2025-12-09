@@ -23,10 +23,10 @@ public class SessionCommand extends KodFunction<Session>{
                 throw new KException(ExceptionCode.KDE0012,"You need to write userId to terminate session");
             }
             Value<?> userId = arguments.get("sessionId");
-            if (!(userId.get() instanceof Long sessionIdLong)) {
+            if (!(userId.get() instanceof Number sessionIdLong)) {
                 throw new KException(ExceptionCode.KDE0012, "sessionId should be Long");
             }
-            terminateSession(sessionIdLong);
+            terminateSession(sessionIdLong.longValue());
         }
         else if (command.get().equals("terminateAllSession")){
             terminateAllSession();

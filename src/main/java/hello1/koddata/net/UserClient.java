@@ -88,4 +88,7 @@ public class UserClient {
         StatementExecutor.executeStatement(statement, this);
     }
 
+    public SocketChannel getSocketChannel() {
+        return socketChannel;
+    }
 }
