@@ -578,8 +578,7 @@ public class StatementExecutor {
                     exportFunction.addArgument("dataType" , new Value<>(DataSource.valueOf(String.valueOf(evaluatedArguments.get(1).get()))));
                     exportFunction.addArgument("fileName" , evaluatedArguments.get(2));
                     exportFunction.addArgument("userId" , new Value<>(client.getUser().getUserData().userId()));
-                    exportFunction.execute();
-                    break;
+                    return new Value<>(exportFunction.execute());
                 case "fetch":
                     FetchFunction fetchFunction = new FetchFunction();
                     fetchFunction.addArgument( "datatype" , new Value<>(DataSource.valueOf((String) evaluatedArguments.get(0).get())));
@@ -591,8 +590,7 @@ public class StatementExecutor {
                     RemoveFunction removeFunction = new RemoveFunction();
                     removeFunction.addArgument( "dataName" , evaluatedArguments.get(0));
                     removeFunction.addArgument( "session" , new Value<>(client.getCurrentSession()));
-                    removeFunction.execute();
-                    break;
+                    return new Value<>(removeFunction.execute());
                 case "apply":
                     ApplyFunction applyFunction = new ApplyFunction();
                     applyFunction.addArgument("session", new Value<>(client.getCurrentSession()));
@@ -604,7 +602,6 @@ public class StatementExecutor {
                         applyFunction.addArgument("operation", evaluatedArguments.getFirst());
                     }
                     applyFunction.addArgument("dataframe", evaluatedArguments.get(1));
-                    applyFunction.execute();
                     return new Value<>(applyFunction.execute());
                 case "user":
                     UserCommand userCommand = new UserCommand();

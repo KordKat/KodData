@@ -59,7 +59,7 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
             User user = Main.bootstrap.getUserManager().findUser(userIdLong);
 
             Path rootfs = Main.bootstrap.getRootPath();
-            Path filePathPa = rootfs.resolve(user.getUserData().name());
+            Path filePathPa = rootfs.resolve("home").resolve(user.getUserData().name());
             CSVDataTransformer csvDataTransformer = new CSVDataTransformer();
             String data = csvDataTransformer.transform(dataNameDFR);
             byte[] dataByteArray = data.getBytes(StandardCharsets.UTF_8);
