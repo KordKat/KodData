@@ -583,6 +583,7 @@ public class StatementExecutor {
                     FetchFunction fetchFunction = new FetchFunction();
                     fetchFunction.addArgument( "datatype" , new Value<>(DataSource.valueOf((String) evaluatedArguments.get(0).get())));
                     fetchFunction.addArgument( "datasource" , evaluatedArguments.get(1));
+                    fetchFunction.addArgument("session" , new Value<>(client.getCurrentSession()));
                     if(evaluatedArguments.size() >= 3)
                         fetchFunction.addArgument( "query" , evaluatedArguments.get(2));
                     return new Value<>(fetchFunction.execute());

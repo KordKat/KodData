@@ -1,5 +1,6 @@
 package hello1.koddata.engine.function;
 
+import hello1.koddata.Main;
 import hello1.koddata.database.DatabaseConnection;
 import hello1.koddata.dataframe.Column; // สมมติว่ามี class นี้
 import hello1.koddata.dataframe.ColumnArray;
@@ -11,6 +12,7 @@ import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 
+import hello1.koddata.sessions.Session;
 import hello1.koddata.utils.collection.ImmutableArray;
 
 import java.io.File;
@@ -44,6 +46,17 @@ public class FetchFunction extends KodFunction<ColumnArray> {
             throw new KException(ExceptionCode.KDE0012, "argument Data Source should be DATABASE , CSV");
         }
 
+        if (!arguments.containsKey("session")) {
+            System.out.println("ds");
+            throw new KException(ExceptionCode.KDE0012, "Function fetch need argument session");
+        }
+
+        Value<?> session = arguments.get("session");
+
+        if(!(session.get() instanceof Session session1)){
+            throw new KException(ExceptionCode.KDE0012, "error");
+        }
+
 
         final Value<DataSource> finalDataSource = dataSourceValue;
         DataFrameLoader dataFrameLoader = null;
@@ -51,7 +64,8 @@ public class FetchFunction extends KodFunction<ColumnArray> {
         // --- Logic Execution (Synchronous) ---
         if (dataSourceValue.get().equals(DataSource.CSV)) {
             if (source.get() instanceof String s) {
-                final File file = new File(s);
+                final File file = new File(Main.bootstrap.getRootPath().resolve("home").resolve(session1.getUser().getUser().getUserData().name()).resolve(s).toAbsolutePath().toString());
+                System.out.println(Main.bootstrap.getRootPath().resolve("home").resolve(session1.getUser().getUser().getUserData().name()).resolve(s).toAbsolutePath().toString());
                 if (!file.exists()) {
                     throw new KException(ExceptionCode.KDE0013, "There are no file in that name exists");
                 }

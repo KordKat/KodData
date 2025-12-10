@@ -6,8 +6,11 @@ import hello1.koddata.exception.KException;
 import hello1.koddata.io.ChannelState;
 import hello1.koddata.sessions.Session;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -30,13 +33,18 @@ public class UserUploadFileState extends ChannelState {
        payloadBuffer.flip();
         Path rootfs = Main.bootstrap.getRootPath();
         Session userSession = Main.bootstrap.getSessionManager().getSession(sessionId);
-        Path path = rootfs.resolve(userSession.getUser().getUser().getUserData().name()).resolve(fileName);
-
+        Path path = rootfs.resolve("home").resolve(userSession.getUser().getUser().getUserData().name()).resolve(fileName);
+        if (Files.exists(path)){
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                throw new KException(ExceptionCode.KD00000 ,"Failed to write file asynchronously " + e.getMessage());
+            }
+        }
         try (AsynchronousFileChannel asyncFileChannel = AsynchronousFileChannel.open(
                 path,
                 StandardOpenOption.CREATE,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.APPEND)) {
+                StandardOpenOption.WRITE)) {
 
             Future<Integer> writeResult = asyncFileChannel.write(payloadBuffer, writePosition);
 
@@ -47,7 +55,8 @@ public class UserUploadFileState extends ChannelState {
             payloadBuffer.clear();
 
         } catch (Exception e) {
-            throw new KException(ExceptionCode.KD00000 ,"Failed to write file asynchronously");
+            e.printStackTrace();
+            throw new KException(ExceptionCode.KD00000 ,"Failed to write file asynchronously " + e.getMessage());
         }
     }
 }

@@ -10,16 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="050cc2f1-bfd9-4df1-bac2-ddaa23abaca7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/KTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/KTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/Column.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ExportFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ExportFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Lexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Token.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Token.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/FetchFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserUploadFileState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserUploadFileState.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +57,20 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-cffe25b9f5b3-intellij.indexing.shared.core-IU-253.28294.334" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

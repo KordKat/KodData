@@ -108,7 +108,7 @@ public class UserServiceServer extends Server {
     private void handleRead(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         UserClient client = (UserClient) key.attachment();
-        ByteBuffer buffer = ByteBuffer.allocate(2048);
+        ByteBuffer buffer = ByteBuffer.allocate(50000);
 
         int bytesRead = channel.read(buffer);
         if(bytesRead == -1){
@@ -119,8 +119,8 @@ public class UserServiceServer extends Server {
         if(bytesRead > 0){
             buffer.flip();
             byte mode = buffer.get();
-
-            if (mode == 1) {
+            System.out.println(mode);
+            if (mode == 1 || (client.getCurrentSession() != null && uploadFileStateMap.containsKey(client.getCurrentSession().id()))) {
                 UserUploadFileState state = uploadFileStateMap.get(client.getCurrentSession().id());
                 if (state == null) {
                     int fileNameSize = buffer.getInt();
@@ -130,7 +130,8 @@ public class UserServiceServer extends Server {
                     state = new UserUploadFileState(capacity, client.getCurrentSession().id(), new String(fileNameBytes, StandardCharsets.UTF_8));
                     uploadFileStateMap.put(client.getCurrentSession().id(), state);
 
-                    state.payloadLength = capacity - 4 - 4 - fileNameBytes.length;
+                    state.payloadLength = capacity;
+                    System.out.println(capacity);
                     state.payloadBuffer.limit((int) state.payloadLength);
                 }
 
@@ -143,7 +144,8 @@ public class UserServiceServer extends Server {
                 byte[] temp = new byte[chunk];
                 buffer.get(temp);
                 state.payloadBuffer.put(temp);
-
+                state.bytesReceived += chunk;
+                System.out.println(state.bytesReceived);
                 if (state.payloadLength <= state.bytesReceived) {
                     try {
                         state.perform();
