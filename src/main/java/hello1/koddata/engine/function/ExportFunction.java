@@ -23,10 +23,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 
-public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoader>>{
+public class ExportFunction extends KodFunction<String>{
 
     @Override
-    public Value<CompletableFuture<DataFrameLoader>> execute() throws KException {
+    public Value<String> execute() throws KException {
 
         if(!arguments.containsKey("dataframe")){
             throw new KException(ExceptionCode.KDE0012,"argument dataframe is missing");
@@ -107,6 +107,6 @@ public class ExportFunction extends KodFunction<CompletableFuture<DataFrameLoade
                 throw new KException(ExceptionCode.KD00010, "Cannot export file: " + fileNameString + " ex: " + ex.getMessage());
             }
         }
-        return null;
+        return new Value<>(fileNameString);
     }
 }

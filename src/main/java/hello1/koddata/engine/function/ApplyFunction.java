@@ -11,10 +11,10 @@ import hello1.koddata.sessions.Session;
 // import java.util.concurrent.CompletableFuture;
 
 // เปลี่ยน Generic Type จาก CompletableFuture<Value<?>> เป็น Object (หรือประเภทผลลัพธ์ที่แท้จริง)
-public class ApplyFunction extends KodFunction<Object> {
+public class ApplyFunction extends KodFunction<ColumnArray> {
 
     @Override
-    public Value<Object> execute() throws KException {
+    public Value<ColumnArray> execute() throws KException {
         if(arguments.get("session") == null){
             throw new KException(ExceptionCode.KDE0012, "session not found");
         }
@@ -46,7 +46,7 @@ public class ApplyFunction extends KodFunction<Object> {
             Value<?> result = session.newProcess(operation, columnArray);
 
             // Cast ผลลัพธ์กลับเป็น Value<Object> เพื่อให้ตรงกับ Signature ของ Method
-            return (Value<Object>) result;
+            return (Value<ColumnArray>) result;
 
         } catch (Exception e) {
             // จัดการ Error กรณีที่ Process ทำงานล้มเหลว

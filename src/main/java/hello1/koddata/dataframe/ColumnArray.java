@@ -4,11 +4,15 @@ import hello1.koddata.engine.Value;
 import hello1.koddata.exception.KException;
 import hello1.koddata.utils.collection.ImmutableArray;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ColumnArray {
-    private final ConcurrentMap<String, Column> columns = new ConcurrentHashMap<>();
+    private final Map<String, Column> columns = new LinkedHashMap<>();
 
     public ColumnArray(ImmutableArray<Column> columns){
         columns.forEach(x -> {
@@ -51,15 +55,62 @@ public class ColumnArray {
         }
         return records;
     }
-    public ConcurrentMap<String, Column> getColumns() {
+    public Map<String, Column> getColumns() {
         return columns;
     }
     @Override
     public String toString() {
-        StringBuilder res = new StringBuilder();
-        for (Column column : columns.values()){
-            res.append(column.toString()).append("\n");
+        if (columns.isEmpty()) return "<EMPTY>";
+
+        List<String> names = new ArrayList<>(columns.keySet());
+        // ตรวจสอบจำนวนแถวจากคอลัมน์แรก (สมมติว่าทุกคอลัมน์ยาวเท่ากันตามโครงสร้าง DataFrame)
+        int numRows = columns.get(names.get(0)).size();
+
+        // 1. คำนวณความกว้างที่เหมาะสมสำหรับแต่ละคอลัมน์
+        Map<String, Integer> columnWidths = new LinkedHashMap<>();
+        for (String name : names) {
+            Column col = columns.get(name);
+            // เริ่มต้นความกว้างด้วยความยาวของชื่อคอลัมน์
+            int maxWidth = name.length();
+
+            // วนลูปเช็คความยาวข้อมูลในแต่ละแถว
+            for (int i = 0; i < numRows; i++) {
+                String valStr = String.valueOf(col.readRow(i));
+                if (valStr.length() > maxWidth) {
+                    maxWidth = valStr.length();
+                }
+            }
+            // เพิ่ม Padding (เช่น +2 ช่องว่าง) เพื่อความสวยงาม
+            columnWidths.put(name, maxWidth + 2);
         }
-        return res.toString();
+
+        StringBuilder sb = new StringBuilder();
+
+        // 2. สร้าง Header
+        for (String name : names) {
+            int width = columnWidths.get(name);
+            sb.append(String.format("%-" + width + "s", name));
+        }
+        sb.append("\n");
+
+        // 3. สร้างเส้นขีดคั่น (Separator) ตามความกว้างของแต่ละคอลัมน์
+        for (String name : names) {
+            int width = columnWidths.get(name);
+            // ลบ 1 เพื่อเว้นวรรคระหว่างเส้นนิดหน่อย หรือจะใช้ width เต็มก็ได้
+            sb.append("-".repeat(width - 1)).append(" ");
+        }
+        sb.append("\n");
+
+        // 4. สร้าง Rows ข้อมูล
+        for (int row = 0; row < numRows; row++) {
+            for (String name : names) {
+                Column c = columns.get(name);
+                int width = columnWidths.get(name);
+                sb.append(String.format("%-" + width + "s", c.readRow(row)));
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }

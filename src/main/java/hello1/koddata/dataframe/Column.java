@@ -40,4 +40,21 @@ public class Column{
     public int size() {
         return column != null ? column.size() : 0;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(metaData.getName())
+                .append(" (")
+                .append(metaData.getDType())
+                .append(")")
+                .append(":\n");
+
+        for (Value<?> v : column) {
+            sb.append("  ").append(v.toString()).append("\n");
+        }
+
+        return sb.toString();
+    }
 }

@@ -53,6 +53,8 @@ public class Lexer {
                 tokens.add(new Token(Token.TokenType.OP_EQ, new char[]{c}, i, i++));
             }else if(c == ';'){
                 tokens.add(new Token(Token.TokenType.SEMICOLON, new char[]{c}, i, i++));
+            }else if(c == ':'){
+                tokens.add(new Token(Token.TokenType.COLON, new char[]{c}, i, i++));
             }else if(c == '.'){
                 tokens.add(new Token(Token.TokenType.DOT, new char[]{c}, i, i++));
             }else if(c == '\'' || c == '"'){

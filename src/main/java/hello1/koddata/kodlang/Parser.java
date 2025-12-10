@@ -323,7 +323,7 @@ public class Parser {
                         !current().type.equals(Token.TokenType.EOF) &&
                         !current().type.equals(Token.TokenType.RCURLY)){
                     pipeline.add(parseExpression());
-                    expect(Token.TokenType.SEMICOLON);
+                    expect(Token.TokenType.COLON);
                 }
 
                 expect(Token.TokenType.RCURLY);
