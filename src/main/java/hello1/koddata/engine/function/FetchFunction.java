@@ -2,7 +2,6 @@ package hello1.koddata.engine.function;
 
 import hello1.koddata.Main;
 import hello1.koddata.database.DatabaseConnection;
-import hello1.koddata.dataframe.Column; // สมมติว่ามี class นี้
 import hello1.koddata.dataframe.ColumnArray;
 import hello1.koddata.dataframe.loader.CSVLoader;
 import hello1.koddata.dataframe.loader.DataFrameLoader;
@@ -19,12 +18,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-// เปลี่ยน Generic Type เป็น Column[]
 public class FetchFunction extends KodFunction<ColumnArray> {
 
     @Override
     public Value<ColumnArray> execute() throws KException {
-        // --- Validation Section ---
         if (!arguments.containsKey("datatype")) {
             System.out.println("dtype");
             throw new KException(ExceptionCode.KDE0012, "Function fetch need argument datatype");
@@ -61,7 +58,6 @@ public class FetchFunction extends KodFunction<ColumnArray> {
         final Value<DataSource> finalDataSource = dataSourceValue;
         DataFrameLoader dataFrameLoader = null;
 
-        // --- Logic Execution (Synchronous) ---
         if (dataSourceValue.get().equals(DataSource.CSV)) {
             if (source.get() instanceof String s) {
                 final File file = new File(Main.bootstrap.getRootPath().resolve("home").resolve(session1.getUser().getUser().getUserData().name()).resolve(s).toAbsolutePath().toString());
@@ -70,10 +66,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
                     throw new KException(ExceptionCode.KDE0013, "There are no file in that name exists");
                 }
 
-                // สร้าง Loader
                 dataFrameLoader = new CSVLoader();
-
-                // โหลดข้อมูลทันที (รอจนเสร็จ)
                 try {
                     dataFrameLoader.load(new FileInputStream(file));
                 } catch (IOException e) {
@@ -85,7 +78,6 @@ public class FetchFunction extends KodFunction<ColumnArray> {
             }
 
         } else {
-            // Database Logic
             if (source.get() instanceof DatabaseConnection databaseConnection) {
                 if (!arguments.containsKey("query")) {
                     throw new KException(ExceptionCode.KDE0012, "Function fetch database need argument query");
@@ -94,10 +86,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
                 Value<?> query = arguments.get("query");
                 if (query.get() instanceof String queryString) {
 
-                    // สร้าง Loader
                     dataFrameLoader = new DatabaseLoader(databaseConnection, queryString);
-
-                    // โหลดข้อมูลทันที (รอจนเสร็จ)
                     try {
                         dataFrameLoader.load(null);
                     } catch (IOException e) {
@@ -111,10 +100,6 @@ public class FetchFunction extends KodFunction<ColumnArray> {
                 throw new KException(ExceptionCode.KDE0012, "database can only use databaseConnection");
             }
         }
-
-        // --- Return Result ---
-        // สมมติว่า dataFrameLoader มีเมธอด getColumns() เพื่อดึง Column[] ออกมา
-        // หาก method ชื่ออื่นให้เปลี่ยนตรงนี้ครับ เช่น dataFrameLoader.getResult()
         if (dataFrameLoader != null) {
             return new Value<>(new ColumnArray(new ImmutableArray<>(dataFrameLoader.getColumns())));
         } else {

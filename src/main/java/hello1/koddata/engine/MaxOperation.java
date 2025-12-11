@@ -17,11 +17,10 @@ public class MaxOperation implements ColumnOperation {
         double max = Double.NEGATIVE_INFINITY;
         boolean hasValue = false;
 
-        // column = List<Value<?>>
         for (Object o : column) {
 
             if (!(o instanceof Value<?> cell)) {
-                continue; // element ไม่ใช่ Value<?> ก็ข้าม
+                continue;
             }
 
             if (cell instanceof NullValue) {

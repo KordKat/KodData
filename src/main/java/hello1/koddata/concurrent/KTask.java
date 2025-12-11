@@ -21,7 +21,7 @@ public class KTask implements Supplier<Value<?>> {
     private final QueryExecution execution;
     private final Session session;
     private final ColumnArray columnArray;
-    private volatile boolean isCancelled = false; // เพิ่ม volatile เพื่อความปลอดภัยใน Thread
+    private volatile boolean isCancelled = false;
 
     public KTask(QueryExecution execution, ColumnArray columnArray, Session session) {
         this.execution = execution;
@@ -31,21 +31,17 @@ public class KTask implements Supplier<Value<?>> {
 
     @Override
     public Value<?> get() {
-        // 1. หาจำนวนแถว (Rows) ทั้งหมด
         int rows = columnArray.getColumns()
                 .values()
                 .stream()
-                .findFirst() // ใช้ findFirst เพื่อความเร็ว
+                .findFirst()
                 .map(Column::size)
                 .orElse(0);
 
-        // 2. เตรียมโครงสร้างข้อมูล
         List<Value<?>> bufferValue = new ArrayList<>();
-        // เก็บ ColumnOperation ที่รอการประมวลผลเมื่อครบทุกแถว
         QueryOperationNode pendingColumnOpNode = null;
         Map<String, Value<?>> columnOperationResultMap = new HashMap<>();
 
-        // เตรียมถังเก็บผลลัพธ์ (Final Result)
         Set<String> columnNames = columnArray.getColumns().keySet();
         Map<String, List<Value<?>>> finalResult = new LinkedHashMap<>();
         for (String colName : columnNames) {
@@ -54,24 +50,16 @@ public class KTask implements Supplier<Value<?>> {
 
         int index = 0;
 
-        // 3. เริ่มวนลูปทีละแถว
         while (index < rows) {
-            // -- Context Construction --
-            // สร้าง Map ของค่าในแถวปัจจุบัน (Current Row Context)
             final int currentIndex = index;
             Map<String, Value<?>> valueMap = new HashMap<>();
 
             for (String colName : columnNames) {
                 valueMap.put(colName, columnArray.getColumns().get(colName).readRow(currentIndex));
             }
-
-            // ใส่ผลลัพธ์จาก ColumnOperation ก่อนหน้า (ถ้ามี)
             if (!columnOperationResultMap.isEmpty()) {
                 valueMap.putAll(columnOperationResultMap);
             }
-
-            // -- Pipeline Execution --
-            // เริ่มต้นที่ Node แรก ถ้ามี pending op ให้ข้ามไป process logic การสะสมค่าแทน
             QueryOperationNode currentNode = (pendingColumnOpNode == null)
                     ? execution.getHead().getNextNode()
                     : pendingColumnOpNode;
@@ -82,29 +70,16 @@ public class KTask implements Supplier<Value<?>> {
                 QueryOperation op = currentNode.getOperation();
 
                 if (op instanceof ColumnOperation) {
-                    // กรณีเจอ Column Operation (เช่น SUM, AVG)
-                    // เราต้อง "หยุด" การไหลของข้อมูลปกติ และเริ่ม "สะสม" (Buffer)
 
-                    // หมายเหตุ: โค้ดนี้สมมติว่า Node ก่อนหน้าได้ส่งค่ามาแล้ว หรือเราต้องดึงจาก valueMap
-                    // ในบริบทนี้ ถ้า flow มาถึงนี่ แสดงว่า valueMap มีค่าล่าสุดที่ process มาแล้ว
-                    // แต่เนื่องจาก logic เดิมซับซ้อน ส่วนนี้อาจจะต้องปรับตาม Data Flow ของคุณ
-                    // สมมติว่า ColumnOperation รับค่าจาก Buffer ที่สะสมมาจาก Node ก่อนหน้า
+                    pendingColumnOpNode = currentNode;
 
-                    pendingColumnOpNode = currentNode; // set flag ว่าเราติดสถานะ buffering
-
-                    // *Logic นี้อาจต้องปรับตามว่า Input ของ ColumnOp มาจากไหน*
-                    // สมมติว่ารับจาก Result ล่าสุดที่คำนวณได้
-                    // ตรงนี้ Value ล่าสุดอาจจะต้องถูก tracking ไว้ แต่ใน code เดิมไม่ได้ส่งต่อชัดเจน
-                    // ผมจะสมมติว่า ColumnOp รอ process ตอนจบ loop ใหญ่
                     break;
                 }
 
-                // กรณี Standard Operation (Row-by-Row)
                 try {
                     String reqColumn = currentNode.getColumn();
                     Value<?> value = valueMap.get(reqColumn);
 
-                    // ถ้าไม่มีค่าใน Map ให้ลองหาจาก Result Map หรือ Throw Error
                     if (value == null) {
                         if (columnOperationResultMap.containsKey(reqColumn)) {
                             value = columnOperationResultMap.get(reqColumn);
@@ -115,33 +90,21 @@ public class KTask implements Supplier<Value<?>> {
                             );
                         }
                     }
-
-                    // Execute Operation
                     Value<?> result = op.operate(value);
                     if (result == null) break;
-
-                    // Update valueMap เพื่อให้ Node ถัดไปใช้ค่านี้ได้
                     valueMap.put(reqColumn, result);
-
-                    // เช็ค Node ถัดไป
                     QueryOperationNode nextNode = currentNode.getNextNode();
-
-                    // ถ้า Node ถัดไปเป็น ColumnOperation -> เริ่ม Buffer
                     if (nextNode != null && nextNode.getOperation() instanceof ColumnOperation) {
                         bufferValue.add(result);
-                        pendingColumnOpNode = nextNode; // Set Barrier
-
-                        // ถ้าเป็นแถวสุดท้าย ให้ Execute Column Operation เลย
+                        pendingColumnOpNode = nextNode;
                         if (index == rows - 1) {
                             ColumnOperation co = (ColumnOperation) nextNode.getOperation();
                             Value<?> colResult = co.operate(new Value<>(new ArrayList<>(bufferValue)));
 
                             columnOperationResultMap.put(nextNode.getColumn(), colResult);
                             bufferValue.clear();
-                            // pendingColumnOpNode = null; // Reset หรือไปต่อตาม Flow
-                            // ในที่นี้ถ้าจบแล้วก็จบเลย หรือถ้ามี Node ต่อจาก ColumnOp ก็ต้อง handle ต่อ
                         }
-                        break; // จบการ process แถวนี้ ไปแถวถัดไปเพื่อสะสมค่าต่อ
+                        break;
                     }
 
                     currentNode = nextNode;
@@ -150,17 +113,12 @@ public class KTask implements Supplier<Value<?>> {
                     throw new RuntimeException("Error processing row " + index, e);
                 }
             }
-
-            // -- Result Collection --
-            // บันทึกผลลัพธ์ของแถวนี้ลง Final Result
             for (String s : columnNames) {
                 finalResult.get(s).add(valueMap.get(s));
             }
 
             index++;
         }
-
-        // 4. สร้าง Columns ใหม่จากผลลัพธ์ (Reconstruct Dataframe)
         Map<String, Column> newColumns = new LinkedHashMap<>();
 
         for (Map.Entry<String, List<Value<?>>> entry : finalResult.entrySet()) {
@@ -180,8 +138,6 @@ public class KTask implements Supplier<Value<?>> {
                 new ImmutableArray<>(new ArrayList<>(newColumns.values()))
         ));
     }
-
-    // ปรับปรุง Infer Type ให้อ่านง่ายและครอบคลุม
     private ColumnMetaData.ColumnDType inferType(List<Value<?>> values) {
         Object sample = values.stream()
                 .map(Value::get)
@@ -190,8 +146,6 @@ public class KTask implements Supplier<Value<?>> {
                 .orElse(null);
 
         if (sample == null) return ColumnMetaData.ColumnDType.SCALAR_STRING;
-
-        // Pattern matching หรือ logic แบบง่าย
         if (sample instanceof List) {
             return inferListType((List<?>) sample);
         }

@@ -16,15 +16,12 @@ public class ProductOperation implements ColumnOperation {
         double product = 1.0;
         boolean hasValue = false;
 
-        // column = List<Value<?>>
         for (Object o : column) {
 
-            // ต้องเป็น Value<?> เท่านั้น
             if (!(o instanceof Value<?> cell)) {
                 continue;
             }
 
-            // NullValue ข้าม
             if (cell instanceof NullValue) {
                 continue;
             }
@@ -37,7 +34,6 @@ public class ProductOperation implements ColumnOperation {
             }
         }
 
-        // ถ้าไม่เจอเลขเลย NaN
         if (!hasValue) {
             return new Value<>(Double.NaN);
         }

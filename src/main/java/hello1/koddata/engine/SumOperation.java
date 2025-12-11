@@ -17,12 +17,10 @@ public class SumOperation implements ColumnOperation {
         double acc = 0.0;
         for (Object o : column) {
 
-            // ต้องเป็น Value<?> เท่านั้น
             if (!(o instanceof Value<?> cell)) {
                 continue;
             }
 
-            // NullValue ให้ ข้าม
             if (cell instanceof NullValue) {
                 continue;
             }

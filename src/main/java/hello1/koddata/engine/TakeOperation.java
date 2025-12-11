@@ -23,7 +23,6 @@ public class TakeOperation implements ColumnOperation {
 
         List<Integer> result = new ArrayList<>();
 
-        // take index ตามลำดับจาก list
         for (int i = 0; i < column.size() && i < limit; i++) {
             result.add(i);
         }

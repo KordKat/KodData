@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 public abstract class ChannelState {
 
-    public ByteBuffer headerBuffer = ByteBuffer.allocate(24); // header size
+    public ByteBuffer headerBuffer = ByteBuffer.allocate(24);
     public ByteBuffer payloadBuffer;
 
     public boolean headerComplete = false;

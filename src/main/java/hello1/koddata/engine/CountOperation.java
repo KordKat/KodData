@@ -15,15 +15,12 @@ public class CountOperation implements ColumnOperation {
 
         long count = 0;
 
-        // column = List<Value<?>>
         for (Object o : column) {
 
             if (!(o instanceof Value<?> cell)) {
-                // ถ้า element ไม่ใช่ Value ก็ข้ามหรือโยน error
                 continue;
             }
 
-            // นับเฉพาะที่ไม่ใช่ NullValue
             if (cell instanceof NullValue) continue;
 
             count++;

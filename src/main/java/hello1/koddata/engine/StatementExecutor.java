@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException; // Import เพิ่มเติมสำหรับการ handle .get()
+import java.util.concurrent.ExecutionException;
 
 public class StatementExecutor {
 
@@ -135,20 +135,18 @@ public class StatementExecutor {
 
                 Object raw = result.get();
 
-                // --- แก้ไข: ใช้ .get() เพื่อรอค่า ---
                 if(raw instanceof CompletableFuture<?> cf){
                     try {
-                        Object awaitedValue = cf.get(); // รอจนกว่าจะเสร็จ
+                        Object awaitedValue = cf.get();
                         System.out.println("Completed");
                         client.getCurrentSession()
                                 .getSessionData()
                                 .assignVariable(new DataName(i.identifier, null), awaitedValue);
-                        return new Value<>(awaitedValue); // return ค่าจริง ไม่ใช่ Future
+                        return new Value<>(awaitedValue);
                     } catch (InterruptedException | ExecutionException e) {
                         throw new KException(ExceptionCode.KDC0001, "Async assignment failed: " + e.getMessage());
                     }
                 }
-                // --------------------------------
 
                 client.getCurrentSession()
                         .getSessionData()
@@ -165,7 +163,6 @@ public class StatementExecutor {
 
                     Object raw = result.get();
 
-                    // --- แก้ไข: ใช้ .get() เพื่อรอค่า ---
                     if(raw instanceof CompletableFuture<?> cf){
                         try {
                             Object awaitedValue = cf.get();
@@ -177,7 +174,6 @@ public class StatementExecutor {
                             throw new KException(ExceptionCode.KDC0001, "Async assignment failed: " + e.getMessage());
                         }
                     }
-                    // --------------------------------
 
                     client.getCurrentSession()
                             .getSessionData()
@@ -217,7 +213,6 @@ public class StatementExecutor {
                     Object actualValue = (rhsObj instanceof Value<?> v) ? v.get() : rhsObj;
 
                     if (leftCurr instanceof Identifier i2) {
-                        // --- แก้ไข: ใช้ .get() เพื่อรอค่า ---
                         if(result.get() instanceof CompletableFuture<?> completableFuture){
                             try {
                                 Object awaitedValue = completableFuture.get();
@@ -232,7 +227,6 @@ public class StatementExecutor {
                                     .getSessionData()
                                     .assignVariable(new DataName(i2.identifier, null), actualValue);
                         }
-                        // --------------------------------
                     } else if (leftCurr instanceof Subscript sub) {
 
                         Expression baseExpr = sub.base;
@@ -240,7 +234,6 @@ public class StatementExecutor {
 
 
                         if (baseExpr instanceof Identifier id && indexExpr instanceof NIdentifier nid) {
-                            // --- แก้ไข: ใช้ .get() เพื่อรอค่า ---
                             if(result.get() instanceof CompletableFuture<?> completableFuture){
                                 try {
                                     Object awaitedValue = completableFuture.get();
@@ -255,7 +248,6 @@ public class StatementExecutor {
                                         .getSessionData()
                                         .assignVariable(new DataName(id.identifier, nid.identifier), actualValue);
                             }
-                            // --------------------------------
                         } else {
                             Value<?> baseValue = evaluateExpression(baseExpr, client);
                             Value<?> subValue = evaluateExpression(indexExpr, client);
@@ -269,13 +261,12 @@ public class StatementExecutor {
                                 List<Object> updatedList = new ArrayList<>(baseList);
                                 updatedList.set(idx, actualValue);
 
-                                // --- แก้ไข: ใช้ .get() เพื่อรอค่า ---
                                 if(result.get() instanceof CompletableFuture<?> completableFuture){
                                     try {
                                         Object awaitedValue = completableFuture.get();
                                         client.getCurrentSession()
                                                 .getSessionData()
-                                                .assignVariable(new DataName("_", null), awaitedValue); // หมายเหตุ: logic นี้ดูเหมือนจะ assign ค่าที่ unwrap แล้วลงตัวแปร _
+                                                .assignVariable(new DataName("_", null), awaitedValue);
                                     } catch (InterruptedException | ExecutionException e) {
                                         throw new KException(ExceptionCode.KDC0001, "Async assignment failed: " + e.getMessage());
                                     }
@@ -284,7 +275,6 @@ public class StatementExecutor {
                                             .getSessionData()
                                             .assignVariable(new DataName("_", null), updatedList);
                                 }
-                                // --------------------------------
                             } else {
                                 return new NullValue("Invalid subscript in destructuring");
                             }
@@ -318,13 +308,11 @@ public class StatementExecutor {
 
         } else if (expression instanceof NullLiteral n){
             return new NullValue("null");
-        }else if(expression instanceof FunctionCall fc){ //string -> new Value<>("Task {id} started");
-            // 1. Get function name and evaluate arguments
+        }else if(expression instanceof FunctionCall fc){
             String functionName = fc.function.identifier;
             List<Value<?>> evaluatedArguments = new ArrayList<>();
             for (Expression argExpr : fc.arguments) {
                 Value<?> argValue = evaluateExpression(argExpr, client);
-                // Check for null result during argument evaluation
                 if (argValue instanceof NullValue) {
                     throw new KException(ExceptionCode.KDC0001, "argValue cant be null");
                 }
@@ -332,7 +320,7 @@ public class StatementExecutor {
             }
 
             switch (functionName) {
-                // 🔢 คณิตศาสตร์
+                // คณิตศาสตร์
                 case "max":
                     return new Value<>(new QueryOperationNode(new MaxOperation() , evaluatedArguments));
 
@@ -405,7 +393,7 @@ public class StatementExecutor {
                     }
                     return new Value<>(new QueryOperationNode(new RootOperation(n.doubleValue()) , evaluatedArguments));
 
-                // 📊 สถิติ
+                // สถิติ
                 case "sum":
                     return new Value<>(new QueryOperationNode(new SumOperation(), evaluatedArguments));
 
@@ -428,13 +416,13 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new ProductOperation(), evaluatedArguments));
 
 
-                // 💡 ตรรกะ/เงื่อนไข
+                //  ตรรกะ/เงื่อนไข
                 case "equals":
                     return new Value<>(new QueryOperationNode(new EqualsOperation(evaluatedArguments.get(1)) , evaluatedArguments));
                 case "not":
                     return new Value<>(new QueryOperationNode(new NotOperation() , evaluatedArguments));
 
-                // 📝 สตริง
+                // สตริง
                 case "length":
                     return new Value<>(new QueryOperationNode(new LengthOperation() , evaluatedArguments));
                 case "upper":
@@ -501,14 +489,14 @@ public class StatementExecutor {
                 case "tostring":
                     return new Value<>(new QueryOperationNode(new ToStringOperation(), evaluatedArguments));
 
-                // 📚 การจัดการรายการ/คอลเลกชัน
+                // การจัดการรายการ/คอลเลกชัน
                 case "sort":
                     return  new Value<>(new QueryOperationNode(new SortOperation(), evaluatedArguments));
                 case "distinct":
                     return new Value<>(new QueryOperationNode(new DistinctOperation(), evaluatedArguments));
 
 
-                // ⚙️ การจัดการข้อมูล/ประเภท
+                // การจัดการข้อมูล/ประเภท
                 case "type":
                     return new Value<>(new QueryOperationNode(new TypeOperation(), evaluatedArguments));
                 case "isnumber":
@@ -527,7 +515,7 @@ public class StatementExecutor {
                     }
                     return new Value<>(new QueryOperationNode(new CoalesceOperation(evaluatedArguments.get(1)), evaluatedArguments));
 
-                // 🗂️ การจัดการรายการแบบมีเงื่อนไข
+                // การจัดการรายการแบบมีเงื่อนไข
                 case "take":
                     if (!(evaluatedArguments.get(1).get() instanceof Number n)){
                         throw new KException(ExceptionCode.KDE0012, "error");
@@ -664,7 +652,7 @@ public class StatementExecutor {
                     throw new KException(ExceptionCode.KD00006, "There is no this command");
 
             }
-        } else if(expression instanceof Pipeline pipe){ //return query execution
+        } else if(expression instanceof Pipeline pipe){
             QueryExecution queryExecution = new QueryExecution();
             QueryOperationNode queryOperationNode = queryExecution.getHead();
 
@@ -737,7 +725,7 @@ public class StatementExecutor {
             Object value = exprVal.get();
 
             switch (unary.op) {
-                case SUB -> { // Negative (เช่น -5)
+                case SUB -> {
                     if (value instanceof Number n) {
                         return new Value<>(-n.doubleValue());
                     }

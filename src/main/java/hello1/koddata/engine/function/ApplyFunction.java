@@ -6,13 +6,7 @@ import hello1.koddata.engine.Value;
 import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
-
-// เอา CompletableFuture import ออก เพราะเราจะรอผลลัพธ์เลย
-// import java.util.concurrent.CompletableFuture;
-
-// เปลี่ยน Generic Type จาก CompletableFuture<Value<?>> เป็น Object (หรือประเภทผลลัพธ์ที่แท้จริง)
 public class ApplyFunction extends KodFunction<ColumnArray> {
-
     @Override
     public Value<ColumnArray> execute() throws KException {
         if(arguments.get("session") == null){
@@ -41,16 +35,11 @@ public class ApplyFunction extends KodFunction<ColumnArray> {
         }
 
         try {
-            // เรียก process และใช้ .join() เพื่อรอผลลัพธ์ทันที
-            // สมมติว่า session.newProcess คืนค่า CompletableFuture<Value<?>>
             Value<?> result = session.newProcess(operation, columnArray);
 
-            // Cast ผลลัพธ์กลับเป็น Value<Object> เพื่อให้ตรงกับ Signature ของ Method
             return (Value<ColumnArray>) result;
 
         } catch (Exception e) {
-            // จัดการ Error กรณีที่ Process ทำงานล้มเหลว
-            // อาจจะต้อง unwrap CompletionException หากจำเป็น
             Throwable cause = e.getCause() != null ? e.getCause() : e;
             throw new KException(ExceptionCode.KD00005, "Process execution failed: " + cause.getMessage());
         }

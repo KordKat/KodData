@@ -17,15 +17,12 @@ public class MedianOperation implements ColumnOperation {
 
         List<Double> numbers = new ArrayList<>();
 
-        // ไล่อ่านค่าจาก list ของ Value<?>
         for (Object o : column) {
 
-            // ต้องเป็น Value<?> ถ้าไม่ใช่ ให้ข้าม
             if (!(o instanceof Value<?> cell)) {
                 continue;
             }
 
-            // null ไม่เอา
             if (cell instanceof NullValue) {
                 continue;
             }
@@ -36,22 +33,15 @@ public class MedianOperation implements ColumnOperation {
                 numbers.add(n.doubleValue());
             }
         }
-
         int n = numbers.size();
         if (n == 0) {
             return new Value<>(Double.NaN);
         }
-
-        // sort ค่า
         Collections.sort(numbers);
-
         double median;
-
         if (n % 2 == 1) {
-            // ค่าตรงกลางพอดี
             median = numbers.get(n / 2);
         } else {
-            // ค่าเฉลี่ยของสองตัวกลาง
             double left = numbers.get((n / 2) - 1);
             double right = numbers.get(n / 2);
             median = (left + right) / 2.0;

@@ -17,15 +17,14 @@ public class ModeOperation implements ColumnOperation {
 
         Map<Double, Integer> freq = new HashMap<>();
 
-        // ไล่ค่าทีละตัวใน List<Value<?>>
         for (Object o : column) {
 
             if (!(o instanceof Value<?> cell)) {
-                continue; // element ไม่ใช่ Value<?> → ข้าม
+                continue;
             }
 
             if (cell instanceof NullValue) {
-                continue; // null ไม่ต้องนับ
+                continue;
             }
 
             Object raw = cell.get();
@@ -35,21 +34,15 @@ public class ModeOperation implements ColumnOperation {
                 freq.merge(d, 1, Integer::sum);
             }
         }
-
-        // ไม่มีข้อมูลตัวเลขเลย
         if (freq.isEmpty()) {
             return new Value<>(Double.NaN);
         }
 
         double mode = 0.0;
         int bestCount = -1;
-
-        // หา key ที่มี count สูงที่สุด
         for (Map.Entry<Double, Integer> e : freq.entrySet()) {
             double val = e.getKey();
             int count = e.getValue();
-
-            // กรณีนับเท่ากัน เอาตัวที่ค่าน้อยกว่า
             if (count > bestCount || (count == bestCount && val < mode)) {
                 bestCount = count;
                 mode = val;

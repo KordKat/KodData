@@ -17,15 +17,12 @@ public class MinOperation implements ColumnOperation {
         double min = Double.POSITIVE_INFINITY;
         boolean hasValue = false;
 
-        // column = List<Value<?>>
         for (Object o : column) {
 
-            // ต้องเป็น Value<?> เท่านั้น
             if (!(o instanceof Value<?> cell)) {
                 continue;
             }
 
-            // null ไม่เอา
             if (cell instanceof NullValue) {
                 continue;
             }

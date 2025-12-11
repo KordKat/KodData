@@ -17,11 +17,9 @@ public class SortOperation implements ColumnOperation {
 
         int rows = column.size();
 
-        // ตรียม index array ตามจำนวน list
         Integer[] index = new Integer[rows];
         for (int i = 0; i < rows; i++) index[i] = i;
 
-        // Sort index
         Arrays.sort(index, (a, b) -> {
             try {
                 Object oa = ((Value<?>) column.get(a)).get();
@@ -42,7 +40,6 @@ public class SortOperation implements ColumnOperation {
             }
         });
 
-        // คืนเป็น List<Integer>
         return new Value<>(Arrays.asList(index));
     }
 }
