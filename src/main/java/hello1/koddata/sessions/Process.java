@@ -21,8 +21,8 @@ public class Process {
         return processId;
     }
 
-    public Value<?> execute(){
-        return task.get();
+    public CompletableFuture<Value<?>> execute(){
+        return CompletableFuture.supplyAsync(task);
     }
 
     public void interrupt(){

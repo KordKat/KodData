@@ -91,7 +91,7 @@ public class Session {
         }
     }
 
-    public Value<?> newProcess(QueryExecution execution, ColumnArray columnArray){
+    public CompletableFuture<Value<?>> newProcess(QueryExecution execution, ColumnArray columnArray){
         Process process = new Process(new KTask(execution, columnArray, this));
         this.processes.put(process.id(), process);
         return process.execute();

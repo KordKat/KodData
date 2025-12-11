@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="KodData:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="23017edd-21e4-43a1-9787-79163f51b3a1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/KodData_jar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/KodData_jar.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/RangeOperation.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/StatementExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/engine/function/ApplyFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserServiceServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Process.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,12 +32,35 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="36h06pl378E1GHJf5k0v94buqF9" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "development"
+    "Maven.KodData [clean].executor": "Run",
+    "Maven.KodData [package].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "development",
+    "kotlin-language-version-configured": "true",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2"
   }
 }]]></component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="23017edd-21e4-43a1-9787-79163f51b3a1" name="Changes" comment="" />
+      <created>1765443322571</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1765443322571</updated>
+    </task>
     <servers />
   </component>
 </project>

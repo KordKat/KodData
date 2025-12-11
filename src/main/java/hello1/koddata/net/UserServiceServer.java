@@ -197,7 +197,10 @@ public class UserServiceServer extends Server {
 
                 client.setUser(user);
                 client.setCurrentSession(session);
-                client.write(ByteBuffer.wrap(new byte[]{3}));
+                ByteBuffer buf1 = ByteBuffer.allocate(5);
+                buf1.put((byte) 3);
+                buf1.putInt(Math.toIntExact(session.id()));
+                client.write(buf1.flip());
             }else {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);

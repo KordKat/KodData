@@ -17,6 +17,7 @@ public class Main {
     public static Bootstrap bootstrap;
 
     public static void main(String[] args) throws IOException, KException, InterruptedException {
+        System.out.println("NV2");
         bootstrap = new Bootstrap();
         bootstrap.start(args);
 //        String testCode = """

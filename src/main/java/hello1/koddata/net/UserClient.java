@@ -83,7 +83,7 @@ public class UserClient {
     public void executeCode(String code) throws KException {
         Token[] tokens = Lexer.analyze(code.toCharArray());
         Parser parser = new Parser(new ImmutableArray<>(tokens));
-        Statement statement = parser.parseStatement();
+        Statement statement = parser.parseStatements();
 //        new SemanticAnalyzer().analyze(statement);
         StatementExecutor.executeStatement(statement, this);
     }
