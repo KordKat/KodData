@@ -3,6 +3,7 @@ package hello1.koddata.engine;
 import java.util.Objects;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class EqualsOperation implements QueryOperation {
     private final Object target;
 

@@ -1,6 +1,8 @@
 package hello1.koddata.engine;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
+
 public class SinOperation implements QueryOperation {
 
     //Polymorphism

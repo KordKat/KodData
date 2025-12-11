@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 // stored as direct acyclic graph
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class QueryOperationNode {
 
     private QueryOperation operation;

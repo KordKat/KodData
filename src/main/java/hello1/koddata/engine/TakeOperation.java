@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
+
 public class TakeOperation implements ColumnOperation {
 
     private final int limit;

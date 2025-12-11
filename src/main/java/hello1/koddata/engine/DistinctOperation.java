@@ -6,6 +6,7 @@ import hello1.koddata.exception.KException;
 import java.util.*;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class DistinctOperation implements ColumnOperation {
 
     //Polymorphism

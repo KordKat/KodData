@@ -1,6 +1,7 @@
 package hello1.koddata.engine;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class RootOperation implements QueryOperation {
     private final double root;
 

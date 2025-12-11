@@ -4,6 +4,7 @@ package hello1.koddata.engine;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class LengthOperation implements QueryOperation {
 
     //Polymorphism

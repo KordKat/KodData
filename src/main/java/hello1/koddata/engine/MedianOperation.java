@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class MedianOperation implements ColumnOperation {
 
     //Polymorphism

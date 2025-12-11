@@ -3,6 +3,7 @@ package hello1.koddata.engine;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class JoinOperation implements QueryOperation {
 
     private final String delimiter;

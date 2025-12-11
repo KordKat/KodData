@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class TypeOperation implements QueryOperation{
 
     //Polymorphism

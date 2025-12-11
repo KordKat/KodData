@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class ModeOperation implements ColumnOperation {
 
     //Polymorphism
