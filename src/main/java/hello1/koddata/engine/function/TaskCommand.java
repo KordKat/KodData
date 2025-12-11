@@ -10,7 +10,10 @@ import hello1.koddata.sessions.users.UserData;
 
 import java.util.List;
 
+//Inheritance
 public class TaskCommand extends KodFunction<KTask>{
+
+//    Polymorphism
     @Override
     public Value<KTask> execute() throws KException {
         if (!arguments.containsKey("command")){

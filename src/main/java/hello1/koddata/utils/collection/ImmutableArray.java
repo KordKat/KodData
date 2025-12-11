@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+//Inheritance
 public final class ImmutableArray<T> implements Iterable<T> {
 
     private final T[] data;
@@ -36,11 +37,13 @@ public final class ImmutableArray<T> implements Iterable<T> {
         return Arrays.copyOf(data, data.length);
     }
 
+    //Polymorphism
     @Override
     public Iterator<T> iterator() {
         return Arrays.asList(data).iterator();
     }
 
+    //Polymorphism
     @Override
     public String toString() {
         return Arrays.toString(data);

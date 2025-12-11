@@ -1,5 +1,6 @@
 package hello1.koddata.exception;
 
+//Inheritance
 public class KException extends Exception {
 
     private final ExceptionCode errorCode;
@@ -14,6 +15,7 @@ public class KException extends Exception {
         return errorCode;
     }
 
+    //Polymorphism
     @Override
     public String getMessage() {
         return String.format("Error: %s -> %s, %s", errorCode.name(), errorCode.getMessage(), msg);

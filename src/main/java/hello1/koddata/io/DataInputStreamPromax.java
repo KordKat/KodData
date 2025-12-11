@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+//Inheritance
 public abstract class DataInputStreamPromax extends InputStream implements DataInputPromax {
 
+    //Polymorphism
     @Override
     public int read(byte[] buffer) throws IOException {
         Objects.requireNonNull(buffer, "array must not be null (read(byte[]))");
         return read(buffer, 0, buffer.length);
     }
 
+    //Polymorphism
     @Override
     public int read(byte[] buffer, int offset, int length) throws IOException {
         Objects.requireNonNull(buffer, "array must not be null (read(byte[], off, len))");

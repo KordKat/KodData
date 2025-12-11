@@ -6,6 +6,7 @@ import hello1.koddata.exception.KException;
 import java.util.ArrayList;
 import java.util.List;
 
+//Inheritance
 public class TakeOperation implements ColumnOperation {
 
     private final int limit;
@@ -14,6 +15,7 @@ public class TakeOperation implements ColumnOperation {
         this.limit = Math.max(0, limit);
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

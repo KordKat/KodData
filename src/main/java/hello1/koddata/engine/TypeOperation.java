@@ -4,8 +4,10 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+//Inheritance
 public class TypeOperation implements QueryOperation{
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if(value.get() instanceof List){

@@ -23,14 +23,17 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 
+//Inheritance
 public class ExportFunction extends KodFunction<String>{
 
+//    Polymorphism
     @Override
     public Value<String> execute() throws KException {
 
         if(!arguments.containsKey("dataframe")){
             throw new KException(ExceptionCode.KDE0012,"argument dataframe is missing");
         }
+//        Encapsulation
         Value<?> df = arguments.get("dataframe");
         if(!(df.get() instanceof ColumnArray ca)){
             throw new KException(ExceptionCode.KD00005, "only dataframe can export");

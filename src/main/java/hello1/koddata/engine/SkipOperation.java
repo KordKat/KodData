@@ -6,6 +6,7 @@ import hello1.koddata.exception.KException;
 import java.util.ArrayList;
 import java.util.List;
 
+//Inheritance
 public class SkipOperation implements ColumnOperation {
 
     private final int count;
@@ -14,6 +15,7 @@ public class SkipOperation implements ColumnOperation {
         this.count = Math.max(0, count);
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

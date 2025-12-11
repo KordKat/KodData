@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class FactorialOperation implements QueryOperation {
 
     private long fact(long n){
@@ -8,6 +9,7 @@ public class FactorialOperation implements QueryOperation {
         return r;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) return value;

@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+//Inheritance
 public class FetchFunction extends KodFunction<ColumnArray> {
 
+//    Polymorphism
     @Override
     public Value<ColumnArray> execute() throws KException {
         if (!arguments.containsKey("datatype")) {

@@ -1,5 +1,7 @@
 package hello1.koddata.engine;
 
+
+//Inheritance
 public class CoalesceOperation implements QueryOperation{
     private Value<?> fillValue;
 
@@ -7,6 +9,7 @@ public class CoalesceOperation implements QueryOperation{
         this.fillValue = fillValue;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
 

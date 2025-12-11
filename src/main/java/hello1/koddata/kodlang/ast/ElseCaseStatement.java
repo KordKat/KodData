@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Inheritance
 public non-sealed class ElseCaseStatement extends BranchMember {
 
     public final Expression doPipe;

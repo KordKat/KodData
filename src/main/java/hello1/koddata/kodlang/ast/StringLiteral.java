@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Inheritance
 public class StringLiteral extends Expression {
 
     public final char[] literal;

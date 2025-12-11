@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class SubstringOperation implements QueryOperation {
     private final int start;
     private final int end;
@@ -9,6 +10,7 @@ public class SubstringOperation implements QueryOperation {
         this.end = end;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

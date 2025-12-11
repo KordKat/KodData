@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.Future;
 
+//Inheritance
 public class UserUploadFileState extends ChannelState {
 
     private long sessionId;
@@ -28,6 +29,7 @@ public class UserUploadFileState extends ChannelState {
         this.fileName = fileName;
     }
 
+    //Polymorphism
     @Override
     public void perform() throws KException {
        payloadBuffer.flip();

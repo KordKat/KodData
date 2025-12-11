@@ -12,7 +12,10 @@ import hello1.koddata.sessions.users.UserPrivilege;
 import java.io.IOException;
 import java.util.List;
 
+//Inheritance
 public class UserCommand extends KodFunction<Object>{
+
+//    Polymorphism
     @Override
     public Value<Object> execute() throws KException {
         if (!arguments.containsKey("command")) {

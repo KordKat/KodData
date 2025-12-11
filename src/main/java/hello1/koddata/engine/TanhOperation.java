@@ -1,7 +1,9 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class TanhOperation implements QueryOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null)

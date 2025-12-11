@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class PadRightOperation implements QueryOperation {
 
     private final int length;
@@ -10,6 +11,7 @@ public class PadRightOperation implements QueryOperation {
         this.pad = pad;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

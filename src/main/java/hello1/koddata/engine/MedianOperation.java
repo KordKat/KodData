@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+//Inheritance
 public class MedianOperation implements ColumnOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

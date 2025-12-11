@@ -7,6 +7,7 @@ import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
+//Abstract
 public abstract class Reference<T> {
 
     protected static final Cleaner cleaner = Cleaner.create();

@@ -4,8 +4,10 @@ import hello1.koddata.exception.ExceptionCode;
 import hello1.koddata.exception.KException;
 import java.util.List;
 
+//Inheritance
 public class ProductOperation implements ColumnOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

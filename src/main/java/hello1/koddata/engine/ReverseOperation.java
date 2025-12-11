@@ -1,6 +1,9 @@
 package hello1.koddata.engine;
+
+//Inheritance
 public class ReverseOperation implements QueryOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

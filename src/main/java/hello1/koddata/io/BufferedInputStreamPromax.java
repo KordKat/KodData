@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+//Inheritance
 public class BufferedInputStreamPromax extends DataInputStreamPromax {
 //    BufferedInputStream
     private final InputStream in;
@@ -24,6 +25,7 @@ public class BufferedInputStreamPromax extends DataInputStreamPromax {
         return count;
     }
 
+    //Polymorphism
     @Override
     public synchronized int read() throws IOException {
         if (pos >= count) {
@@ -32,6 +34,7 @@ public class BufferedInputStreamPromax extends DataInputStreamPromax {
         return buffer[pos++] & 0xFF;
     }
 
+    //Polymorphism
     @Override
     public synchronized String readUTF() throws IOException {
         if (pos >= count) {
@@ -43,6 +46,7 @@ public class BufferedInputStreamPromax extends DataInputStreamPromax {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
+    //Polymorphism
     @Override
     public synchronized void close() throws IOException {
         in.close();

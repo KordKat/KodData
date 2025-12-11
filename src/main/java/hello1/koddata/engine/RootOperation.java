@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class RootOperation implements QueryOperation {
     private final double root;
 
@@ -7,6 +8,7 @@ public class RootOperation implements QueryOperation {
         this.root = root;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) return value;

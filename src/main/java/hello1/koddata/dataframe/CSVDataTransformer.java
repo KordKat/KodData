@@ -2,8 +2,10 @@ package hello1.koddata.dataframe;
 
 import hello1.koddata.engine.Value;
 
+//Inheritance
 public class CSVDataTransformer implements DataTransformer {
 
+    //Polymorphism
     @Override
     public String transform(DataFrameRecord[] records) {
         if (records == null || records.length == 0) {

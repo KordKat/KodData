@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class PowOperation implements QueryOperation {
     private final double exponent;
 
@@ -7,6 +8,7 @@ public class PowOperation implements QueryOperation {
         this.exponent = exponent;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null)

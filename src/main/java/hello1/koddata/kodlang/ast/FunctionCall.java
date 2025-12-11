@@ -2,6 +2,7 @@ package hello1.koddata.kodlang.ast;
 
 import hello1.koddata.utils.collection.ImmutableArray;
 
+//Inheritance
 public class FunctionCall extends Expression {
 
     public final NIdentifier function;

@@ -3,6 +3,7 @@ package hello1.koddata.sessions.users;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionManager;
 
+//Inheritance
 public class Admin extends User {
 
     private UserManager userManager;

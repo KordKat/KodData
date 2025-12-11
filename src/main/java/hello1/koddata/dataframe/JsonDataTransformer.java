@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import hello1.koddata.engine.Value;
 
+//Inheritance
 public class JsonDataTransformer implements DataTransformer {
 
     private final Gson gson = new GsonBuilder()
@@ -13,6 +14,7 @@ public class JsonDataTransformer implements DataTransformer {
             .setPrettyPrinting()
             .create();
 
+    //Polymorphism
     @Override
     public String transform(DataFrameRecord[] records) {
         JsonArray array = new JsonArray();

@@ -9,8 +9,10 @@ import hello1.koddata.sessions.users.User;
 
 import java.io.IOException;
 
+//Inheritance
 public class StopServerFunction extends KodFunction<Integer>{
 
+//    Polymorphism
     @Override
     public Value<Integer> execute() throws KException {
         Value<?> userVal = arguments.get("userId");

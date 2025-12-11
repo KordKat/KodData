@@ -5,12 +5,14 @@ import hello1.koddata.net.UserClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+//Inheritance
 public class PrintOperation implements QueryOperation{
     private UserClient client;
     public PrintOperation(UserClient client){
         this.client = client;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
 

@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 
+//Inheritance
 public abstract class DataOutputStreamPromax extends OutputStream implements DataOutputPromax {
+
+    //Polymorphism
     @Override
     public void write(byte[] b) throws IOException{
         Objects.requireNonNull(b,"array must not be null (write(byte[]))");
         write(b,0,b.length);
     }
 
+    //Polymorphism
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         Objects.requireNonNull(b, "array must not be null (write(byte[], off, len))");

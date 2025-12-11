@@ -1,5 +1,6 @@
 package hello1.koddata.utils.ref;
 
+//Inheritance
 public class SharedReference<T> extends Reference<T> implements AutoCloseable {
 
     SharedReference(ControlBlock<T> ctrl) {
@@ -12,11 +13,13 @@ public class SharedReference<T> extends Reference<T> implements AutoCloseable {
         registerLeakWatcher(this, obj.getClass().getSimpleName());
     }
 
+    //Polymorphism
     @Override
     public T get() {
         return ctrl.get();
     }
 
+    //Polymorphism
     @Override
     public boolean isValid() {
         return ctrl.alive();
@@ -27,6 +30,7 @@ public class SharedReference<T> extends Reference<T> implements AutoCloseable {
         return new SharedReference<>(ctrl);
     }
 
+    //Polymorphism
     @Override
     public void close() {
         ctrl.release();

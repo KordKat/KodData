@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+//Inheritance
 public class UserServiceServer extends Server {
 
     private Selector selector;
@@ -35,6 +36,7 @@ public class UserServiceServer extends Server {
         super(inetSocketAddress, socketFactory);
     }
 
+    //Polymorphism
     @Override
     public void start() throws IOException {
         selector = Selector.open();
@@ -47,6 +49,7 @@ public class UserServiceServer extends Server {
         serverThread.start();
     }
 
+    //Polymorphism
     @Override
     public void stop() throws IOException {
 

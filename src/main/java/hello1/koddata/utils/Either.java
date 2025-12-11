@@ -51,16 +51,19 @@ public class Either<F, S> {
         return Either.left(left);
     }
 
+    //Polymorphism
     @Override
     public String toString() {
         return isLeft() ? "Left(" + left + ")" : "Right(" + right + ")";
     }
 
+    //Polymorphism
     @Override
     public int hashCode() {
         return Objects.hash(left, right);
     }
 
+    //Polymorphism
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Either<?, ?> other)) return false;

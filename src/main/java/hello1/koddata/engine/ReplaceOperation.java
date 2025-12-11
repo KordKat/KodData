@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class ReplaceOperation implements QueryOperation {
 
     private final String target;
@@ -10,6 +11,7 @@ public class ReplaceOperation implements QueryOperation {
         this.replacement = replacement;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

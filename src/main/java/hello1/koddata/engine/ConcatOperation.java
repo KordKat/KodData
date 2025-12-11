@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class ConcatOperation implements QueryOperation {
     private final String suffix;
 
@@ -7,6 +8,7 @@ public class ConcatOperation implements QueryOperation {
         this.suffix = suffix;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

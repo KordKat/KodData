@@ -5,8 +5,10 @@ import hello1.koddata.exception.KException;
 
 import java.util.List;
 
+//Inheritance
 public class SumOperation implements ColumnOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

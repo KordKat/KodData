@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class RepeatOperation implements QueryOperation {
 
     private final int times;
@@ -8,6 +9,7 @@ public class RepeatOperation implements QueryOperation {
         this.times = times;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

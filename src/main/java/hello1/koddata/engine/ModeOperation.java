@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//Inheritance
 public class ModeOperation implements ColumnOperation {
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) throws KException {
 

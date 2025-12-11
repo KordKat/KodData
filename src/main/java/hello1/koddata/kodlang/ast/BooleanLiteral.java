@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Inheritance
 public class BooleanLiteral extends Expression {
 
     public boolean literal;

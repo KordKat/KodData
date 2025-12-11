@@ -1,6 +1,9 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class AbsOperation implements QueryOperation {
+
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) {

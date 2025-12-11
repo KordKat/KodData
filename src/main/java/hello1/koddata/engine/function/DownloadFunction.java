@@ -12,8 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+//Inheritance
 public class DownloadFunction extends KodFunction<Object> {
 
+//    Polymorphism
     @Override
     public Value<Object> execute() throws KException {
         if (!arguments.containsKey("fileName")) {

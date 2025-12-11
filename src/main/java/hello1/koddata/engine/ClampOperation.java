@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class ClampOperation implements QueryOperation {
     private final double min, max;
 
@@ -8,6 +9,7 @@ public class ClampOperation implements QueryOperation {
         this.max = max;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) return value;

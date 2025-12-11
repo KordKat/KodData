@@ -4,17 +4,20 @@ import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 
+//Inheritance
 public interface DataInputPromax extends DataInput {
 
     int read() throws IOException;
     int read(byte[] buffer, int offset, int length) throws IOException;
 
+    //Polymorphism
     @Override
     default void readFully(byte[] buffer) throws IOException {
         if (buffer == null) throw new NullPointerException("buffer must not be null (readFully)");
         readFully(buffer, 0, buffer.length);
     }
 
+    //Polymorphism
     @Override
     default void readFully(byte[] buffer, int offset, int length) throws IOException {
         if (buffer == null) throw new NullPointerException("buffer must not be null (readFully)");
@@ -30,6 +33,7 @@ public interface DataInputPromax extends DataInput {
         }
     }
 
+    //Polymorphism
     @Override
     default int skipBytes(int n) throws IOException {
         if (n <= 0) return 0;
@@ -41,11 +45,13 @@ public interface DataInputPromax extends DataInput {
         return skipped;
     }
 
+    //Polymorphism
     @Override
     default boolean readBoolean() throws IOException {
         return readUnsignedByte() != 0;
     }
 
+    //Polymorphism
     @Override
     default byte readByte() throws IOException {
         int ch = read();
@@ -53,6 +59,7 @@ public interface DataInputPromax extends DataInput {
         return (byte) ch;
     }
 
+    //Polymorphism
     @Override
     default int readUnsignedByte() throws IOException {
         int ch = read();
@@ -60,6 +67,7 @@ public interface DataInputPromax extends DataInput {
         return ch;
     }
 
+    //Polymorphism
     @Override
     default short readShort() throws IOException {
         int a = readUnsignedByte();
@@ -67,6 +75,7 @@ public interface DataInputPromax extends DataInput {
         return (short) ((a << 8) | b);
     }
 
+    //Polymorphism
     @Override
     default int readUnsignedShort() throws IOException {
         int a = readUnsignedByte();
@@ -74,6 +83,7 @@ public interface DataInputPromax extends DataInput {
         return (a << 8) | b;
     }
 
+    //Polymorphism
     @Override
     default char readChar() throws IOException {
         int a = readUnsignedByte();
@@ -81,6 +91,7 @@ public interface DataInputPromax extends DataInput {
         return (char) ((a << 8) | b);
     }
 
+    //Polymorphism
     @Override
     default int readInt() throws IOException {
         int a = readUnsignedByte();
@@ -90,6 +101,7 @@ public interface DataInputPromax extends DataInput {
         return (a << 24) | (b << 16) | (c << 8) | d;
     }
 
+    //Polymorphism
     @Override
     default long readLong() throws IOException {
         return ((long) readUnsignedByte() << 56)|
@@ -101,15 +113,19 @@ public interface DataInputPromax extends DataInput {
                 ((long) readUnsignedByte() <<  8)|
                 ((long) readUnsignedByte());
     }
+    //Polymorphism
     @Override
     default float readFloat() throws IOException{
         return Float.intBitsToFloat(readInt());
     }
 
+    //Polymorphism
     @Override
     default double readDouble() throws IOException{
         return Double.longBitsToDouble(readLong());
     }
+
+    //Polymorphism
     @Override
     default String readLine() throws IOException{
         StringBuilder sb = new StringBuilder();

@@ -1,6 +1,6 @@
 package hello1.koddata.engine;
 
-
+//Inheritance
 public class FillOperation implements QueryOperation {
 
     private Value<?> value;
@@ -11,6 +11,7 @@ public class FillOperation implements QueryOperation {
         this.fillValue = fillValue;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         return value.get().equals(this.value.get()) ? fillValue : value;

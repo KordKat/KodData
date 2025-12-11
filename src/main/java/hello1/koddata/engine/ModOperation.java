@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class ModOperation implements QueryOperation {
     private final double mod;
 
@@ -7,6 +8,7 @@ public class ModOperation implements QueryOperation {
         this.mod = mod;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value) {
         if (value == null || value.get() == null) return value;

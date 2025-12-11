@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Inheritance
 public class UnaryExpression extends Expression {
 
     public final BinaryExpression.Operator op;

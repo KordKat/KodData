@@ -4,30 +4,36 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+//Inheritance
 public interface DataOutputPromax extends DataOutput {
 
     void write(ByteBuffer b) throws IOException;
 
+    //Polymorphism
      @Override
      default void writeBoolean(boolean b) throws IOException {
          write((int)(b ? 1 : 0));
      }
 
+    //Polymorphism
     @Override
     default void writeByte(int y) throws IOException{
         write(y);
     }
 
+    //Polymorphism
     @Override
     default void writeShort(int s) throws IOException{
         write(s >>> 8);
     }
 
+    //Polymorphism
     @Override
     default void writeChar(int c) throws IOException{
         write(c >>> 8);
     }
 
+    //Polymorphism
     @Override
     default void writeInt(int i) throws IOException{
         write(i >>> 24);
@@ -36,6 +42,7 @@ public interface DataOutputPromax extends DataOutput {
         write(i);
     }
 
+    //Polymorphism
     @Override
     default void writeLong(long l) throws IOException{
         write((int)l >>> 56);
@@ -48,16 +55,19 @@ public interface DataOutputPromax extends DataOutput {
         write((int)l);
     }
 
+    //Polymorphism
     @Override
     default void writeFloat(float f) throws IOException{
         writeInt(Float.floatToIntBits(f));
     }
 
+    //Polymorphism
     @Override
     default void writeDouble(double d) throws IOException {
         writeDouble(Double.doubleToLongBits(d));
     }
 
+    //Polymorphism
     @Override
     default void writeBytes(String s) throws IOException {
         if (s == null) throw new NullPointerException("String not be null (writeChars)");
@@ -65,6 +75,7 @@ public interface DataOutputPromax extends DataOutput {
             write(c);
     }
 
+    //Polymorphism
     @Override
     default void writeChars(String cs) throws IOException {
         if (cs == null) throw new NullPointerException(" String not be null (writeChars)");

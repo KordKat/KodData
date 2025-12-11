@@ -8,7 +8,10 @@ import hello1.koddata.sessions.Session;
 
 import java.util.List;
 
+//Inheritance
 public class SessionCommand extends KodFunction<Session>{
+
+//    Polymorphism
     @Override
     public Value<Session> execute() throws KException {
         if (!arguments.containsKey("command")){

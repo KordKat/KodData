@@ -58,6 +58,8 @@ public class ColumnArray {
     public Map<String, Column> getColumns() {
         return columns;
     }
+
+    //    Polymorphism
     @Override
     public String toString() {
         if (columns.isEmpty()) return "<EMPTY>";

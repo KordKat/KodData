@@ -7,8 +7,10 @@ import hello1.koddata.exception.KException;
 import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionData;
 
+//Inheritance
 public class RemoveFunction extends KodFunction<SessionData>{
 
+//    Polymorphism
     @Override
     public Value<SessionData> execute() throws KException {
         if (!arguments.containsKey("dataName")){

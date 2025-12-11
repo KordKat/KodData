@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-
+//Inheritance
 public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
     private final OutputStream out;
     private byte[] buffer;
@@ -25,6 +25,7 @@ public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
         this.out = out;
     }
 
+    //Polymorphism
     @Override
     public synchronized void write(ByteBuffer buf) throws IOException {
         int remaining = buf.remaining();
@@ -44,6 +45,7 @@ public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
         }
     }
 
+    //Polymorphism
     @Override
     public synchronized void write(byte[] b, int off, int len) throws IOException {
         if (len >= buffer.length) {
@@ -60,19 +62,21 @@ public class BufferedOutputStreamPromax extends DataOutputStreamPromax {
 
     }
 
-    //เน้น ห้ามลืม
+    //Polymorphism
     @Override
     public synchronized void writeUTF(String s) throws IOException {
         byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
         write(bytes, 0 , bytes.length);
     }
 
+    //Polymorphism
     @Override
     public synchronized void write(int b) throws IOException {
         if (count >= buffer.length) flushBuffer();
         buffer[count++] = (byte) b;
     }
 
+    //Polymorphism
     @Override
     public synchronized void flush() throws IOException {
         flushBuffer();

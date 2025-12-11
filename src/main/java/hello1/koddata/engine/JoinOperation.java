@@ -2,6 +2,7 @@ package hello1.koddata.engine;
 
 import java.util.List;
 
+//Inheritance
 public class JoinOperation implements QueryOperation {
 
     private final String delimiter;
@@ -10,6 +11,7 @@ public class JoinOperation implements QueryOperation {
         this.delimiter = delimiter;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

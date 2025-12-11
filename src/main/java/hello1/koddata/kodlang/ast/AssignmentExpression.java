@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Inheritance
 public class AssignmentExpression extends Expression {
 
     public final Expression right;

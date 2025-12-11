@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class IndexOfOperation implements QueryOperation {
 
     private final String search;
@@ -8,6 +9,7 @@ public class IndexOfOperation implements QueryOperation {
         this.search = search;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;

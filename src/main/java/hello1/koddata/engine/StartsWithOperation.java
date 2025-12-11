@@ -1,5 +1,6 @@
 package hello1.koddata.engine;
 
+//Inheritance
 public class StartsWithOperation implements QueryOperation {
 
     private final String prefix;
@@ -8,6 +9,7 @@ public class StartsWithOperation implements QueryOperation {
         this.prefix = prefix;
     }
 
+    //Polymorphism
     @Override
     public Value<?> operate(Value<?> value){
         if (value == null || value.get() == null) return value;
