@@ -18,7 +18,6 @@ import java.util.function.Supplier;
 
 // Inheritance
 public class KTask implements Supplier<Value<?>> {
-    // Encapsulation
     private final QueryExecution execution;
     private final Session session;
     private final ColumnArray columnArray;
@@ -141,7 +140,6 @@ public class KTask implements Supplier<Value<?>> {
                 new ImmutableArray<>(new ArrayList<>(newColumns.values()))
         ));
     }
-    //Encapsulation
     private ColumnMetaData.ColumnDType inferType(List<Value<?>> values) {
         Object sample = values.stream()
                 .map(Value::get)
@@ -156,7 +154,6 @@ public class KTask implements Supplier<Value<?>> {
 
         return inferScalarType(sample);
     }
-    //Encapsulation
     private ColumnMetaData.ColumnDType inferScalarType(Object sample) {
         if (sample instanceof Integer || sample instanceof Long || sample instanceof Short || sample instanceof Byte)
             return ColumnMetaData.ColumnDType.SCALAR_INT;
@@ -170,7 +167,6 @@ public class KTask implements Supplier<Value<?>> {
             return ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP;
         return ColumnMetaData.ColumnDType.SCALAR_STRING;
     }
-    // Encapsulation
     private ColumnMetaData.ColumnDType inferListType(List<?> list) {
         if (list.isEmpty()) return ColumnMetaData.ColumnDType.LIST_STRING;
 
@@ -190,7 +186,6 @@ public class KTask implements Supplier<Value<?>> {
 
         return ColumnMetaData.ColumnDType.LIST_STRING;
     }
-    // Encapsulation
     public QueryExecution getExecution() {
         return execution;
     }

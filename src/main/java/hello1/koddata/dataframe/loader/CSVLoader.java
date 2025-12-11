@@ -10,10 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
+// Inheritance
 public class CSVLoader extends DataFrameLoader {
     // Polymorphism
-
     @Override
     public void load(InputStream in) throws IOException {
         try (BufferedInputStreamPromax bis = new BufferedInputStreamPromax(in, 8192)) {

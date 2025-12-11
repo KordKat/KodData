@@ -81,14 +81,17 @@ public class Bootstrap {
         }
     }
 
+//       Encapsulation
 
     public Path getRootPath() {
         return rootPath;
     }
+//       Encapsulation
 
     public UserManager getUserManager() {
         return userManager;
     }
+//       Encapsulation
 
     public SessionManager getSessionManager() {
         return sessionManager;

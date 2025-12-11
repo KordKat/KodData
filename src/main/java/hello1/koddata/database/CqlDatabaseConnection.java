@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 // Inheritance
 // Abstract DatabaseConnection เป็น abstraction
 public class CqlDatabaseConnection implements DatabaseConnection {
-    // Encapsulation
     private final CqlSession session;
 
     public CqlDatabaseConnection(CqlSession session){

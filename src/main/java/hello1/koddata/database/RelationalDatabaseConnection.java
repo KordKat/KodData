@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.util.Locale;
 // Inheritance
 public class RelationalDatabaseConnection implements DatabaseConnection {
-    // Encapsulation
     private String host, user, pass;
     private int port;
     private String databaseName;

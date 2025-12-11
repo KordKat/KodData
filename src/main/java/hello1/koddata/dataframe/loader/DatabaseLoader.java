@@ -17,7 +17,6 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 // Inheritance
 public class DatabaseLoader extends DataFrameLoader {
-    // Encapsulation
     private final DatabaseConnection conn;
     private final String query;
 
@@ -46,7 +45,6 @@ public class DatabaseLoader extends DataFrameLoader {
             throw new RuntimeException(e);
         }
     }
-    // Encapsulation
 
     private void loadJdbc(ResultSet rs) throws Exception {
         ResultSetMetaData meta = rs.getMetaData();
@@ -70,7 +68,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         buildFromTable(names, table);
     }
-    // Encapsulation
 
     private void loadCql(com.datastax.oss.driver.api.core.cql.ResultSet cql) throws Exception {
 
@@ -95,7 +92,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         buildFromTable(names, table);
     }
-    // Encapsulation
     private void buildFromTable(List<String> names, List<List<String>> table) throws Exception {
         int rowCount = table.size();
         int colCount = names.size();
@@ -112,7 +108,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         ColumnKind[] kinds = inferColumnKinds(cells, colCount, rowCount);
         Column[] result = new Column[colCount];
-// Polymorphism
         for (int c = 0; c < colCount; c++) {
             String name = names.get(c);
             ColumnKind kind = kinds[c];
@@ -137,7 +132,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         this.columns = result;
     }
-    // Encapsulation
     private enum ColumnKind {
         SCALAR_INT,
         SCALAR_DOUBLE,
@@ -152,7 +146,6 @@ public class DatabaseLoader extends DataFrameLoader {
         LIST_DATE,
         LIST_TIMESTAMP
     }
-    // Encapsulation
     private ColumnKind[] inferColumnKinds(String[][] cells, int columnCount, int rowCount) {
         ColumnKind[] kinds = new ColumnKind[columnCount];
 
@@ -173,7 +166,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return kinds;
     }
-    // Encapsulatio
     private ColumnKind inferScalarKind(String[][] cells, int colIdx, int rowCount) {
         boolean canInt = true;
         boolean canDouble = true;
@@ -233,7 +225,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return ColumnKind.SCALAR_STRING;
     }
-    // Encapsulatio
     private ColumnKind inferListKind(String[][] cells, int colIdx, int rowCount) {
         boolean canInt = true;
         boolean canDouble = true;
@@ -324,7 +315,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return ColumnKind.LIST_STRING;
     }
-    // Encapsulatio
     private Column buildScalarIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -333,7 +323,6 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_INT);
     }
-    // Encapsulatio
     private Column buildScalarDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -342,7 +331,6 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_DOUBLE);
     }
-    // Encapsulatio
     private Column buildScalarStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -351,7 +339,6 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_STRING);
     }
-    // Encapsulatio
     private Column buildScalarLogicalColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -366,7 +353,6 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_LOGICAL);
     }
-    // Encapsulatio
     private Column buildScalarDateColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -379,7 +365,6 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_DATE);
     }
-    // Encapsulatio
     private Column buildScalarTimestampColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
@@ -392,7 +377,7 @@ public class DatabaseLoader extends DataFrameLoader {
         }
         return new Column(name, data, ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP);
     }
-    // Encapsulatio
+
     private Column buildListIntColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
@@ -418,7 +403,7 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return new Column(name, data, ColumnMetaData.ColumnDType.LIST_INT);
     }
-    // Encapsulatio
+
     private Column buildListDoubleColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
@@ -444,7 +429,7 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return new Column(name, data, ColumnMetaData.ColumnDType.LIST_DOUBLE);
     }
-    // Encapsulatio
+
     private Column buildListStringColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
@@ -466,7 +451,7 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return new Column(name, data, ColumnMetaData.ColumnDType.LIST_STRING);
     }
-    // Encapsulatio
+
     private Column buildListLogicalColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
@@ -493,7 +478,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return new Column(name, data, ColumnMetaData.ColumnDType.LIST_LOGICAL);
     }
-    // Encapsulatio
     private Column buildListDateColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
@@ -519,7 +503,6 @@ public class DatabaseLoader extends DataFrameLoader {
 
         return new Column(name, data, ColumnMetaData.ColumnDType.LIST_DATE);
     }
-    // Encapsulatio
     private Column buildListTimestampColumn(String name, String[][] cells, int colIdx, int rowCount) throws KException {
         List<Value<?>> data = new ArrayList<>(rowCount);
 
