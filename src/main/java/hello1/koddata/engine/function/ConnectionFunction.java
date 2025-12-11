@@ -13,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class ConnectionFunction extends KodFunction<CompletableFuture<DatabaseConnection>>{
 
 //   Polymorphism

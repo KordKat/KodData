@@ -1,12 +1,13 @@
 package hello1.koddata.engine.function;
 
-import hello1.koddata.engine.QueryOperation;
 import hello1.koddata.engine.Value;
 import hello1.koddata.exception.KException;
 
 import java.util.HashMap;
 import java.util.Map;
+
 // Abstract
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public abstract class KodFunction <T>{
 //    Encapsulation
     protected Map<String , Value<?>> arguments = new HashMap<>();

@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class DownloadFunction extends KodFunction<Object> {
 
 //   Polymorphism

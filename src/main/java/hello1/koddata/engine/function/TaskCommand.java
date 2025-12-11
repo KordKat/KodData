@@ -11,6 +11,7 @@ import hello1.koddata.sessions.users.UserData;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class TaskCommand extends KodFunction<KTask>{
 
 //     Polymorphism

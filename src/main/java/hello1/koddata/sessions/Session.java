@@ -50,6 +50,7 @@ public class Session {
     }
 
 
+    //Factory Pattern: สำหรับการสร้าง objects
     public static Session newSession(UserClient userClient){
         SessionSettings sessionSettings = new SessionSettings(userClient.getUser().getUserData().userPrivilege().maxProcessPerSession(), userClient.getUser().getUserData().userPrivilege().maxMemoryPerProcess());
         Session session = new Session(sessionSettings , userClient);
@@ -86,6 +87,7 @@ public class Session {
         }
     }
 
+    //Factory Pattern: สำหรับการสร้าง objects
     public CompletableFuture<Value<?>> newProcess(QueryExecution execution, ColumnArray columnArray){
         Process process = new Process(new KTask(execution, columnArray, this));
         this.processes.put(process.id(), process);

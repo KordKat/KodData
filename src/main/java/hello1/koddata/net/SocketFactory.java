@@ -6,6 +6,7 @@ import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+//Factory Pattern: สำหรับการสร้าง objects
 public class SocketFactory {
 
     private int writeBufferSize;

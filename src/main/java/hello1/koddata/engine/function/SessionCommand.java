@@ -9,6 +9,7 @@ import hello1.koddata.sessions.Session;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class SessionCommand extends KodFunction<Session>{
 
 //     Polymorphism

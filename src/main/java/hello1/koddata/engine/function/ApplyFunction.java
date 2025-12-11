@@ -10,6 +10,7 @@ import hello1.koddata.sessions.Session;
 import java.util.concurrent.CompletableFuture;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class ApplyFunction extends KodFunction<CompletableFuture<ColumnArray>> {
 
 //   Polymorphism

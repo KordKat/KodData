@@ -5,30 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d91bd6f4-c772-4ab3-ae8b-5e3c4b74d826" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/KTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/concurrent/KTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnArray.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/ColumnMetaData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/DataFrameRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/dataframe/DataFrameRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/exception/ExceptionCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/exception/ExceptionCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/ChannelState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/ChannelState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/DataInputStreamPromax.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/DataInputStreamPromax.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/DataOutputStreamPromax.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/io/DataOutputStreamPromax.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/BranchMember.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/BranchPipeline.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/ElseCaseStatement.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/Expression.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/Expression.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/Statement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/Statement.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/kodlang/ast/WhenCaseStatement.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/SocketFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/SocketFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserUploadFileState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/net/UserUploadFileState.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/Session.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionSettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/sessions/SessionSettings.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/Reference.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/Reference.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/SharedReference.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/ref/SharedReference.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/ImmutableArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/hello1/koddata/utils/collection/ImmutableArray.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

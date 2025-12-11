@@ -10,6 +10,7 @@ import hello1.koddata.sessions.users.User;
 import java.io.IOException;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class StopServerFunction extends KodFunction<Integer>{
 
 //     Polymorphism

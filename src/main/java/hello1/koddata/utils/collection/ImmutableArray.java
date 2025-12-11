@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+//Iterator Pattern: เข้าถึงและวนซ้ำข้อมูลในโครงสร้างข้อมูล
 //Inheritance
 public final class ImmutableArray<T> implements Iterable<T> {
 

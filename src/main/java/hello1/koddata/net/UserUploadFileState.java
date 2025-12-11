@@ -30,6 +30,7 @@ public class UserUploadFileState extends ChannelState {
     }
 
     //Polymorphism
+    //Observer Pattern: สำหรับ event handling
     @Override
     public void perform() throws KException {
        payloadBuffer.flip();

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class UserCommand extends KodFunction<Object>{
 
 //    Polymorphism

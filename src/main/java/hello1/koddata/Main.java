@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 public class Main {
 
+//    Singleton Pattern: สำหรับ global state management
     public static Bootstrap bootstrap;
 
     public static void main(String[] args) throws IOException, KException, InterruptedException {

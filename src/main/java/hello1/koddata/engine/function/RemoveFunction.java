@@ -8,6 +8,7 @@ import hello1.koddata.sessions.Session;
 import hello1.koddata.sessions.SessionData;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class RemoveFunction extends KodFunction<SessionData>{
 
 //     Polymorphism

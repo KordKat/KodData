@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 //Inheritance
+//Strategy Pattern: สำหรับการเลือกใช้ algorithm ต่างๆ
 public class FetchFunction extends KodFunction<ColumnArray> {
 
 //   Polymorphism
