@@ -321,12 +321,6 @@ public class StatementExecutor {
 
             switch (functionName) {
                 // คณิตศาสตร์
-                case "max":
-                    return new Value<>(new QueryOperationNode(new MaxOperation() , evaluatedArguments));
-
-                case "min":
-                    return new Value<>(new QueryOperationNode(new MinOperation() , evaluatedArguments));
-
                 case "abs":
                     return new Value<>(new QueryOperationNode(new AbsOperation() , evaluatedArguments));
                 case "sqrt":
@@ -490,11 +484,8 @@ public class StatementExecutor {
                     return new Value<>(new QueryOperationNode(new ToStringOperation(), evaluatedArguments));
 
                 // การจัดการรายการ/คอลเลกชัน
-                case "sort":
-                    return  new Value<>(new QueryOperationNode(new SortOperation(), evaluatedArguments));
                 case "distinct":
                     return new Value<>(new QueryOperationNode(new DistinctOperation(), evaluatedArguments));
-
 
                 // การจัดการข้อมูล/ประเภท
                 case "type":

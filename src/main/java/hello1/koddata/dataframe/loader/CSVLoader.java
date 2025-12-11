@@ -488,17 +488,24 @@ public class CSVLoader extends DataFrameLoader {
             if (b == '\n') {
                 String line = sb.toString();
                 sb.setLength(0);
-                lines.add(line);
+
+                if (!line.trim().isEmpty()) {
+                    lines.add(line);
+                }
+
             } else if (b != '\r') {
                 sb.append((char) b);
             }
         }
+
         if (!sb.isEmpty()) {
-            lines.add(sb.toString());
+            String last = sb.toString();
+            if (!last.trim().isEmpty()) {
+                lines.add(last);
+            }
         }
         return lines;
     }
-
     private String[] splitCsvLine(String line) {
         if (line == null || line.isEmpty()) return new String[0];
 
