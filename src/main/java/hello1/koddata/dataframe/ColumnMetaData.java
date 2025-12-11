@@ -19,9 +19,6 @@ public class ColumnMetaData {
     }
     // Encapsulation
     private final String name;
-    private boolean isVariable;
-    private int rows;
-    private boolean isSharded = false;
     private ColumnDType dType;
 
     public ColumnMetaData(String name, ColumnDType dType){
@@ -29,30 +26,12 @@ public class ColumnMetaData {
         this.dType = dType;
     }
 
-    public void setSharded(boolean sharded) {
-        isSharded = sharded;
-    }
-
-    public boolean isSharded() {
-        return isSharded;
-    }
-
-    void setRows(int rows) {
-        this.rows = rows;
-    }
-
-    public int getRows() {
-        return rows;
-    }
-
+    //Encapsulation
     public String getName() {
         return name;
     }
 
-    public boolean isVariable() {
-        return isVariable;
-    }
-
+    //Encapsulation
     public ColumnDType getDType() {
         return dType;
     }

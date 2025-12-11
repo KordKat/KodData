@@ -19,13 +19,14 @@ public enum ExceptionCode {
     KDS00014("Serialization"),
     KDE00015("Illegal Variable Name");
 
-
+//Encapsulation
     private final String message;
 
     ExceptionCode(String message){
         this.message = message;
     }
 
+//Encapsulation
     public String getMessage() {
         return message;
     }

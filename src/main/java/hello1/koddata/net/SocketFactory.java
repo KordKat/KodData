@@ -22,22 +22,6 @@ public class SocketFactory {
         this.keepAlive = builder.keepAlive;
     }
 
-    public SocketChannel createNode(String host, int port) throws IOException {
-        SocketChannel channel = SocketChannel.open();
-        channel.setOption(StandardSocketOptions.TCP_NODELAY, tcpNoDelay);
-        channel.setOption(StandardSocketOptions.SO_REUSEADDR, reuseAddress);
-        channel.setOption(StandardSocketOptions.SO_KEEPALIVE, keepAlive);
-
-        if(writeBufferSize > 0)
-            channel.setOption(StandardSocketOptions.SO_SNDBUF, writeBufferSize);
-        if(readBufferSize > 0)
-            channel.setOption(StandardSocketOptions.SO_RCVBUF, readBufferSize);
-
-        channel.connect(new InetSocketAddress(host, port));
-        channel.configureBlocking(false);
-        return channel;
-    }
-
     public ServerSocketChannel createServer(int port) throws IOException{
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
         serverChannel.configureBlocking(false);

@@ -21,9 +21,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class UserClient {
 
+    //Encapsulation
     private User user;
+    //Encapsulation
     private Session currentSession;
     private final Selector selector;
+    //Encapsulation
     private final SocketChannel socketChannel;
 
     private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
@@ -33,18 +36,22 @@ public class UserClient {
         this.socketChannel = sc;
     }
 
+    //Encapsulation
     public User getUser() {
         return user;
     }
 
+    //Encapsulation
     public void setUser(User user) {
         this.user = user;
     }
 
+    //Encapsulation
     public Session getCurrentSession() {
         return currentSession;
     }
 
+    //Encapsulation
     public void setCurrentSession(Session currentSession) {
         this.currentSession = currentSession;
     }
@@ -88,6 +95,7 @@ public class UserClient {
         StatementExecutor.executeStatement(statement, this);
     }
 
+    //Encapsulation
     public SocketChannel getSocketChannel() {
         return socketChannel;
     }

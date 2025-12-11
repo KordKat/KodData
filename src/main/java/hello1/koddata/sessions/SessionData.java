@@ -13,15 +13,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionData {
-    private String sessionName;
+    //Encapsulation
     private Map<String, Value<?>> variables = new ConcurrentHashMap<>();
 
+    //Encapsulation
     private Map<String, ColumnArray> sessionDataFrame = new ConcurrentHashMap<>();
 
 
-    public SessionData(String sessionName){
-        this.sessionName = sessionName;
-    }
 
     public Value<?> get(String varName){
         return variables.getOrDefault(varName, null);
@@ -84,14 +82,13 @@ public class SessionData {
         }
     }
 
-    public String getSessionName() {
-        return sessionName;
-    }
 
+    //Encapsulation
     public Map<String, ColumnArray> getSessionDataFrame() {
         return sessionDataFrame;
     }
 
+    //Encapsulation
     public Map<String, Value<?>> getVariables() {
         return variables;
     }

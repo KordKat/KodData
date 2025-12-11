@@ -73,9 +73,8 @@ public abstract class Reference<T> {
         this.ctrl = ctrl;
     }
 
+    //Abstract
     public abstract T get();
-
-    public abstract boolean isValid();
 
     protected static void registerLeakWatcher(Object ref, String name){
         cleaner.register(ref, () -> System.err.println("[Leak Warning] " + name + " was not closed before GC"));

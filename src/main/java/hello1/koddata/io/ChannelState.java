@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
+//Abstract
 public abstract class ChannelState {
 
     public ByteBuffer headerBuffer = ByteBuffer.allocate(24);
@@ -29,6 +30,7 @@ public abstract class ChannelState {
         payloadBuffer.clear();
     }
 
+    //Abstract
     public abstract void perform() throws KException;
 }
 

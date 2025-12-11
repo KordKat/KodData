@@ -24,16 +24,8 @@ public class Server {
 
     }
 
-    public void stopGracefully(){
-
-    }
-
-
     public void stop() throws IOException {
 
     }
 
-    public InetSocketAddress getInetSocketAddress() {
-        return inetSocketAddress;
-    }
 }

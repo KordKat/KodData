@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 //Inheritance
+//Abstract
 public abstract class DataInputStreamPromax extends InputStream implements DataInputPromax {
 
     //Polymorphism

@@ -17,12 +17,14 @@ public class Session {
     private static final IdCounter idCounter =
             new IdCounter();
 
+    //Encapsulation
     private long sessionId;
-    private final long startedTime;
-    private long lastActive;
+    //Encapsulation
     private SessionSettings settings;
     private HashMap<Long, Process> processes;
+    //Encapsulation
     private SessionData sessionData;
+    //Encapsulation
     private UserClient userClient;
 
     public enum State {
@@ -40,12 +42,10 @@ public class Session {
     private State state;
     private Session(SessionSettings settings , UserClient userClient){
         sessionId = idCounter.next();
-        startedTime = System.currentTimeMillis();
-        lastActive = System.currentTimeMillis();
         this.state = State.IDLE;
         this.settings = settings;
         this.userClient = userClient;
-        this.sessionData = new SessionData(userClient.getUser().getUserData().name());
+        this.sessionData = new SessionData();
         this.processes = new HashMap<>();
     }
 
@@ -61,22 +61,17 @@ public class Session {
         return processes.containsKey(processId);
     }
 
+    //Encapsulation
     public long id(){
         return sessionId;
     }
 
-    public long startedTime(){
-        return startedTime;
-    }
-
-    public long lastActive(){
-        return lastActive;
-    }
-
+    //Encapsulation
     public void state(State state){
         this.state = state;
     }
 
+    //Encapsulation
     public State state(){
         return state;
     }
@@ -106,14 +101,17 @@ public class Session {
         state = State.TERMINATED;
     }
 
+    //Encapsulation
     public SessionSettings getSettings() {
         return settings;
     }
 
+    //Encapsulation
     public SessionData getSessionData() {
         return sessionData;
     }
 
+    //Encapsulation
     public UserClient getUser() {
         return userClient;
     }

@@ -19,11 +19,6 @@ public class SharedReference<T> extends Reference<T> implements AutoCloseable {
         return ctrl.get();
     }
 
-    //Polymorphism
-    @Override
-    public boolean isValid() {
-        return ctrl.alive();
-    }
 
     public SharedReference<T> retain() {
         if (!ctrl.tryRetain()) throw new IllegalStateException("Object already destroyed");
@@ -36,8 +31,5 @@ public class SharedReference<T> extends Reference<T> implements AutoCloseable {
         ctrl.release();
     }
 
-    public int useCount() {
-        return ctrl.count();
-    }
 
 }

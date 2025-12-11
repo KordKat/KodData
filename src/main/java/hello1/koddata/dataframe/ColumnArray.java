@@ -56,6 +56,7 @@ public class ColumnArray {
         }
         return records;
     }
+    //Encapsulation
     public Map<String, Column> getColumns() {
         return columns;
     }

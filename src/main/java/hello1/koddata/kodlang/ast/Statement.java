@@ -1,5 +1,6 @@
 package hello1.koddata.kodlang.ast;
 
+//Abstract
 public abstract class Statement {
 
     public enum StatementType {

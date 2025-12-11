@@ -335,22 +335,6 @@ public class Parser {
         return expr;
     }
 
-    private WhenCaseStatement parseWhenCase() throws KException {
-        Expression condition = parseExpression();
-
-        if(current() == null || !current().type.equals(Token.TokenType.DO)){
-            throw new KException(ExceptionCode.KDC0002, "Expected token 'DO' in when case");
-        }
-        consume();
-
-        Expression doPipe = parseExpression();
-
-        if(current() != null && current().type.equals(Token.TokenType.SEMICOLON)){
-            consume();
-        }
-
-        return new WhenCaseStatement(condition, doPipe);
-    }
 
     private void consume(){
         Token peek = peek(0);

@@ -27,14 +27,17 @@ public class DataFrameRecord {
         }
     }
 
+    //Encapsulation
     public String[] getColumns() {
         return columns;
     }
 
+    //Encapsulation
     public Value<?>[] getValues() {
         return values;
     }
 
+    //Encapsulation
     public Value<?> get(String column){
         return map.get(column);
     }
