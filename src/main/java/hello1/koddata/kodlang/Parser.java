@@ -226,7 +226,6 @@ public class Parser {
                 type.equals(Token.TokenType.LPAREN) ||
                 type.equals(Token.TokenType.LBRACKET) ||
                 type.equals(Token.TokenType.PIPELINE) ||
-                type.equals(Token.TokenType.BRANCH) ||
                 type.equals(Token.TokenType.OP_SUB) ||
                 type.equals(Token.TokenType.NULL) ||
                 type.equals(Token.TokenType.TRUE) ||
@@ -329,25 +328,6 @@ public class Parser {
                 expect(Token.TokenType.RCURLY);
                 expr = new Pipeline(new ImmutableArray<>(pipeline));
             }
-            case BRANCH -> {
-                consume();
-                expect(Token.TokenType.LCURLY);
-                List<WhenCaseStatement> whens = new ArrayList<>();
-                ElseCaseStatement elseCase = null;
-
-                while(current() != null && current().type.equals(Token.TokenType.WHEN)){
-                    consume();
-                    whens.add(parseWhenCase());
-                }
-
-                if(current() != null && current().type.equals(Token.TokenType.ELSE)){
-                    consume();
-                    elseCase = new ElseCaseStatement(parseExpression());
-                }
-
-                expect(Token.TokenType.RCURLY);
-                expr = new BranchPipeline(new ImmutableArray<>(whens), elseCase);
-            }
             default -> throw new KException(ExceptionCode.KDC0002,
                     "Unexpected token in expression: " + t.type);
         }
@@ -388,25 +368,21 @@ public class Parser {
 
     private static boolean isFunction(String name){
         Set<String> functionName = Set.of(
-                "max", "min", "abs", "sqrt", "pow", "exp", "log", "log10",
+                "abs", "sqrt", "pow", "exp", "log", "log10",
                 "sin", "cos", "tan", "asin", "acos", "atan", "ceil", "floor",
                 "round", "clamp", "random", "sign", "mod", "sinh",
-                "cosh", "tanh", "deg", "rad", "gcd", "lcm", "factorial", "root",
-                "sum", "avg", "mean", "median", "mode", "count",
-                 "range", "product",
-                "equals", "not", "and", "or", "xor", "if", "ifelse",
+                "cosh", "tanh", "deg", "rad", "factorial", "root",
+                "equals",
                 "length", "upper", "lower", "trim", "concat", "substring",
                 "replace", "indexof", "startswith", "endswith", "split", "join",
                 "reverse", "contains", "padleft", "padright", "repeat",
-                "tostring", "str", "format", "match", "regex",
-                "sort",
-                "map", "filter", "reduce", "first", "last", "distinct", "every",
-                "some", "any", "merge",
+                "tostring", "str", "format", "match",
+                "first", "last", "distinct",
                 "type", "isnumber", "isstring", "islist", "isbool", "print",
                 "coalesce", "cast",
                 "take", "skip", "fill"
                 ,"connect","download", "export", "fetch", "remove", "session", "task"
-                ,"user", "copy", "drop", "apply", "stop"
+                ,"user", "stop"
         );
         return functionName.contains(name.toLowerCase());
     }
