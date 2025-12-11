@@ -7,13 +7,11 @@ import java.io.InputStream;
 import java.util.List;
 
 public abstract class DataFrameLoader {
-
+    // Encapsulation
     protected Column[] columns;
-
+    // Abstract + Polymorphism
     public abstract void load(InputStream in) throws IOException;
 
-
-    public Column[] getColumns() {
-            return columns;
-    }
+    // Encapsulation
+    public Column[] getColumns() {return columns;}
 }

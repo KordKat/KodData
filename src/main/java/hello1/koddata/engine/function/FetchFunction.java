@@ -21,7 +21,7 @@ import java.io.IOException;
 //Inheritance
 public class FetchFunction extends KodFunction<ColumnArray> {
 
-//    Polymorphism
+//   Polymorphism
     @Override
     public Value<ColumnArray> execute() throws KException {
         if (!arguments.containsKey("datatype")) {
@@ -32,7 +32,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
             System.out.println("ds");
             throw new KException(ExceptionCode.KDE0012, "Function fetch need argument datasource");
         }
-
+        // Encapsulation
         Value<?> value = arguments.get("datatype");
         Value<?> source = arguments.get("datasource");
 
@@ -59,7 +59,7 @@ public class FetchFunction extends KodFunction<ColumnArray> {
 
         final Value<DataSource> finalDataSource = dataSourceValue;
         DataFrameLoader dataFrameLoader = null;
-
+        // Polymorphism
         if (dataSourceValue.get().equals(DataSource.CSV)) {
             if (source.get() instanceof String s) {
                 final File file = new File(Main.bootstrap.getRootPath().resolve("home").resolve(session1.getUser().getUser().getUserData().name()).resolve(s).toAbsolutePath().toString());

@@ -7,8 +7,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Locale;
-
+// Inheritance
 public class RelationalDatabaseConnection implements DatabaseConnection {
+    // Encapsulation
     private String host, user, pass;
     private int port;
     private String databaseName;
@@ -24,6 +25,7 @@ public class RelationalDatabaseConnection implements DatabaseConnection {
         this.dbmsName = dbmsName.toLowerCase(Locale.ROOT);
 
     }
+    // Polymorphism
 
     @Override
     public void connect() {
@@ -40,6 +42,7 @@ public class RelationalDatabaseConnection implements DatabaseConnection {
         }
 
 
+    // Polymorphism
 
     @Override
     public Either<ResultSet, com.datastax.oss.driver.api.core.cql.ResultSet> executeQuery(String query) {
@@ -52,6 +55,7 @@ public class RelationalDatabaseConnection implements DatabaseConnection {
             throw new RuntimeException(e);
         }
     }
+    // Polymorphism
 
     @Override
     public void close() {

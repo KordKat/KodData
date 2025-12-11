@@ -36,7 +36,7 @@ public class CSVDataTransformer implements DataTransformer {
 
         return sb.toString();
     }
-
+    // Encapsulation
     private String escapeCsv(String value) {
         if (value == null) return "";
 

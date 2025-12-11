@@ -8,7 +8,7 @@ import hello1.koddata.engine.Value;
 
 //Inheritance
 public class JsonDataTransformer implements DataTransformer {
-
+    // Encapsulation
     private final Gson gson = new GsonBuilder()
             .serializeNulls()
             .setPrettyPrinting()

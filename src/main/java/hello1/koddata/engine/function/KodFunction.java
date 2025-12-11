@@ -6,13 +6,15 @@ import hello1.koddata.exception.KException;
 
 import java.util.HashMap;
 import java.util.Map;
-
+// Abstract
 public abstract class KodFunction <T>{
+//    Encapsulation
     protected Map<String , Value<?>> arguments = new HashMap<>();
 
 
     public void addArgument(String name, Value<?> value){
         arguments.put(name , value);
     }
+    // Abstract
     public abstract Value<T> execute() throws KException;
 }

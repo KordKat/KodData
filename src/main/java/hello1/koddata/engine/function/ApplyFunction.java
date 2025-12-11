@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 //Inheritance
 public class ApplyFunction extends KodFunction<CompletableFuture<ColumnArray>> {
 
-//    Polymorphism
+//   Polymorphism
     @Override
     public Value<CompletableFuture<ColumnArray>> execute() throws KException {
         if (arguments.get("session") == null) {

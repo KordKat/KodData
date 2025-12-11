@@ -16,6 +16,7 @@ import java.util.List;
 //import java.util.Set;
 
 public class Column{
+    // Encapsulation
     private ColumnMetaData metaData;
     private List<Value<?>> column;
     public Column(){}

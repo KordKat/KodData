@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataFrameRecord {
-
+    // Encapsulation
     private final String[] columns;
     private final Value<?>[] values;
     private Map<String, Value<?>> map;
+
+
+
     public DataFrameRecord(String[] columns, Value<?>[] values) throws KException{
         if(columns.length != values.length) {
             throw new KException(ExceptionCode.KDD0008, "number of column should be equals to number of values");

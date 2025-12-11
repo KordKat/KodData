@@ -11,7 +11,7 @@ import java.util.List;
 //Inheritance
 public class SessionCommand extends KodFunction<Session>{
 
-//    Polymorphism
+//     Polymorphism
     @Override
     public Value<Session> execute() throws KException {
         if (!arguments.containsKey("command")){

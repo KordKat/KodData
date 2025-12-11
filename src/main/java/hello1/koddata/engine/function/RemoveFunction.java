@@ -10,7 +10,7 @@ import hello1.koddata.sessions.SessionData;
 //Inheritance
 public class RemoveFunction extends KodFunction<SessionData>{
 
-//    Polymorphism
+//     Polymorphism
     @Override
     public Value<SessionData> execute() throws KException {
         if (!arguments.containsKey("dataName")){

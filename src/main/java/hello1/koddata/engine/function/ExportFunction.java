@@ -33,7 +33,7 @@ public class ExportFunction extends KodFunction<String>{
         if(!arguments.containsKey("dataframe")){
             throw new KException(ExceptionCode.KDE0012,"argument dataframe is missing");
         }
-//        Encapsulation
+//       Encapsulation
         Value<?> df = arguments.get("dataframe");
         if(!(df.get() instanceof ColumnArray ca)){
             throw new KException(ExceptionCode.KD00005, "only dataframe can export");

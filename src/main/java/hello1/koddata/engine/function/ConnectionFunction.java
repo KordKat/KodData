@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 //Inheritance
 public class ConnectionFunction extends KodFunction<CompletableFuture<DatabaseConnection>>{
 
-//    Polymorphism
+//   Polymorphism
     @Override
     public Value<CompletableFuture<DatabaseConnection>> execute() throws KException {
         if (!arguments.containsKey("databaseType")){

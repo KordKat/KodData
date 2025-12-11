@@ -15,7 +15,7 @@ import java.nio.file.Path;
 //Inheritance
 public class DownloadFunction extends KodFunction<Object> {
 
-//    Polymorphism
+//   Polymorphism
     @Override
     public Value<Object> execute() throws KException {
         if (!arguments.containsKey("fileName")) {

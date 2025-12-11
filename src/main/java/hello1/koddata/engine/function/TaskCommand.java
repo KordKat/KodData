@@ -13,7 +13,7 @@ import java.util.List;
 //Inheritance
 public class TaskCommand extends KodFunction<KTask>{
 
-//    Polymorphism
+//     Polymorphism
     @Override
     public Value<KTask> execute() throws KException {
         if (!arguments.containsKey("command")){

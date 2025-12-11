@@ -17,7 +17,7 @@ public class ColumnMetaData {
         LIST_DATE,
         LIST_TIMESTAMP;
     }
-
+    // Encapsulation
     private final String name;
     private boolean isVariable;
     private int rows;

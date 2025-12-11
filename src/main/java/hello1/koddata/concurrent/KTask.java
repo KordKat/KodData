@@ -12,12 +12,13 @@ import hello1.koddata.utils.collection.ImmutableArray;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
+
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
+
+// Inheritance
 public class KTask implements Supplier<Value<?>> {
-
+    // Encapsulation
     private final QueryExecution execution;
     private final Session session;
     private final ColumnArray columnArray;
@@ -28,7 +29,7 @@ public class KTask implements Supplier<Value<?>> {
         this.columnArray = columnArray;
         this.session = session;
     }
-
+    // Polymorphism
     @Override
     public Value<?> get() {
         int rows = columnArray.getColumns()
@@ -68,7 +69,7 @@ public class KTask implements Supplier<Value<?>> {
 
             while (currentNode != null) {
                 QueryOperation op = currentNode.getOperation();
-
+            // Abstract
                 if (op instanceof ColumnOperation) {
 
                     pendingColumnOpNode = currentNode;
@@ -90,6 +91,7 @@ public class KTask implements Supplier<Value<?>> {
                             );
                         }
                     }
+                    // Polymorphism
                     Value<?> result = op.operate(value);
                     if (result == null) break;
                     valueMap.put(reqColumn, result);
@@ -99,6 +101,7 @@ public class KTask implements Supplier<Value<?>> {
                         pendingColumnOpNode = nextNode;
                         if (index == rows - 1) {
                             ColumnOperation co = (ColumnOperation) nextNode.getOperation();
+                            // Polymorphism + Abstract
                             Value<?> colResult = co.operate(new Value<>(new ArrayList<>(bufferValue)));
 
                             columnOperationResultMap.put(nextNode.getColumn(), colResult);
@@ -138,6 +141,7 @@ public class KTask implements Supplier<Value<?>> {
                 new ImmutableArray<>(new ArrayList<>(newColumns.values()))
         ));
     }
+    //Encapsulation
     private ColumnMetaData.ColumnDType inferType(List<Value<?>> values) {
         Object sample = values.stream()
                 .map(Value::get)
@@ -152,7 +156,7 @@ public class KTask implements Supplier<Value<?>> {
 
         return inferScalarType(sample);
     }
-
+    //Encapsulation
     private ColumnMetaData.ColumnDType inferScalarType(Object sample) {
         if (sample instanceof Integer || sample instanceof Long || sample instanceof Short || sample instanceof Byte)
             return ColumnMetaData.ColumnDType.SCALAR_INT;
@@ -166,7 +170,7 @@ public class KTask implements Supplier<Value<?>> {
             return ColumnMetaData.ColumnDType.SCALAR_TIMESTAMP;
         return ColumnMetaData.ColumnDType.SCALAR_STRING;
     }
-
+    // Encapsulation
     private ColumnMetaData.ColumnDType inferListType(List<?> list) {
         if (list.isEmpty()) return ColumnMetaData.ColumnDType.LIST_STRING;
 
@@ -186,7 +190,7 @@ public class KTask implements Supplier<Value<?>> {
 
         return ColumnMetaData.ColumnDType.LIST_STRING;
     }
-
+    // Encapsulation
     public QueryExecution getExecution() {
         return execution;
     }

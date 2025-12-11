@@ -3,7 +3,7 @@ package hello1.koddata.database;
 import hello1.koddata.utils.Either;
 
 import java.sql.ResultSet;
-
+// Abstract
 public interface DatabaseConnection {
 
     void connect();

@@ -12,7 +12,7 @@ import java.io.IOException;
 //Inheritance
 public class StopServerFunction extends KodFunction<Integer>{
 
-//    Polymorphism
+//     Polymorphism
     @Override
     public Value<Integer> execute() throws KException {
         Value<?> userVal = arguments.get("userId");

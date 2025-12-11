@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ColumnArray {
+    // Encapsulation
     private final Map<String, Column> columns = new LinkedHashMap<>();
 
     public ColumnArray(ImmutableArray<Column> columns){
